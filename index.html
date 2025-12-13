@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的旅行規劃</title>
+    <!-- ★ 地圖API引入 - 必須替換金鑰 -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCaoU4qICEMFvEGY2AdoCUP-nlVjBj3bSM&libraries=places&callback=initMap" async defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <style>
+        :root {
+            --primary: #8A9EA8; --secondary: #C9B8A3; --accent: #A3C9B8;
+            --light: #F8F5F2; --dark: #5A6D73; --text: #333333;
+            --shadow: rgba(138, 158, 168, 0.15); --radius: 20px; --radius-sm: 12px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, 'Microsoft JhengHei', sans-serif; }
+        body { background-color: var(--light); color: var(--text); min-height: 100vh; padding-bottom: 90px; line-height: 1.6; }
+
+        /* 可自訂的頁面背景 (應用於整個 .page) */
+        .page-with-bg {
+            position: relative;
+            border-radius: var(--radius);
+            overflow: hidden; /* 確保背景圖不溢出圓角 */
+            box-shadow: 0 10px 30px var(--shadow);
+            border: 1px solid rgba(138, 158, 168, 0.08);
+        }
+        .page-bg-layer {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-size: cover;
+            background-position: center;
+            opacity: 0.6; /* 背景圖透明度 60% */
+            z-index: 1;
+        }
+        .page-content {
+            position: relative; /* 確保內容在背景圖上方 */
+            z-index: 2;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.85); /* 內容區輕微白色背景，提高文字可讀性 */
+            border-radius: var(radius);
+        }
+
+        /* 背景設定按鈕 */
+        .bg-setting-btn {
+            position: absolute; top: 15px; right: 15px;
+            background: rgba(255, 255, 255, 0.9); 
+            border: none; width: 36px; height: 36px;
+            border-radius: 50%; font-size: 18px;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15); transition: all 0.3s; z-index: 3; /* 確保在最上層 */
+        }
+        .bg-setting-btn:hover { background: white; transform: scale(1.1); }
+        /* 背景設定面板 */
+        .bg-setting-panel {
+            display: none; position: absolute; top: 60px; right: 15px;
+            background: white; padding: 20px; border-radius: var(--radius-sm);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15); z-index: 4; min-width: 250px;
+            border: 1px solid rgba(138, 158, 168, 0.1);
+        }
+        .bg-setting-panel h4 { margin-bottom: 10px; color: var(--dark); }
+        .bg-setting-panel input[type="file"] { width: 100%; margin-bottom: 15px; padding: 10px; border: 1px dashed #ccc; border-radius: 8px; }
+        .bg-setting-panel button { background: var(--accent); color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; width: 100%; }
+
+        /* 主內容區 */
+        .main-content { padding: 25px; }
+        .page { display: none; margin-top: 25px; } /* 基礎樣式，實際樣式由 .page-with-bg 提供 */
+        .page.active { display: block; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* 標題框 - 置中，與下方保持2cm距離 */
+        .header-title-container {
+            text-align: center;
+            margin: 0 auto 2cm; /* 下邊距 2cm */
+            display: flex;
+            justify-content: center;
+        }
+        .title-container {
+            display: inline-flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 15px 30px;
+            border-radius: 50px;
+            transition: all 0.3s ease;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            box-shadow: 0 6px 20px var(--shadow);
+            max-width: 80%;
+        }
+        #app-title {
+            font-size: 26px;
+            font-weight: 700;
+            border: none;
+            background: transparent;
+            color: white;
+            text-align: center;
+            outline: none;
+            min-width: 200px;
+            cursor: pointer;
+        }
+
+        h2 { color: var(--dark); margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid var(--light); font-size: 24px; display: flex; align-items: center; gap: 10px; }
+
+        /* 表單 */
+        .input-group { margin-bottom: 30px; }
+        input, textarea, select {
+            width: 100%; padding: 16px 20px; margin: 10px 0; border: 2px solid #eee;
+            border-radius: var(--radius-sm); font-size: 16px; transition: all 0.3s; background: #fcfcfc;
+        }
+        input:focus, textarea:focus, select:focus { outline: none; border-color: var(--accent); background: white; box-shadow: 0 0 0 3px rgba(163, 201, 184, 0.2); }
+        button.primary-btn {
+            background: linear-gradient(to right, var(--primary), var(--accent)); color: white; border: none;
+            padding: 17px 30px; border-radius: var(--radius-sm); font-size: 17px; font-weight: 600;
+            cursor: pointer; transition: all 0.3s; margin-top: 15px; width: 100%; letter-spacing: 0.5px;
+        }
+        button.primary-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(138, 158, 168, 0.3); }
+
+        /* 底部導航 */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%; background: white;
+            display: flex; justify-content: space-around; padding: 18px 0;
+            box-shadow: 0 -5px 25px var(--shadow); z-index: 1000; border-top: 1px solid rgba(138, 158, 168, 0.1);
+        }
+        .nav-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; padding: 12px 25px; border-radius: var(--radius-sm); transition: all 0.3s; color: var(--text-light); }
+        .nav-item.active { background: rgba(138, 158, 168, 0.1); color: var(--primary); }
+        .nav-icon { font-size: 26px; margin-bottom: 6px; }
+        .nav-text { font-size: 14px; font-weight: 500; }
+
+        /* 行程列表樣式 */
+        #itinerary-list { margin-top: 20px; }
+        .date-section { margin-bottom: 35px; background: rgba(248, 245, 242, 0.7); border-radius: var(--radius); padding: 25px; border-left: 6px solid var(--accent); }
+        .date-header { font-size: 20px; font-weight: 700; color: var(--dark); margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px dashed rgba(138, 158, 168, 0.3); }
+        .sortable-list { min-height: 20px; }
+        .itinerary-item {
+            background: white; border-radius: var(--radius-sm); padding: 22px; margin-bottom: 15px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); border: 1px solid rgba(138, 158, 168, 0.1);
+            transition: all 0.3s; cursor: move;
+        }
+        .itinerary-item:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(138, 158, 168, 0.15); }
+        .item-content { flex-grow: 1; }
+        .item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
+        .item-title { font-weight: 700; color: var(--text); font-size: 18px; }
+        .item-time { color: var(--primary); font-size: 15px; font-weight: 600; background: rgba(138, 158, 168, 0.1); padding: 5px 12px; border-radius: 20px; }
+        .item-location { color: var(--text-light); margin: 8px 0; font-size: 15px; }
+        .item-remarks { color: var(--text); margin-top: 10px; padding: 12px; background: rgba(201, 184, 163, 0.08); border-radius: 10px; font-size: 15px; border-left: 3px solid var(--secondary); }
+
+        /* 刪除按鈕 - 使用新垃圾桶圖示並縮小 */
+        .delete-btn {
+            background: url('https://i.pinimg.com/736x/bc/fb/fe/bcfbfe6f458175b4afd8375a69257cb8.jpg') center/contain no-repeat;
+            border: none; width: 30px; height: 30px; /* 縮小約5pt */
+            cursor: pointer; margin-left: 20px; flex-shrink: 0;
+            transition: all 0.3s; opacity: 0.7;
+        }
+        .delete-btn:hover { opacity: 1; transform: scale(1.1); }
+
+        /* 預算和日記項目 */
+        .budget-item, .diary-entry {
+            background: white; border-radius: var(--radius-sm); padding: 22px; margin-bottom: 18px;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); border: 1px solid rgba(138, 158, 168, 0.1);
+        }
+
+        /* 地圖頁面佈局 */
+        .map-page-layout { display: flex; gap: 20px; height: 500px; margin-top: 20px; }
+        #locations-sidebar { flex: 1; background: rgba(249, 249, 249, 0.9); border-radius: var(--radius-sm); padding: 20px; overflow-y: auto; }
+        #map-container { flex: 2; border-radius: var(--radius-sm); overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        #map { width: 100%; height: 100%; }
+        .location-list-item {
+            padding: 15px; margin-bottom: 10px; background: white; border-radius: 8px;
+            cursor: pointer; border-left: 4px solid #4b6cb7; transition: all 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        .location-list-item:hover { background-color: #f0f7ff; }
+
+        @media (max-width: 768px) {
+            .page, .main-content { padding: 20px 15px; }
+            .bottom-nav { padding: 15px 0; }
+            .nav-item { padding: 10px 15px; }
+            .map-page-layout { flex-direction: column; height: auto; }
+            #map-container { height: 350px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 置中的標題框 -->
+    <div class="header-title-container">
+        <div class="title-container">
+            <input type="text" id="app-title" value="✈️ 我的旅行規劃" maxlength="30" onclick="this.select();">
+        </div>
+    </div>
+
+    <!-- 頁面1：行程規劃 -->
+    <div class="main-content">
+        <div id="itinerary-page" class="page-with-bg active">
+            <!-- 背景圖層與設定按鈕 -->
+            <div id="itinerary-bg-layer" class="page-bg-layer"></div>
+            <button class="bg-setting-btn" onclick="toggleBgPanel('itinerary')">⚙️</button>
+            <div id="itinerary-bg-panel" class="bg-setting-panel">
+                <h4>更改背景圖</h4>
+                <input type="file" id="itinerary-bg-input" accept="image/*">
+                <button onclick="changeBackground('itinerary')">套用背景</button>
+            </div>
+            <!-- 頁面主要內容 -->
+            <div class="page-content">
+                <h2>📅 行程規劃</h2>
+                <div class="input-group">
+                    <input type="text" id="activity-input" placeholder="活動名稱">
+                    <input type="text" id="location-input" placeholder="地點">
+                    <!-- 輸入框標題改為「日期」 -->
+                    <label for="time-input" style="display:block; margin-top:15px; font-weight:bold; color: var(--dark);">日期</label>
+                    <input type="datetime-local" id="time-input">
+                    <textarea id="remarks-input" placeholder="備註" rows="3"></textarea>
+                    <button class="primary-btn" onclick="addActivity()">新增活動</button>
+                </div>
+                <div id="itinerary-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 頁面2：行程地圖 -->
+    <div class="main-content" style="display:none;" id="map-main-content">
+        <div id="map-page" class="page-with-bg">
+            <div id="map-bg-layer" class="page-bg-layer"></div>
+            <button class="bg-setting-btn" onclick="toggleBgPanel('map')">⚙️</button>
+            <div id="map-bg-panel" class="bg-setting-panel">
+                <h4>更改背景圖</h4>
+                <input type="file" id="map-bg-input" accept="image/*">
+                <button onclick="changeBackground('map')">套用背景</button>
+            </div>
+            <div class="page-content">
+                <h2>🗺️ 行程地圖</h2>
+                <div class="map-page-layout">
+                    <div id="locations-sidebar">
+                        <h3>地點清單</h3>
+                        <div id="locations-list"><p style="color: var(--text-light); text-align: center; margin-top: 20px;">請先在行程頁面添加地點</p></div>
+                    </div>
+                    <div id="map-container"><div id="map"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 頁面3：預算規劃 -->
+    <div class="main-content" style="display:none;" id="budget-main-content">
+        <div id="budget-page" class="page-with-bg">
+            <div id="budget-bg-layer" class="page-bg-layer"></div>
+            <button class="bg-setting-btn" onclick="toggleBgPanel('budget')">⚙️</button>
+            <div id="budget-bg-panel" class="bg-setting-panel">
+                <h4>更改背景圖</h4>
+                <input type="file" id="budget-bg-input" accept="image/*">
+                <button onclick="changeBackground('budget')">套用背景</button>
+            </div>
+            <div class="page-content">
+                <h2>💰 預算規劃</h2>
+                <div class="input-group">
+                    <input type="text" id="expense-name" placeholder="花費項目">
+                    <input type="number" id="expense-amount" placeholder="金額 (泰銖)">
+                    <select id="expense-category">
+                        <option value="">選擇分類</option>
+                        <option value="food">餐飲</option>
+                        <option value="shopping">購物</option>
+                        <option value="leisure">休閒娛樂</option>
+                    </select>
+                    <select id="payment-method">
+                        <option value="">支付方式</option>
+                        <option value="credit">信用卡</option>
+                        <option value="cash">現金</option>
+                    </select>
+                    <button class="primary-btn" onclick="addExpense()">記錄花費</button>
+                </div>
+                <div style="background: rgba(138, 158, 168, 0.08); padding:25px; border-radius:var(--radius-sm); margin:25px 0;">
+                    <h3>預算統計</h3>
+                    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 15px;">
+                        <div style="text-align: center; padding: 15px; background: white; border-radius: var(--radius-sm);">
+                            <div style="font-size: 14px; color: var(--text-light);">總預算</div>
+                            <div style="font-size: 24px; font-weight: 700; color: var(--primary);"><span id="total-budget">10000</span> ฿</div>
+                        </div>
+                        <div style="text-align: center; padding: 15px; background: white; border-radius: var(--radius-sm);">
+                            <div style="font-size: 14px; color: var(--text-light);">已花費</div>
+                            <div style="font-size: 24px; font-weight: 700; color: #EA5455;"><span id="total-spent">0</span> ฿</div>
+                        </div>
+                        <div style="text-align: center; padding: 15px; background: white; border-radius: var(--radius-sm);">
+                            <div style="font-size: 14px; color: var(--text-light);">剩餘</div>
+                            <div style="font-size: 24px; font-weight: 700; color: var(--accent);"><span id="remaining">10000</span> ฿</div>
+                        </div>
+                    </div>
+                </div>
+                <div id="expense-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 頁面4：旅行筆記 -->
+    <div class="main-content" style="display:none;" id="diary-main-content">
+        <div id="diary-page" class="page-with-bg">
+            <div id="diary-bg-layer" class="page-bg-layer"></div>
+            <button class="bg-setting-btn" onclick="toggleBgPanel('diary')">⚙️</button>
+            <div id="diary-bg-panel" class="bg-setting-panel">
+                <h4>更改背景圖</h4>
+                <input type="file" id="diary-bg-input" accept="image/*">
+                <button onclick="changeBackground('diary')">套用背景</button>
+            </div>
+            <div class="page-content">
+                <h2>📝 旅行筆記</h2>
+                <div class="input-group">
+                    <input type="text" id="diary-title" placeholder="標題">
+                    <textarea id="diary-content" placeholder="寫下筆記..." rows="6"></textarea>
+                    <input type="file" id="diary-image" accept="image/*">
+                    <button class="primary-btn" onclick="addDiaryEntry()">新增筆記</button>
+                </div>
+                <div id="diary-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部導航列 (新順序：行程->地圖->預算->筆記) -->
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="showPage('itinerary')">
+            <div class="nav-icon">📅</div>
+            <div class="nav-text">行程</div>
+        </div>
+        <div class="nav-item" onclick="showPage('map')">
+            <div class="nav-icon">🗺️</div>
+            <div class="nav-text">地圖</div>
+        </div>
+        <div class="nav-item" onclick="showPage('budget')">
+            <div class="nav-icon">💰</div>
+            <div class="nav-text">預算</div>
+        </div>
+        <div class="nav-item" onclick="showPage('diary')">
+            <div class="nav-icon">📝</div>
+            <div class="nav-text">筆記</div>
+        </div>
+    </div>
+
+    <script>
+        // ==================== 全域變數 ====================
+        let map; // Google 地圖實例
+        let markers = []; let infoWindows = [];
+        let totalSpent = 0; const totalBudget = 10000;
+        const activities = []; const dateColors = {};
+        const colorPalette = [ 'rgba(163, 201, 184, 0.15)', 'rgba(138, 158, 168, 0.15)', 'rgba(201, 184, 163, 0.15)', 'rgba(168, 138, 153, 0.15)', 'rgba(163, 184, 201, 0.15)' ];
+
+        // ==================== 頁面切換與背景控制 (已修改) ====================
+        function showPage(pageName) {
+            const pages = ['itinerary', 'map', 'budget', 'diary'];
+            pages.forEach(p => {
+                document.getElementById(p + '-page').classList.remove('active');
+                document.getElementById(p + '-main-content') && (document.getElementById(p + '-main-content').style.display = 'none');
+                document.getElementById(p + '-bg-panel').style.display = 'none';
+            });
+            document.getElementById(pageName + '-page').classList.add('active');
+            document.getElementById(pageName + '-main-content') && (document.getElementById(pageName + '-main-content').style.display = 'block');
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+            if (pageName === 'map' && map) {
+                setTimeout(() => google.maps.event.trigger(map, 'resize'), 300);
+                updateMapPage();
+            }
+            loadBackground(pageName);
+        }
+        function toggleBgPanel(page) {
+            const panel = document.getElementById(page + '-bg-panel');
+            panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+        }
+        function changeBackground(page) {
+            const input = document.getElementById(page + '-bg-input');
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const bgLayer = document.getElementById(page + '-bg-layer');
+                    bgLayer.style.backgroundImage = `url('${e.target.result}')`;
+                    localStorage.setItem(page + '_bg', e.target.result);
+                    document.getElementById(page + '-bg-panel').style.display = 'none';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+        function loadBackground(page) {
+            const savedBg = localStorage.getItem(page + '_bg');
+            if (savedBg) {
+                document.getElementById(page + '-bg-layer').style.backgroundImage = `url('${savedBg}')`;
+            }
+        }
+
+        // ==================== 地圖功能 ====================
+        // ★ 地圖API金鑰 - 必須替換
+        // 前往 https://console.cloud.google.com 啟用 Maps JavaScript API 和 Places API
+        // 將下方的 'YOUR_GOOGLE_MAPS_API_KEY' 替換為你自己的金鑰
+        function initMap() {
+            const defaultCenter = { lat: 13.7563, lng: 100.5018 };
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: defaultCenter,
+                zoom: 12,
+                styles: [
+                    { featureType: "all", elementType: "geometry", stylers: [{ color: "#f5f5f5" }] },
+                    { featureType: "water", elementType: "geometry", stylers: [{ color: "#c3d7df" }] }
+                ]
+            });
+        }
+        function updateMapPage() {
+            if (!map) return;
+            markers.forEach(m => m.setMap(null)); infoWindows.forEach(iw => iw.close());
+            markers = []; infoWindows = [];
+            const locationsList = document.getElementById('locations-list');
+            locationsList.innerHTML = '';
+            if (activities.length === 0) {
+                locationsList.innerHTML = '<p style="color: var(--text-light); text-align: center; margin-top: 20px;">尚未添加任何地點</p>';
+                return;
+            }
+            const bounds = new google.maps.LatLngBounds();
+            activities.forEach((activity, index) => {
+                if (!activity.location || activity.location.trim() === '') return;
+                const geocoder = new google.maps.Geocoder();
+                geocoder.geocode({ address: activity.location }, (results, status) => {
+                    if (status === 'OK' && results[0]) {
+                        const position = results[0].geometry.location;
+                        const marker = new google.maps.Marker({
+                            map, position, title: activity.title,
+                            animation: google.maps.Animation.DROP,
+                            label: { text: (index + 1).toString(), color: 'white', fontWeight: 'bold' },
+                            icon: { path: google.maps.SymbolPath.CIRCLE, scale: 14, fillColor: '#4b6cb7', fillOpacity: 1, strokeColor: 'white', strokeWeight: 2 }
+                        });
+                        const infoWindow = new google.maps.InfoWindow({
+                            content: `<div style="padding:12px; max-width:250px;">
+                                        <h3 style="margin:0 0 8px 0; color:var(--primary);">${activity.title}</h3>
+                                        <p style="margin:0 0 5px 0; font-size:14px; color:#666;">📍 ${activity.location}</p>
+                                        ${activity.remarks ? `<p style="margin:0; font-size:14px;">📝 ${activity.remarks.substring(0, 50)}${activity.remarks.length > 50 ? '...' : ''}</p>` : ''}
+                                      </div>`
+                        });
+                        marker.addListener('click', () => { infoWindows.forEach(iw => iw.close()); infoWindow.open(map, marker); });
+                        markers.push(marker); infoWindows.push(infoWindow); bounds.extend(position);
+                        const listItem = document.createElement('div');
+                        listItem.className = 'location-list-item';
+                        listItem.innerHTML = `<div style="font-weight: bold; color: #2c3e50;">${index + 1}. ${activity.title}</div>
+                                              <div style="font-size: 14px; color: #666; margin-top: 5px;">📍 ${activity.location}</div>`;
+                        listItem.addEventListener('click', () => {
+                            map.panTo(position); map.setZoom(16);
+                            infoWindows.forEach(iw => iw.close()); infoWindow.open(map, marker);
+                            marker.setAnimation(google.maps.Animation.BOUNCE);
+                            setTimeout(() => marker.setAnimation(null), 1500);
+                        });
+                        locationsList.appendChild(listItem);
+                        if (markers.length === activities.filter(a => a.location && a.location.trim() !== '').length) {
+                            map.fitBounds(bounds); if (map.getZoom() > 15) map.setZoom(15);
+                        }
+                    }
+                });
+            });
+        }
+
+        // ==================== 行程規劃功能 (日期顯示邏輯已修改) ====================
+        function addActivity() {
+            const activity = document.getElementById('activity-input').value;
+            const location = document.getElementById('location-input').value;
+            const timeValue = document.getElementById('time-input').value; // 取得日期時間值
+            const remarks = document.getElementById('remarks-input').value;
+
+            if (!activity || !location) { alert('請填寫活動名稱和地點'); return; }
+
+            // 計算顯示用的詳細日期字串
+            let displayDate = '未設定日期';
+            if (timeValue) {
+                const dateObj = new Date(timeValue);
+                displayDate = dateObj.toLocaleDateString('zh-TW', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric',
+                    weekday: 'long'
+                });
+                // 可選：加上時間
+                // displayDate += ' ' + dateObj.toLocaleTimeString('zh-TW', { hour: '2-digit', minute: '2-digit' });
+            }
+
+            const activityObj = { 
+                id: Date.now(), 
+                title: activity, 
+                location: location, 
+                // 儲存原始時間值供後續使用
+                time: timeValue,
+                // 儲存用於顯示的詳細日期字串
+                displayDate: displayDate,
+                remarks: remarks 
+            };
+            activities.push(activityObj); 
+            renderItinerary(); 
+            updateMapPage(); 
+            saveToLocalStorage();
+
+            document.getElementById('activity-input').value = '';
+            document.getElementById('location-input').value = '';
+            document.getElementById('time-input').value = '';
+            document.getElementById('remarks-input').value = '';
+
+            alert('活動已新增！');
+        }
+        function deleteActivity(id) {
+            const index = activities.findIndex(a => a.id === id);
+            if (index !== -1) { activities.splice(index, 1); renderItinerary(); updateMapPage(); saveToLocalStorage(); }
+        }
+        function renderItinerary() {
+            const listContainer = document.getElementById('itinerary-list');
+            listContainer.innerHTML = '';
+            if (activities.length === 0) {
+                listContainer.innerHTML = '<div style="text-align:center; padding:30px; color:#666;">尚未添加任何行程</div>';
+                return;
+            }
+
+            // 按日期分組活動 (使用顯示日期 displayDate 進行分組)
+            const activitiesByDate = {};
+            activities.forEach(activity => {
+                const dateKey = activity.displayDate || '未設定日期';
+                if (!activitiesByDate[dateKey]) activitiesByDate[dateKey] = [];
+                activitiesByDate[dateKey].push(activity);
+            });
+
+            // 為每個日期分配顏色
+            Object.keys(activitiesByDate).forEach((dateKey, index) => {
+                if (!dateColors[dateKey]) dateColors[dateKey] = colorPalette[index % colorPalette.length];
+            });
+
+            // 渲染每個日期區塊
+            Object.keys(activitiesByDate).forEach(dateKey => {
+                const dateSection = document.createElement('div');
+                dateSection.className = 'date-section';
+                dateSection.style.backgroundColor = dateColors[dateKey];
+                
+                // 日期標頭顯示詳細日期
+                dateSection.innerHTML = `<div class="date-header">${dateKey}</div><div class="sortable-list" id="sortable-${dateKey.replace(/\s+/g, '-')}"></div>`;
+                listContainer.appendChild(dateSection);
+                const sortableList = dateSection.querySelector(`#sortable-${dateKey.replace(/\s+/g, '-')}`);
+                
+                activitiesByDate[dateKey].forEach(activity => {
+                    sortableList.appendChild(createActivityElement(activity));
+                });
+                
+                new Sortable(sortableList, { animation: 150, ghostClass: 'sortable-ghost', onEnd: () => saveToLocalStorage() });
+            });
+        }
+        function createActivityElement(activity) {
+            const div = document.createElement('div'); 
+            div.className = 'itinerary-item'; 
+            div.setAttribute('data-id', activity.id);
+            div.innerHTML = `<div class="item-content">
+                                <div class="item-header">
+                                    <div class="item-title">${activity.title}</div>
+                                </div>
+                                <div class="item-location">📍 ${activity.location}</div>
+                                ${activity.remarks ? `<div class="item-remarks">📝 ${activity.remarks}</div>` : ''}
+                             </div>
+                             <button class="delete-btn" onclick="deleteActivity(${activity.id})" title="刪除"></button>`;
+            return div;
+        }
+
+        // ==================== 預算規劃功能 ====================
+        const expenses = JSON.parse(localStorage.getItem('travelExpenses')) || [];
+        function addExpense() {
+            const name = document.getElementById('expense-name').value;
+            const amount = parseFloat(document.getElementById('expense-amount').value);
+            const category = document.getElementById('expense-category').value;
+            const payment = document.getElementById('payment-method').value;
+            if (!name || !amount || !category || !payment) { alert('請填寫所有資訊'); return; }
+            const expense = { id: Date.now(), name, amount, category, payment, date: new Date().toISOString().split('T')[0] };
+            expenses.push(expense); totalSpent += amount; updateBudgetDisplay(); renderExpenses(); saveExpensesToLocalStorage();
+            document.getElementById('expense-name').value = ''; document.getElementById('expense-amount').value = '';
+            document.getElementById('expense-category').value = ''; document.getElementById('payment-method').value = '';
+            alert('花費已記錄！');
+        }
+        function deleteExpense(id) {
+            const index = expenses.findIndex(exp => exp.id === id);
+            if (index !== -1) { totalSpent -= expenses[index].amount; expenses.splice(index, 1); updateBudgetDisplay(); renderExpenses(); saveExpensesToLocalStorage(); }
+        }
+        function updateBudgetDisplay() {
+            document.getElementById('total-spent').textContent = totalSpent;
+            document.getElementById('remaining').textContent = totalBudget - totalSpent;
+        }
+        function renderExpenses() {
+            const list = document.getElementById('expense-list'); list.innerHTML = '';
+            if (expenses.length === 0) { list.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">尚未記錄任何花費</div>'; return; }
+            expenses.forEach(expense => {
+                const item = document.createElement('div'); item.className = 'budget-item';
+                const categoryNames = { 'food':'餐飲', 'shopping':'購物', 'leisure':'休閒娛樂' };
+                const paymentNames = { 'credit':'信用卡', 'cash':'現金' };
+                item.innerHTML = `<div><div style="font-weight:bold;">${expense.name}</div><div style="font-size:14px;color:var(--text-light);">${paymentNames[expense.payment]} • ${expense.date}</div></div>
+                                  <div style="display:flex; align-items:center; gap:15px;">
+                                    <div style="padding:5px 12px; border-radius:20px; font-size:12px; font-weight:bold; 
+                                         background:${expense.category==='food'?'#e1f5fe':expense.category==='shopping'?'#f3e5f5':'#e8f5e8'}; 
+                                         color:${expense.category==='food'?'#0277bd':expense.category==='shopping'?'#7b1fa2':'#2e7d32'}">
+                                        ${categoryNames[expense.category]}
+                                    </div>
+                                    <div style="font-weight:bold;color:#EA5455;font-size:20px;">${expense.amount} ฿</div>
+                                    <button class="delete-btn" onclick="deleteExpense(${expense.id})" title="刪除"></button>
+                                  </div>`;
+                list.appendChild(item);
+            });
+        }
+
+        // ==================== 筆記功能 ====================
+        const diaryEntries = JSON.parse(localStorage.getItem('travelDiary')) || [];
+        function addDiaryEntry() {
+            const title = document.getElementById('diary-title').value;
+            const content = document.getElementById('diary-content').value;
+            const imageInput = document.getElementById('diary-image');
+            if (!title || !content) { alert('請填寫標題和內容'); return; }
+            const entry = { id: Date.now(), title, content, date: new Date().toLocaleString('zh-TW'), image: null };
+            if (imageInput.files && imageInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) { entry.image = e.target.result; diaryEntries.unshift(entry); renderDiaryEntries(); saveDiaryToLocalStorage(); resetDiaryForm(); alert('筆記已新增！'); };
+                reader.readAsDataURL(imageInput.files[0]);
+            } else { diaryEntries.unshift(entry); renderDiaryEntries(); saveDiaryToLocalStorage(); resetDiaryForm(); alert('筆記已新增！'); }
+        }
+        function deleteDiaryEntry(id) {
+            const index = diaryEntries.findIndex(entry => entry.id === id);
+            if (index !== -1) { diaryEntries.splice(index, 1); renderDiaryEntries(); saveDiaryToLocalStorage(); }
+        }
+        function renderDiaryEntries() {
+            const list = document.getElementById('diary-list'); list.innerHTML = '';
+            if (diaryEntries.length === 0) { list.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">尚未撰寫任何筆記</div>'; return; }
+            diaryEntries.forEach(entry => {
+                const entryEl = document.createElement('div'); entryEl.className = 'diary-entry';
+                let imageHTML = ''; if (entry.image) { imageHTML = `<img src="${entry.image}" alt="筆記圖片" style="max-width:100%; border-radius:var(--radius-sm); margin-top:15px;">`; }
+                entryEl.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                                        <div style="flex-grow:1;">
+                                            <div style="font-weight:bold;font-size:20px;margin-bottom:10px;color:var(--dark);">${entry.title}</div>
+                                            <div style="font-size:14px; color:#7f8c8d;">📅 ${entry.date}</div>
+                                        </div>
+                                        <button class="delete-btn" onclick="deleteDiaryEntry(${entry.id})" title="刪除"></button>
+                                     </div>
+                                     <div style="margin-top:15px; line-height:1.8;">${entry.content.replace(/\n/g, '<br>')}</div>
+                                     ${imageHTML}`;
+                list.appendChild(entryEl);
+            });
+        }
+        function resetDiaryForm() {
+            document.getElementById('diary-title').value = '';
+            document.getElementById('diary-content').value = '';
+            document.getElementById('diary-image').value = '';
+        }
+
+        // ==================== 本地儲存功能 ====================
+        function saveToLocalStorage() { localStorage.setItem('travelActivities', JSON.stringify(activities)); localStorage.setItem('dateColors', JSON.stringify(dateColors)); }
+        function saveExpensesToLocalStorage() { localStorage.setItem('travelExpenses', JSON.stringify(expenses)); }
+        function saveDiaryToLocalStorage() { localStorage.setItem('travelDiary', JSON.stringify(diaryEntries)); }
+        function loadFromLocalStorage() {
+            const savedActivities = localStorage.getItem('travelActivities');
+            if (savedActivities) { activities.length = 0; activities.push(...JSON.parse(savedActivities)); renderItinerary(); }
+            const savedExpenses = localStorage.getItem('travelExpenses');
+            if (savedExpenses) { expenses.length = 0; expenses.push(...JSON.parse(savedExpenses)); expenses.forEach(exp => totalSpent += exp.amount); updateBudgetDisplay(); renderExpenses(); }
+            const savedDiary = localStorage.getItem('travelDiary');
+            if (savedDiary) { diaryEntries.length = 0; diaryEntries.push(...JSON.parse(savedDiary)); renderDiaryEntries(); }
+            ['itinerary', 'map', 'budget', 'diary'].forEach(page => loadBackground(page));
+        }
+
+        // ==================== 頁面初始化 ====================
+        window.onload = function() {
+            loadFromLocalStorage();
+            renderItinerary(); updateBudgetDisplay(); renderExpenses(); renderDiaryEntries();
+            console.log('頁面初始化完成。請替換地圖API金鑰。');
+        };
+    </script>
+</body>
+</html>
