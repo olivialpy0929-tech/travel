@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>我的旅行規劃</title>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <!-- ★ Google Maps API - 必須替換為您的API金鑰 ★ -->
     <!-- 前往 https://console.cloud.google.com 啟用 Maps JavaScript API 和 Directions API -->
@@ -12,12 +14,33 @@
     
     <style>
         :root {
-            --primary: #8A9EA8; --secondary: #C9B8A3; --accent: #A3C9B8;
-            --light: #F8F5F2; --dark: #5A6D73; --text: #333333;
-            --shadow: rgba(138, 158, 168, 0.15); --radius: 20px; --radius-sm: 12px;
+            /* 使用提供的調色板 1: https://colorhunt.co/palette/ebf4dd90ab8b5a78633b4953 */
+            --primary: #3B4953; /* 深藍灰色 */
+            --secondary: #5A7863; /* 墨綠色 */
+            --accent: #90AB8B; /* 柔和綠色 */
+            --light: #EBF4DD; /* 淺米黃色 */
+            --dark: #3B4953; /* 深藍灰色 */
+            --text: #333333; /* 深灰色文字 */
+            --text-light: #666666; /* 淺灰色文字 */
+            --shadow: rgba(90, 120, 99, 0.15); /* 基於墨綠色的陰影 */
+            --radius: 16px; /* 圓角大小 */
+            --radius-sm: 10px; /* 小圓角 */
         }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, 'Microsoft JhengHei', sans-serif; }
-        body { background-color: var(--light); color: var(--text); min-height: 100vh; padding-bottom: 90px; line-height: 1.6; }
+        
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: -apple-system, 'Microsoft JhengHei', 'PingFang TC', sans-serif; 
+        }
+        
+        body { 
+            background-color: var(--light); 
+            color: var(--text); 
+            min-height: 100vh; 
+            padding-bottom: 90px; 
+            line-height: 1.6; 
+        }
 
         /* 可自訂的頁面背景 (應用於整個 .page) */
         .page-with-bg {
@@ -25,8 +48,10 @@
             border-radius: var(--radius);
             overflow: hidden; /* 確保背景圖不溢出圓角 */
             box-shadow: 0 10px 30px var(--shadow);
-            border: 1px solid rgba(138, 158, 168, 0.08);
+            border: 1px solid rgba(90, 120, 99, 0.08);
+            margin-bottom: 20px;
         }
+        
         .page-bg-layer {
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -35,168 +60,411 @@
             opacity: 0.6; /* 背景圖透明度 60% */
             z-index: 1;
         }
+        
         .page-content {
             position: relative; /* 確保內容在背景圖上方 */
             z-index: 2;
-            padding: 30px;
+            padding: 25px;
             background: rgba(255, 255, 255, 0.85); /* 內容區輕微白色背景，提高文字可讀性 */
-            border-radius: var(radius);
+            border-radius: var(--radius);
         }
 
         /* 背景設定按鈕 */
         .bg-setting-btn {
-            position: absolute; top: 15px; right: 15px;
+            position: absolute; 
+            top: 15px; 
+            right: 15px;
             background: rgba(255, 255, 255, 0.9); 
-            border: none; width: 36px; height: 36px;
-            border-radius: 50%; font-size: 18px;
-            cursor: pointer; display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15); transition: all 0.3s; z-index: 3; /* 確保在最上層 */
+            border: none; 
+            width: 36px; 
+            height: 36px;
+            border-radius: 50%; 
+            font-size: 18px;
+            cursor: pointer; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15); 
+            transition: all 0.3s; 
+            z-index: 3; /* 確保在最上層 */
         }
-        .bg-setting-btn:hover { background: white; transform: scale(1.1); }
+        
+        .bg-setting-btn:hover { 
+            background: white; 
+            transform: scale(1.1); 
+        }
+        
         /* 背景設定面板 */
         .bg-setting-panel {
-            display: none; position: absolute; top: 60px; right: 15px;
-            background: white; padding: 20px; border-radius: var(--radius-sm);
-            box-shadow: 0 5px 20px rgba(0,0,0,0.15); z-index: 4; min-width: 250px;
-            border: 1px solid rgba(138, 158, 168, 0.1);
+            display: none; 
+            position: absolute; 
+            top: 60px; 
+            right: 15px;
+            background: white; 
+            padding: 20px; 
+            border-radius: var(--radius-sm);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.15); 
+            z-index: 4; 
+            min-width: 250px;
+            border: 1px solid rgba(90, 120, 99, 0.1);
         }
-        .bg-setting-panel h4 { margin-bottom: 10px; color: var(--dark); }
-        .bg-setting-panel input[type="file"] { width: 100%; margin-bottom: 15px; padding: 10px; border: 1px dashed #ccc; border-radius: 8px; }
-        .bg-setting-panel button { background: var(--accent); color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; width: 100%; }
+        
+        .bg-setting-panel h4 { 
+            margin-bottom: 10px; 
+            color: var(--dark); 
+        }
+        
+        .bg-setting-panel input[type="file"] { 
+            width: 100%; 
+            margin-bottom: 15px; 
+            padding: 10px; 
+            border: 1px dashed #ccc; 
+            border-radius: 8px; 
+        }
+        
+        .bg-setting-panel button { 
+            background: var(--accent); 
+            color: white; 
+            border: none; 
+            padding: 10px 15px; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            width: 100%; 
+        }
 
         /* 主內容區 */
-        .main-content { padding: 25px; }
-        .page { display: none; margin-top: 25px; } /* 基礎樣式，實際樣式由 .page-with-bg 提供 */
-        .page.active { display: block; animation: fadeIn 0.5s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .main-content { 
+            padding: 20px 15px; 
+        }
+        
+        .page { 
+            display: none; 
+            margin-top: 20px; 
+        } 
+        
+        .page.active { 
+            display: block; 
+            animation: fadeIn 0.5s ease; 
+        }
+        
+        @keyframes fadeIn { 
+            from { 
+                opacity: 0; 
+                transform: translateY(10px); 
+            } 
+            to { 
+                opacity: 1; 
+                transform: translateY(0); 
+            } 
+        }
 
         /* 標題框 - 置中，與下方保持2cm距離 */
         .header-title-container {
             text-align: center;
-            margin: 0 auto 2cm; /* 下邊距 2cm */
+            margin: 0 auto 1.5cm; /* 下邊距 1.5cm */
             display: flex;
             justify-content: center;
+            padding: 0 15px;
         }
+        
         .title-container {
             display: inline-flex;
             align-items: center;
             cursor: pointer;
-            padding: 15px 30px;
+            padding: 15px 25px;
             border-radius: 50px;
             transition: all 0.3s ease;
-            background: linear-gradient(135deg, var(--primary), var(--accent));
+            background: linear-gradient(135deg, var(--secondary), var(--accent));
             color: white;
             box-shadow: 0 6px 20px var(--shadow);
-            max-width: 80%;
+            max-width: 90%;
         }
+        
         #app-title {
-            font-size: 26px;
+            font-size: 24px;
             font-weight: 700;
             border: none;
             background: transparent;
             color: white;
             text-align: center;
             outline: none;
-            min-width: 200px;
+            min-width: 180px;
             cursor: pointer;
+            width: 100%;
         }
 
-        h2 { color: var(--dark); margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid var(--light); font-size: 24px; display: flex; align-items: center; gap: 10px; }
+        h2 { 
+            color: var(--dark); 
+            margin-bottom: 20px; 
+            padding-bottom: 12px; 
+            border-bottom: 2px solid rgba(144, 171, 139, 0.3); 
+            font-size: 22px; 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+        }
 
         /* 表單 */
-        .input-group { margin-bottom: 30px; }
-        input, textarea, select {
-            width: 100%; padding: 16px 20px; margin: 10px 0; border: 2px solid #eee;
-            border-radius: var(--radius-sm); font-size: 16px; transition: all 0.3s; background: #fcfcfc;
+        .input-group { 
+            margin-bottom: 25px; 
         }
-        input:focus, textarea:focus, select:focus { outline: none; border-color: var(--accent); background: white; box-shadow: 0 0 0 3px rgba(163, 201, 184, 0.2); }
+        
+        input, textarea, select {
+            width: 100%; 
+            padding: 14px 18px; 
+            margin: 8px 0; 
+            border: 2px solid rgba(144, 171, 139, 0.3);
+            border-radius: var(--radius-sm); 
+            font-size: 16px; 
+            transition: all 0.3s; 
+            background: white;
+            color: var(--text);
+        }
+        
+        /* 特別為所有輸入框添加統一樣式 */
+        input::placeholder, textarea::placeholder {
+            color: #999;
+        }
+        
+        input:focus, textarea:focus, select:focus { 
+            outline: none; 
+            border-color: var(--accent); 
+            background: white; 
+            box-shadow: 0 0 0 3px rgba(144, 171, 139, 0.2); 
+        }
         
         /* 特別為日期輸入框調整，使其與其他輸入框邊框大小一致 */
-        input[type="datetime-local"] {
-            padding: 16px 20px !important;
-            border: 2px solid #eee !important;
+        input[type="datetime-local"], input[type="date"] {
+            padding: 14px 18px !important;
+            border: 2px solid rgba(144, 171, 139, 0.3) !important;
+            border-radius: var(--radius-sm) !important;
+            font-size: 16px !important;
+            color: var(--text) !important;
+            background: white !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+        
+        /* 日期輸入框的描述標籤 */
+        .date-label {
+            display: block;
+            margin-top: 8px;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: var(--secondary);
+            font-size: 15px;
         }
         
         button.primary-btn {
-            background: linear-gradient(to right, var(--primary), var(--accent)); color: white; border: none;
-            padding: 17px 30px; border-radius: var(--radius-sm); font-size: 17px; font-weight: 600;
-            cursor: pointer; transition: all 0.3s; margin-top: 15px; width: 100%; letter-spacing: 0.5px;
+            background: linear-gradient(to right, var(--secondary), var(--accent)); 
+            color: white; 
+            border: none;
+            padding: 16px 28px; 
+            border-radius: var(--radius-sm); 
+            font-size: 16px; 
+            font-weight: 600;
+            cursor: pointer; 
+            transition: all 0.3s; 
+            margin-top: 15px; 
+            width: 100%; 
+            letter-spacing: 0.5px;
         }
-        button.primary-btn:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(138, 158, 168, 0.3); }
+        
+        button.primary-btn:hover { 
+            transform: translateY(-3px); 
+            box-shadow: 0 10px 20px rgba(90, 120, 99, 0.3); 
+        }
 
         /* 底部導航 */
         .bottom-nav {
-            position: fixed; bottom: 0; left: 0; width: 100%; background: white;
-            display: flex; justify-content: space-around; padding: 18px 0;
-            box-shadow: 0 -5px 25px var(--shadow); z-index: 1000; border-top: 1px solid rgba(138, 158, 168, 0.1);
+            position: fixed; 
+            bottom: 0; 
+            left: 0; 
+            width: 100%; 
+            background: white;
+            display: flex; 
+            justify-content: space-around; 
+            padding: 15px 0;
+            box-shadow: 0 -5px 25px var(--shadow); 
+            z-index: 1000; 
+            border-top: 1px solid rgba(90, 120, 99, 0.1);
         }
-        .nav-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; padding: 12px 25px; border-radius: var(--radius-sm); transition: all 0.3s; color: var(--text-light); }
-        .nav-item.active { background: rgba(138, 158, 168, 0.1); color: var(--primary); }
-        .nav-icon { font-size: 26px; margin-bottom: 6px; }
-        .nav-text { font-size: 14px; font-weight: 500; }
+        
+        .nav-item { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            cursor: pointer; 
+            padding: 10px 15px; 
+            border-radius: var(--radius-sm); 
+            transition: all 0.3s; 
+            color: var(--text-light); 
+            flex: 1;
+            max-width: 80px;
+        }
+        
+        .nav-item.active { 
+            background: rgba(144, 171, 139, 0.1); 
+            color: var(--secondary); 
+        }
+        
+        .nav-icon { 
+            font-size: 22px; 
+            margin-bottom: 5px; 
+        }
+        
+        .nav-text { 
+            font-size: 12px; 
+            font-weight: 500; 
+        }
 
         /* 行程列表樣式 */
-        #itinerary-list { margin-top: 20px; }
-        .date-section { margin-bottom: 35px; background: rgba(248, 245, 242, 0.7); border-radius: var(--radius); padding: 25px; border-left: 6px solid var(--accent); }
-        .date-header { font-size: 20px; font-weight: 700; color: var(--dark); margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px dashed rgba(138, 158, 168, 0.3); }
-        .sortable-list { min-height: 20px; }
-        .itinerary-item {
-            background: white; border-radius: var(--radius-sm); padding: 22px; margin-bottom: 15px;
-            display: flex; justify-content: space-between; align-items: center;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); border: 1px solid rgba(138, 158, 168, 0.1);
-            transition: all 0.3s; cursor: move;
+        #itinerary-list { 
+            margin-top: 20px; 
         }
-        .itinerary-item:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(138, 158, 168, 0.15); }
-        .item-content { flex-grow: 1; }
-        .item-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }
-        .item-title { font-weight: 700; color: var(--text); font-size: 18px; }
-        .item-time { color: var(--primary); font-size: 15px; font-weight: 600; background: rgba(138, 158, 168, 0.1); padding: 5px 12px; border-radius: 20px; }
-        .item-location { color: var(--text-light); margin: 8px 0; font-size: 15px; }
-        .item-remarks { color: var(--text); margin-top: 10px; padding: 12px; background: rgba(201, 184, 163, 0.08); border-radius: 10px; font-size: 15px; border-left: 3px solid var(--secondary); }
+        
+        .date-section { 
+            margin-bottom: 25px; 
+            background: rgba(235, 244, 221, 0.7); 
+            border-radius: var(--radius); 
+            padding: 20px; 
+            border-left: 6px solid var(--accent); 
+        }
+        
+        .date-header { 
+            font-size: 18px; 
+            font-weight: 700; 
+            color: var(--dark); 
+            margin-bottom: 15px; 
+            padding-bottom: 8px; 
+            border-bottom: 1px dashed rgba(90, 120, 99, 0.3); 
+        }
+        
+        .sortable-list { 
+            min-height: 20px; 
+        }
+        
+        .itinerary-item {
+            background: white; 
+            border-radius: var(--radius-sm); 
+            padding: 18px; 
+            margin-bottom: 12px;
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-start;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); 
+            border: 1px solid rgba(144, 171, 139, 0.2);
+            transition: all 0.3s; 
+            cursor: move;
+        }
+        
+        .itinerary-item:hover { 
+            transform: translateY(-3px); 
+            box-shadow: 0 8px 20px rgba(90, 120, 99, 0.15); 
+        }
+        
+        .item-content { 
+            flex-grow: 1; 
+        }
+        
+        .item-header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: flex-start; 
+            margin-bottom: 10px; 
+        }
+        
+        .item-title { 
+            font-weight: 700; 
+            color: var(--text); 
+            font-size: 17px; 
+        }
+        
+        .item-time { 
+            color: var(--secondary); 
+            font-size: 14px; 
+            font-weight: 600; 
+            background: rgba(144, 171, 139, 0.1); 
+            padding: 4px 10px; 
+            border-radius: 20px; 
+        }
+        
+        .item-location { 
+            color: var(--text-light); 
+            margin: 6px 0; 
+            font-size: 14px; 
+        }
+        
+        .item-remarks { 
+            color: var(--text); 
+            margin-top: 8px; 
+            padding: 10px; 
+            background: rgba(144, 171, 139, 0.08); 
+            border-radius: 8px; 
+            font-size: 14px; 
+            border-left: 3px solid var(--accent); 
+        }
         
         /* 新增：交通時間顯示 */
         .travel-time {
             display: inline-block;
-            margin-top: 8px;
+            margin-top: 6px;
             padding: 4px 10px;
-            background-color: rgba(163, 201, 184, 0.2);
+            background-color: rgba(144, 171, 139, 0.15);
             border-radius: 15px;
-            font-size: 13px;
-            color: var(--dark);
+            font-size: 12px;
+            color: var(--secondary);
             font-weight: 500;
         }
+        
         .travel-time i {
             margin-right: 5px;
+            color: var(--secondary);
         }
 
-        /* 刪除按鈕 - 使用新垃圾桶圖示並縮小 */
+        /* 刪除按鈕 - 使用Font Awesome垃圾桶圖示 */
         .delete-btn {
-            background: url('https://i.pinimg.com/736x/bc/fb/fe/bcfbfe6f458175b4afd8375a69257cb8.jpg') center/contain no-repeat;
-            border: none; width: 30px; height: 30px; /* 縮小約5pt */
-            cursor: pointer; margin-left: 20px; flex-shrink: 0;
-            transition: all 0.3s; opacity: 0.7;
+            background: none;
+            border: none; 
+            width: 28px; 
+            height: 28px; 
+            cursor: pointer; 
+            margin-left: 15px; 
+            flex-shrink: 0;
+            transition: all 0.3s; 
+            opacity: 0.7;
+            color: #EA5455;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        .delete-btn:hover { opacity: 1; transform: scale(1.1); }
+        
+        .delete-btn:hover { 
+            opacity: 1; 
+            transform: scale(1.1); 
+        }
 
         /* 記帳項目樣式 */
         .account-item {
-            background: white; border-radius: var(--radius-sm); padding: 22px; margin-bottom: 18px;
-            display: flex; justify-content: space-between; align-items: center;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); border: 1px solid rgba(138, 158, 168, 0.1);
+            background: white; 
+            border-radius: var(--radius-sm); 
+            padding: 18px; 
+            margin-bottom: 15px;
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); 
+            border: 1px solid rgba(144, 171, 139, 0.2);
         }
 
-        @media (max-width: 768px) {
-            .page, .main-content { padding: 20px 15px; }
-            .bottom-nav { padding: 15px 0; }
-            .nav-item { padding: 10px 15px; }
-        }
-        
         /* 頁面內容 - 用於新頁面顯示 */
         .page-wrapper {
             display: none;
-            padding: 25px;
+            padding: 20px 15px;
             animation: fadeIn 0.5s ease;
         }
+        
         .page-wrapper.active {
             display: block;
         }
@@ -205,44 +473,45 @@
         .trip-section {
             background: white;
             border-radius: var(--radius-sm);
-            padding: 25px;
-            margin-bottom: 25px;
+            padding: 20px;
+            margin-bottom: 20px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            border-left: 5px solid var(--primary);
+            border-left: 5px solid var(--secondary);
         }
         
         .section-header {
             display: flex;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 18px;
             padding-bottom: 10px;
-            border-bottom: 1px solid rgba(138, 158, 168, 0.1);
+            border-bottom: 1px solid rgba(144, 171, 139, 0.1);
         }
         
         .section-icon {
-            font-size: 28px;
-            margin-right: 15px;
-            width: 50px;
-            height: 50px;
+            font-size: 24px;
+            margin-right: 12px;
+            width: 45px;
+            height: 45px;
             display: flex;
             align-items: center;
             justify-content: center;
-            background-color: rgba(138, 158, 168, 0.1);
+            background-color: rgba(144, 171, 139, 0.1);
             border-radius: 50%;
+            color: var(--secondary);
         }
         
         .section-title {
-            font-size: 22px;
+            font-size: 20px;
             color: var(--dark);
             font-weight: 700;
         }
         
         .boarding-pass {
-            background: linear-gradient(135deg, #4b6cb7 0%, #182848 100%);
+            background: linear-gradient(135deg, var(--secondary), var(--primary));
             color: white;
             border-radius: 12px;
-            padding: 25px;
-            margin-bottom: 20px;
+            padding: 20px;
+            margin-bottom: 15px;
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
             position: relative;
             overflow: hidden;
@@ -263,27 +532,27 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         
         .pass-airline {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 700;
         }
         
         .pass-flight {
-            font-size: 18px;
+            font-size: 16px;
             background: rgba(255, 255, 255, 0.2);
-            padding: 5px 15px;
+            padding: 4px 12px;
             border-radius: 20px;
         }
         
         .pass-details {
             display: grid;
             grid-template-columns: 1fr auto 1fr;
-            gap: 20px;
+            gap: 15px;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
         }
         
         .pass-from, .pass-to {
@@ -291,155 +560,315 @@
         }
         
         .pass-city {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 700;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
         
         .pass-airport {
-            font-size: 16px;
+            font-size: 14px;
             opacity: 0.9;
         }
         
         .pass-plane {
-            font-size: 30px;
+            font-size: 28px;
             text-align: center;
         }
         
         .pass-info {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 15px;
-            margin-top: 20px;
+            gap: 12px;
+            margin-top: 15px;
         }
         
         .pass-info-item {
             background: rgba(255, 255, 255, 0.1);
-            padding: 10px;
+            padding: 8px;
             border-radius: 8px;
             text-align: center;
         }
         
         .info-label {
-            font-size: 12px;
+            font-size: 11px;
             opacity: 0.8;
-            margin-bottom: 5px;
+            margin-bottom: 4px;
         }
         
         .info-value {
-            font-size: 16px;
+            font-size: 15px;
             font-weight: 600;
         }
         
         .hotel-card, .car-card {
             background: white;
             border-radius: var(--radius-sm);
-            padding: 20px;
-            margin-bottom: 20px;
+            padding: 18px;
+            margin-bottom: 15px;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            border: 1px solid rgba(138, 158, 168, 0.1);
+            border: 1px solid rgba(144, 171, 139, 0.1);
         }
         
         .hotel-name, .car-company {
-            font-size: 20px;
+            font-size: 18px;
             font-weight: 700;
             color: var(--dark);
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
         
         .hotel-address, .car-location {
             color: var(--text-light);
-            margin-bottom: 15px;
-            font-size: 15px;
+            margin-bottom: 12px;
+            font-size: 14px;
         }
         
         .hotel-remarks, .car-remarks {
-            padding: 15px;
-            background-color: rgba(201, 184, 163, 0.08);
-            border-radius: 10px;
-            margin-top: 15px;
-            font-size: 15px;
-            border-left: 3px solid var(--secondary);
+            padding: 12px;
+            background-color: rgba(144, 171, 139, 0.08);
+            border-radius: 8px;
+            margin-top: 12px;
+            font-size: 14px;
+            border-left: 3px solid var(--accent);
         }
         
         .car-details {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-top: 15px;
+            gap: 12px;
+            margin-top: 12px;
         }
         
         .car-detail-item {
-            padding: 10px;
-            background-color: rgba(138, 158, 168, 0.05);
+            padding: 8px;
+            background-color: rgba(144, 171, 139, 0.05);
             border-radius: 8px;
         }
         
         .other-info-item {
             background: white;
             border-radius: var(--radius-sm);
-            padding: 20px;
-            margin-bottom: 15px;
+            padding: 18px;
+            margin-bottom: 12px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
         }
         
         .other-title {
-            font-size: 18px;
+            font-size: 17px;
             font-weight: 700;
             color: var(--dark);
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
         
         .other-content {
             color: var(--text);
             line-height: 1.6;
+            font-size: 14px;
         }
         
         .edit-btn {
             background: var(--accent);
             color: white;
             border: none;
-            padding: 8px 16px;
+            padding: 7px 14px;
             border-radius: 6px;
-            font-size: 14px;
+            font-size: 13px;
             cursor: pointer;
-            margin-top: 15px;
+            margin-top: 12px;
             display: inline-flex;
             align-items: center;
             gap: 5px;
         }
         
         .edit-btn:hover {
-            background: var(--primary);
+            background: var(--secondary);
         }
         
         .empty-state {
             text-align: center;
-            padding: 40px 20px;
+            padding: 30px 15px;
             color: #888;
-            background-color: rgba(138, 158, 168, 0.05);
+            background-color: rgba(144, 171, 139, 0.05);
             border-radius: var(--radius-sm);
         }
         
         .empty-state i {
-            font-size: 48px;
-            margin-bottom: 15px;
+            font-size: 40px;
+            margin-bottom: 12px;
             color: #ccc;
         }
         
         /* 地圖容器 */
         #map-container {
-            height: 400px;
+            height: 350px;
             width: 100%;
             border-radius: var(--radius-sm);
             overflow: hidden;
-            margin-top: 20px;
+            margin-top: 15px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         }
         
         #map {
             height: 100%;
             width: 100%;
+        }
+        
+        /* 模態框樣式 */
+        .modal {
+            display: none; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.5); 
+            z-index: 10000; 
+            align-items: center; 
+            justify-content: center;
+            padding: 15px;
+        }
+        
+        .modal-content {
+            background: white; 
+            width: 100%; 
+            max-width: 500px; 
+            border-radius: var(--radius); 
+            padding: 25px; 
+            max-height: 85vh; 
+            overflow-y: auto;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        
+        /* 響應式設計 */
+        @media (max-width: 768px) {
+            .header-title-container {
+                margin-bottom: 1cm;
+            }
+            
+            .title-container {
+                padding: 12px 20px;
+            }
+            
+            #app-title {
+                font-size: 20px;
+                min-width: 160px;
+            }
+            
+            h2 {
+                font-size: 20px;
+            }
+            
+            .page-content {
+                padding: 20px;
+            }
+            
+            .pass-details {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            
+            .pass-plane {
+                display: none;
+            }
+            
+            .pass-info {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .car-details {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal-content {
+                padding: 20px;
+            }
+            
+            .section-icon {
+                width: 40px;
+                height: 40px;
+                font-size: 20px;
+            }
+            
+            .section-title {
+                font-size: 18px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .header-title-container {
+                margin-bottom: 0.8cm;
+            }
+            
+            .title-container {
+                padding: 10px 15px;
+                max-width: 95%;
+            }
+            
+            #app-title {
+                font-size: 18px;
+            }
+            
+            h2 {
+                font-size: 18px;
+            }
+            
+            .page-content {
+                padding: 15px;
+            }
+            
+            .pass-info {
+                grid-template-columns: 1fr;
+            }
+            
+            .bottom-nav {
+                padding: 12px 0;
+            }
+            
+            .nav-item {
+                padding: 8px 10px;
+            }
+            
+            .nav-icon {
+                font-size: 20px;
+            }
+            
+            .nav-text {
+                font-size: 11px;
+            }
+            
+            .itinerary-item {
+                padding: 15px;
+            }
+        }
+        
+        /* 工具類 */
+        .mt-10 { margin-top: 10px; }
+        .mt-15 { margin-top: 15px; }
+        .mt-20 { margin-top: 20px; }
+        .mb-10 { margin-bottom: 10px; }
+        .mb-15 { margin-bottom: 15px; }
+        .mb-20 { margin-bottom: 20px; }
+        .text-center { text-align: center; }
+        .d-flex { display: flex; }
+        .flex-column { flex-direction: column; }
+        .align-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .gap-10 { gap: 10px; }
+        .gap-15 { gap: 15px; }
+        .w-100 { width: 100%; }
+        
+        /* 載入動畫 */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(144, 171, 139, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--accent);
+            animation: spin 1s ease-in-out infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
         }
     </style>
 </head>
@@ -456,7 +885,7 @@
         <div id="itinerary-page" class="page-with-bg">
             <!-- 背景圖層與設定按鈕 -->
             <div id="itinerary-bg-layer" class="page-bg-layer"></div>
-            <button class="bg-setting-btn" onclick="toggleBgPanel('itinerary')">⚙️</button>
+            <button class="bg-setting-btn" onclick="toggleBgPanel('itinerary')"><i class="fas fa-cog"></i></button>
             <div id="itinerary-bg-panel" class="bg-setting-panel">
                 <h4>更改背景圖</h4>
                 <input type="file" id="itinerary-bg-input" accept="image/*">
@@ -464,14 +893,17 @@
             </div>
             <!-- 頁面主要內容 -->
             <div class="page-content">
-                <h2>📅 行程規劃</h2>
+                <h2><i class="fas fa-route"></i> 行程規劃</h2>
                 <div class="input-group">
                     <input type="text" id="activity-input" placeholder="活動名稱">
                     <input type="text" id="location-input" placeholder="地點">
-                    <!-- 日期輸入框 - 邊框已調整 -->
-                    <input type="datetime-local" id="time-input" style="display:block; margin-top:10px; width:100%;">
+                    
+                    <!-- 日期輸入框 - 帶有描述標籤 -->
+                    <label class="date-label">日期</label>
+                    <input type="datetime-local" id="time-input" placeholder="請選擇日期和時間">
+                    
                     <textarea id="remarks-input" placeholder="備註" rows="3"></textarea>
-                    <button class="primary-btn" onclick="addActivity()">新增活動</button>
+                    <button class="primary-btn" onclick="addActivity()"><i class="fas fa-plus"></i> 新增活動</button>
                 </div>
                 <div id="itinerary-list"></div>
             </div>
@@ -482,22 +914,22 @@
     <div id="map-wrapper" class="page-wrapper">
         <div id="map-page" class="page-with-bg">
             <div id="map-bg-layer" class="page-bg-layer"></div>
-            <button class="bg-setting-btn" onclick="toggleBgPanel('map')">⚙️</button>
+            <button class="bg-setting-btn" onclick="toggleBgPanel('map')"><i class="fas fa-cog"></i></button>
             <div id="map-bg-panel" class="bg-setting-panel">
                 <h4>更改背景圖</h4>
                 <input type="file" id="map-bg-input" accept="image/*">
                 <button onclick="changeBackground('map')">套用背景</button>
             </div>
             <div class="page-content">
-                <h2>🗺️ 行程地圖</h2>
+                <h2><i class="fas fa-map-marked-alt"></i> 行程地圖</h2>
                 <div id="map-container">
                     <div id="map"></div>
                 </div>
-                <div id="locations-list" style="margin-top: 20px;">
-                    <h3>行程地點列表</h3>
-                    <div id="locations-container" style="margin-top: 15px;">
-                        <p style="color: var(--text-light); text-align: center; margin-top: 20px; padding: 20px; background: rgba(138, 158, 168, 0.08); border-radius: var(--radius-sm);">
-                            請先在行程頁面添加活動地點
+                <div id="locations-list" class="mt-20">
+                    <h3><i class="fas fa-list"></i> 行程地點列表</h3>
+                    <div id="locations-container" class="mt-15">
+                        <p style="color: var(--text-light); text-align: center; margin-top: 20px; padding: 20px; background: rgba(144, 171, 139, 0.08); border-radius: var(--radius-sm);">
+                            <i class="fas fa-map-marker-alt"></i> 請先在行程頁面添加活動地點
                         </p>
                     </div>
                 </div>
@@ -509,14 +941,14 @@
     <div id="account-wrapper" class="page-wrapper">
         <div id="account-page" class="page-with-bg">
             <div id="account-bg-layer" class="page-bg-layer"></div>
-            <button class="bg-setting-btn" onclick="toggleBgPanel('account')">⚙️</button>
+            <button class="bg-setting-btn" onclick="toggleBgPanel('account')"><i class="fas fa-cog"></i></button>
             <div id="account-bg-panel" class="bg-setting-panel">
                 <h4>更改背景圖</h4>
                 <input type="file" id="account-bg-input" accept="image/*">
                 <button onclick="changeBackground('account')">套用背景</button>
             </div>
             <div class="page-content">
-                <h2>💰 記帳功能</h2>
+                <h2><i class="fas fa-calculator"></i> 記帳功能</h2>
                 <div class="input-group">
                     <input type="text" id="expense-name" placeholder="花費項目名稱">
                     <input type="number" id="expense-amount" placeholder="金額">
@@ -529,13 +961,14 @@
                         <option value="leisure">休閒娛樂</option>
                         <option value="other">其他</option>
                     </select>
-                    <input type="date" id="expense-date" placeholder="日期">
-                    <button class="primary-btn" onclick="addExpense()">記錄花費</button>
+                    <label class="date-label">日期</label>
+                    <input type="date" id="expense-date" placeholder="請選擇日期">
+                    <button class="primary-btn" onclick="addExpense()"><i class="fas fa-plus"></i> 記錄花費</button>
                 </div>
                 <div id="account-list"></div>
-                <div style="text-align: center; padding: 20px; margin-top: 30px; background: rgba(138, 158, 168, 0.08); border-radius: var(--radius-sm);">
-                    <h3>總支出統計</h3>
-                    <div style="font-size: 32px; font-weight: 700; color: var(--primary); margin: 15px 0;">
+                <div style="text-align: center; padding: 20px; margin-top: 25px; background: rgba(144, 171, 139, 0.08); border-radius: var(--radius-sm);">
+                    <h3><i class="fas fa-chart-bar"></i> 總支出統計</h3>
+                    <div style="font-size: 28px; font-weight: 700; color: var(--secondary); margin: 12px 0;">
                         <span id="total-expense">0</span> 元
                     </div>
                 </div>
@@ -547,19 +980,19 @@
     <div id="diary-wrapper" class="page-wrapper">
         <div id="diary-page" class="page-with-bg">
             <div id="diary-bg-layer" class="page-bg-layer"></div>
-            <button class="bg-setting-btn" onclick="toggleBgPanel('diary')">⚙️</button>
+            <button class="bg-setting-btn" onclick="toggleBgPanel('diary')"><i class="fas fa-cog"></i></button>
             <div id="diary-bg-panel" class="bg-setting-panel">
                 <h4>更改背景圖</h4>
                 <input type="file" id="diary-bg-input" accept="image/*">
                 <button onclick="changeBackground('diary')">套用背景</button>
             </div>
             <div class="page-content">
-                <h2>📝 旅行筆記</h2>
+                <h2><i class="fas fa-book"></i> 旅行筆記</h2>
                 <div class="input-group">
                     <input type="text" id="diary-title" placeholder="筆記標題">
-                    <textarea id="diary-content" placeholder="寫下您的筆記..." rows="6"></textarea>
+                    <textarea id="diary-content" placeholder="寫下您的筆記..." rows="5"></textarea>
                     <input type="file" id="diary-image" accept="image/*">
-                    <button class="primary-btn" onclick="addDiaryEntry()">新增筆記</button>
+                    <button class="primary-btn" onclick="addDiaryEntry()"><i class="fas fa-plus"></i> 新增筆記</button>
                 </div>
                 <div id="diary-list"></div>
             </div>
@@ -570,19 +1003,19 @@
     <div id="trip-wrapper" class="page-wrapper">
         <div id="trip-page" class="page-with-bg">
             <div id="trip-bg-layer" class="page-bg-layer"></div>
-            <button class="bg-setting-btn" onclick="toggleBgPanel('trip')">⚙️</button>
+            <button class="bg-setting-btn" onclick="toggleBgPanel('trip')"><i class="fas fa-cog"></i></button>
             <div id="trip-bg-panel" class="bg-setting-panel">
                 <h4>更改背景圖</h4>
                 <input type="file" id="trip-bg-input" accept="image/*">
                 <button onclick="changeBackground('trip')">套用背景</button>
             </div>
             <div class="page-content">
-                <h2>📋 旅程簡介</h2>
+                <h2><i class="fas fa-info-circle"></i> 旅程簡介</h2>
                 
                 <!-- 航班資訊 -->
                 <div class="trip-section">
                     <div class="section-header">
-                        <div class="section-icon">✈️</div>
+                        <div class="section-icon"><i class="fas fa-plane-departure"></i></div>
                         <div class="section-title">航班資訊</div>
                     </div>
                     <div id="flight-container">
@@ -598,13 +1031,13 @@
                 <!-- 酒店資訊 -->
                 <div class="trip-section">
                     <div class="section-header">
-                        <div class="section-icon">🏨</div>
+                        <div class="section-icon"><i class="fas fa-hotel"></i></div>
                         <div class="section-title">酒店資訊</div>
                     </div>
                     <div id="hotel-container">
                         <!-- 酒店資訊將動態添加 -->
                         <div class="empty-state">
-                            <i class="fas fa-hotel"></i>
+                            <i class="fas fa-bed"></i>
                             <p>尚未添加酒店資訊</p>
                             <button class="edit-btn" onclick="editHotel()"><i class="fas fa-plus"></i> 添加酒店資訊</button>
                         </div>
@@ -614,13 +1047,13 @@
                 <!-- 租車資訊 -->
                 <div class="trip-section">
                     <div class="section-header">
-                        <div class="section-icon">🚗</div>
+                        <div class="section-icon"><i class="fas fa-car"></i></div>
                         <div class="section-title">租車資訊</div>
                     </div>
                     <div id="car-container">
                         <!-- 租車資訊將動態添加 -->
                         <div class="empty-state">
-                            <i class="fas fa-car"></i>
+                            <i class="fas fa-car-side"></i>
                             <p>尚未添加租車資訊</p>
                             <button class="edit-btn" onclick="editCar()"><i class="fas fa-plus"></i> 添加租車資訊</button>
                         </div>
@@ -630,13 +1063,13 @@
                 <!-- 其他資訊 -->
                 <div class="trip-section">
                     <div class="section-header">
-                        <div class="section-icon">📋</div>
+                        <div class="section-icon"><i class="fas fa-info-circle"></i></div>
                         <div class="section-title">其他資訊</div>
                     </div>
                     <div id="other-container">
                         <!-- 其他資訊將動態添加 -->
                         <div class="empty-state">
-                            <i class="fas fa-info-circle"></i>
+                            <i class="fas fa-sticky-note"></i>
                             <p>尚未添加其他資訊</p>
                             <button class="edit-btn" onclick="editOther()"><i class="fas fa-plus"></i> 添加其他資訊</button>
                         </div>
@@ -649,89 +1082,93 @@
     <!-- 底部導航列 (新順序：行程->地圖->記帳->筆記->旅程簡介) -->
     <div class="bottom-nav">
         <div class="nav-item active" onclick="showPage('itinerary')">
-            <div class="nav-icon">📅</div>
+            <div class="nav-icon"><i class="fas fa-route"></i></div>
             <div class="nav-text">行程</div>
         </div>
         <div class="nav-item" onclick="showPage('map')">
-            <div class="nav-icon">🗺️</div>
+            <div class="nav-icon"><i class="fas fa-map-marked-alt"></i></div>
             <div class="nav-text">地圖</div>
         </div>
         <div class="nav-item" onclick="showPage('account')">
-            <div class="nav-icon">💰</div>
+            <div class="nav-icon"><i class="fas fa-calculator"></i></div>
             <div class="nav-text">記帳</div>
         </div>
         <div class="nav-item" onclick="showPage('diary')">
-            <div class="nav-icon">📝</div>
+            <div class="nav-icon"><i class="fas fa-book"></i></div>
             <div class="nav-text">筆記</div>
         </div>
         <div class="nav-item" onclick="showPage('trip')">
-            <div class="nav-icon">📋</div>
+            <div class="nav-icon"><i class="fas fa-info-circle"></i></div>
             <div class="nav-text">簡介</div>
         </div>
     </div>
 
     <!-- 航班編輯模態框 -->
-    <div id="flight-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:10000; align-items:center; justify-content:center;">
-        <div style="background:white; width:90%; max-width:600px; border-radius:var(--radius); padding:30px; max-height:90vh; overflow-y:auto;">
-            <h3 style="margin-bottom:20px;">編輯航班資訊</h3>
+    <div id="flight-modal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-bottom:20px;"><i class="fas fa-plane-departure"></i> 編輯航班資訊</h3>
             <div id="flight-form">
                 <!-- 航班表單將動態生成 -->
             </div>
             <div style="display:flex; gap:15px; margin-top:25px;">
-                <button class="primary-btn" onclick="saveFlight()" style="flex:1;">儲存航班資訊</button>
-                <button class="edit-btn" onclick="closeModal('flight-modal')" style="background:#6c757d; flex:1;">取消</button>
+                <button class="primary-btn" onclick="saveFlight()" style="flex:1;"><i class="fas fa-save"></i> 儲存航班資訊</button>
+                <button class="edit-btn" onclick="closeModal('flight-modal')" style="background:#6c757d; flex:1;"><i class="fas fa-times"></i> 取消</button>
             </div>
         </div>
     </div>
 
     <!-- 酒店編輯模態框 -->
-    <div id="hotel-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:10000; align-items:center; justify-content:center;">
-        <div style="background:white; width:90%; max-width:500px; border-radius:var(--radius); padding:30px; max-height:90vh; overflow-y:auto;">
-            <h3 style="margin-bottom:20px;">編輯酒店資訊</h3>
+    <div id="hotel-modal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-bottom:20px;"><i class="fas fa-hotel"></i> 編輯酒店資訊</h3>
             <div class="input-group">
                 <input type="text" id="hotel-name" placeholder="酒店名稱">
                 <input type="text" id="hotel-address" placeholder="酒店地址">
-                <input type="text" id="hotel-checkin" placeholder="入住日期 (YYYY-MM-DD)">
-                <input type="text" id="hotel-checkout" placeholder="退房日期 (YYYY-MM-DD)">
+                <label class="date-label">入住日期</label>
+                <input type="date" id="hotel-checkin" placeholder="請選擇入住日期">
+                <label class="date-label">退房日期</label>
+                <input type="date" id="hotel-checkout" placeholder="請選擇退房日期">
                 <textarea id="hotel-remarks-input" placeholder="備註" rows="3"></textarea>
             </div>
             <div style="display:flex; gap:15px; margin-top:25px;">
-                <button class="primary-btn" onclick="saveHotel()">儲存酒店資訊</button>
-                <button class="edit-btn" onclick="closeModal('hotel-modal')" style="background:#6c757d;">取消</button>
+                <button class="primary-btn" onclick="saveHotel()"><i class="fas fa-save"></i> 儲存酒店資訊</button>
+                <button class="edit-btn" onclick="closeModal('hotel-modal')" style="background:#6c757d;"><i class="fas fa-times"></i> 取消</button>
             </div>
         </div>
     </div>
 
     <!-- 租車編輯模態框 -->
-    <div id="car-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:10000; align-items:center; justify-content:center;">
-        <div style="background:white; width:90%; max-width:500px; border-radius:var(--radius); padding:30px; max-height:90vh; overflow-y:auto;">
-            <h3 style="margin-bottom:20px;">編輯租車資訊</h3>
+    <div id="car-modal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-bottom:20px;"><i class="fas fa-car"></i> 編輯租車資訊</h3>
             <div class="input-group">
                 <input type="text" id="car-company" placeholder="租車公司">
                 <input type="text" id="car-pickup-location" placeholder="取車地點">
                 <input type="text" id="car-return-location" placeholder="還車地點">
-                <input type="datetime-local" id="car-pickup-time">
-                <input type="datetime-local" id="car-return-time">
+                <label class="date-label">取車時間</label>
+                <input type="datetime-local" id="car-pickup-time" placeholder="請選擇取車時間">
+                <label class="date-label">還車時間</label>
+                <input type="datetime-local" id="car-return-time" placeholder="請選擇還車時間">
                 <textarea id="car-remarks-input" placeholder="備註" rows="3"></textarea>
             </div>
             <div style="display:flex; gap:15px; margin-top:25px;">
-                <button class="primary-btn" onclick="saveCar()">儲存租車資訊</button>
-                <button class="edit-btn" onclick="closeModal('car-modal')" style="background:#6c757d;">取消</button>
+                <button class="primary-btn" onclick="saveCar()"><i class="fas fa-save"></i> 儲存租車資訊</button>
+                <button class="edit-btn" onclick="closeModal('car-modal')" style="background:#6c757d;"><i class="fas fa-times"></i> 取消</button>
             </div>
         </div>
     </div>
 
     <!-- 其他資訊編輯模態框 -->
-    <div id="other-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); z-index:10000; align-items:center; justify-content:center;">
-        <div style="background:white; width:90%; max-width:500px; border-radius:var(--radius); padding:30px; max-height:90vh; overflow-y:auto;">
-            <h3 style="margin-bottom:20px;">編輯其他資訊</h3>
+    <div id="other-modal" class="modal">
+        <div class="modal-content">
+            <h3 style="margin-bottom:20px;"><i class="fas fa-info-circle"></i> 編輯其他資訊</h3>
             <div class="input-group">
                 <input type="text" id="other-title-input" placeholder="標題">
-                <textarea id="other-content-input" placeholder="內容" rows="6"></textarea>
+                <textarea id="other-content-input" placeholder="內容" rows="5"></textarea>
             </div>
             <div style="display:flex; gap:15px; margin-top:25px;">
-                <button class="primary-btn" onclick="saveOther()">儲存資訊</button>
-                <button class="edit-btn" onclick="closeModal('other-modal')" style="background:#6c757d;">取消</button>
+                <button class="primary-btn" onclick="saveOther()"><i class="fas fa-save"></i> 儲存資訊</button>
+                <button class="edit-btn" onclick="closeModal('other-modal')" style="background:#6c757d;"><i class="fas fa-times"></i> 取消</button>
             </div>
         </div>
     </div>
@@ -743,9 +1180,14 @@
         const dateColors = {};
         const expenses = JSON.parse(localStorage.getItem('travelExpenses')) || [];
         const diaryEntries = JSON.parse(localStorage.getItem('travelDiary')) || [];
-        const colorPalette = [ 'rgba(163, 201, 184, 0.15)', 'rgba(138, 158, 168, 0.15)', 'rgba(201, 184, 163, 0.15)', 'rgba(168, 138, 153, 0.15)', 'rgba(163, 184, 201, 0.15)' ];
+        const colorPalette = [ 
+            'rgba(144, 171, 139, 0.15)', 
+            'rgba(90, 120, 99, 0.15)', 
+            'rgba(59, 73, 83, 0.1)', 
+            'rgba(235, 244, 221, 0.5)' 
+        ];
         
-        // ★ 新增：旅程簡介數據 ★
+        // 旅程簡介數據
         let tripInfo = JSON.parse(localStorage.getItem('tripInfo')) || {
             flights: [],
             hotels: [],
@@ -753,13 +1195,13 @@
             others: []
         };
         
-        // ★ 新增：Google Maps 相關變數 ★
+        // Google Maps 相關變數
         let map;
         let markers = [];
         let directionsService;
         let directionsRenderer;
 
-        // ==================== 頁面切換功能 (已改為跳轉至新頁面) ====================
+        // ==================== 頁面切換功能 ====================
         function showPage(pageName) {
             // 隱藏所有頁面
             document.querySelectorAll('.page-wrapper').forEach(wrapper => {
@@ -784,7 +1226,7 @@
                 'trip': '旅程簡介'
             };
             
-            // 更新瀏覽器歷史記錄，實現真正的頁面跳轉效果
+            // 更新瀏覽器歷史記錄
             history.pushState({page: pageName}, '', `#${pageName}`);
             
             // 加載該頁面的背景
@@ -795,7 +1237,7 @@
                 updateExpenseTotal();
             }
             
-            // ★ 如果是地圖頁面，初始化地圖 ★
+            // 如果是地圖頁面，初始化地圖
             if (pageName === 'map') {
                 setTimeout(() => {
                     if (!map) {
@@ -912,7 +1354,7 @@
                 time: timeValue,
                 displayDate: displayDate,
                 remarks: remarks,
-                travelTime: null // ★ 新增：儲存交通時間 ★
+                travelTime: null // 儲存交通時間
             };
             
             activities.push(activityObj); 
@@ -920,7 +1362,7 @@
             updateMapLocations(); 
             saveToLocalStorage();
             
-            // ★ 新增：計算交通時間 ★
+            // 計算交通時間
             calculateTravelTimes();
 
             document.getElementById('activity-input').value = '';
@@ -928,7 +1370,8 @@
             document.getElementById('time-input').value = '';
             document.getElementById('remarks-input').value = '';
 
-            alert('活動已新增！');
+            // 顯示成功提示
+            showNotification('活動已新增！', 'success');
         }
         
         function deleteActivity(id) {
@@ -939,8 +1382,11 @@
                 updateMapLocations(); 
                 saveToLocalStorage(); 
                 
-                // ★ 新增：重新計算交通時間 ★
+                // 重新計算交通時間
                 calculateTravelTimes();
+                
+                // 顯示成功提示
+                showNotification('活動已刪除', 'info');
             }
         }
         
@@ -949,7 +1395,7 @@
             listContainer.innerHTML = '';
             
             if (activities.length === 0) {
-                listContainer.innerHTML = '<div style="text-align:center; padding:30px; color:#666;">尚未添加任何行程</div>';
+                listContainer.innerHTML = '<div class="empty-state"><i class="fas fa-calendar-plus"></i><p>尚未添加任何行程</p></div>';
                 return;
             }
 
@@ -980,7 +1426,7 @@
                     sortableList.appendChild(createActivityElement(activity));
                 });
                 
-                // ★ 修改：排序結束時重新計算交通時間 ★
+                // 排序結束時重新計算交通時間
                 new Sortable(sortableList, { 
                     animation: 150, 
                     ghostClass: 'sortable-ghost', 
@@ -997,7 +1443,7 @@
             div.className = 'itinerary-item'; 
             div.setAttribute('data-id', activity.id);
             
-            // ★ 新增：交通時間顯示 ★
+            // 交通時間顯示
             let travelTimeHtml = '';
             if (activity.travelTime) {
                 travelTimeHtml = `<div class="travel-time"><i class="fas fa-car"></i> 預計交通時間: ${activity.travelTime}</div>`;
@@ -1008,19 +1454,18 @@
                                     <div class="item-title">${activity.title}</div>
                                     <div class="item-time">${activity.displayDate}</div>
                                 </div>
-                                <div class="item-location">📍 ${activity.location}</div>
+                                <div class="item-location"><i class="fas fa-map-marker-alt"></i> ${activity.location}</div>
                                 ${travelTimeHtml}
-                                ${activity.remarks ? `<div class="item-remarks">📝 ${activity.remarks}</div>` : ''}
+                                ${activity.remarks ? `<div class="item-remarks"><i class="fas fa-sticky-note"></i> ${activity.remarks}</div>` : ''}
                              </div>
-                             <button class="delete-btn" onclick="deleteActivity(${activity.id})" title="刪除"></button>`;
+                             <button class="delete-btn" onclick="deleteActivity(${activity.id})" title="刪除"><i class="fas fa-trash"></i></button>`;
             return div;
         }
 
         // ==================== Google Maps 相關功能 ====================
-        // ★ API位置：Google Maps API初始化 ★
         function initMap() {
-            // 設置默認中心點
-            const defaultCenter = { lat: 25.0330, lng: 121.5654 }; // 台北
+            // ★ 設置默認中心點為曼谷 (Bangkok) ★
+            const defaultCenter = { lat: 13.7563, lng: 100.5018 };
             
             map = new google.maps.Map(document.getElementById('map'), {
                 center: defaultCenter,
@@ -1075,7 +1520,7 @@
                             icon: {
                                 path: google.maps.SymbolPath.CIRCLE,
                                 scale: 14,
-                                fillColor: '#4b6cb7',
+                                fillColor: '#5A7863',
                                 fillOpacity: 1,
                                 strokeColor: 'white',
                                 strokeWeight: 2
@@ -1084,11 +1529,11 @@
                         
                         const infoWindow = new google.maps.InfoWindow({
                             content: `<div style="padding:12px; max-width:250px;">
-                                        <h3 style="margin:0 0 8px 0; color:var(--primary);">${activity.title}</h3>
-                                        <p style="margin:0 0 5px 0; font-size:14px; color:#666;">📍 ${activity.location}</p>
-                                        ${activity.displayDate ? `<p style="margin:0 0 5px 0; font-size:14px;">📅 ${activity.displayDate}</p>` : ''}
-                                        ${activity.travelTime ? `<p style="margin:0 0 5px 0; font-size:14px;">🚗 ${activity.travelTime}</p>` : ''}
-                                        ${activity.remarks ? `<p style="margin:0; font-size:14px;">📝 ${activity.remarks.substring(0, 50)}${activity.remarks.length > 50 ? '...' : ''}</p>` : ''}
+                                        <h3 style="margin:0 0 8px 0; color:#5A7863;">${activity.title}</h3>
+                                        <p style="margin:0 0 5px 0; font-size:14px; color:#666;"><i class="fas fa-map-marker-alt"></i> ${activity.location}</p>
+                                        ${activity.displayDate ? `<p style="margin:0 0 5px 0; font-size:14px;"><i class="fas fa-calendar"></i> ${activity.displayDate}</p>` : ''}
+                                        ${activity.travelTime ? `<p style="margin:0 0 5px 0; font-size:14px;"><i class="fas fa-car"></i> ${activity.travelTime}</p>` : ''}
+                                        ${activity.remarks ? `<p style="margin:0; font-size:14px;"><i class="fas fa-sticky-note"></i> ${activity.remarks.substring(0, 50)}${activity.remarks.length > 50 ? '...' : ''}</p>` : ''}
                                       </div>`
                         });
                         
@@ -1122,11 +1567,11 @@
                         
                         const infoWindow = new google.maps.InfoWindow({
                             content: `<div style="padding:12px; max-width:250px;">
-                                        <h3 style="margin:0 0 8px 0; color:var(--primary);">🏨 ${hotel.name}</h3>
-                                        <p style="margin:0 0 5px 0; font-size:14px; color:#666;">📍 ${hotel.address}</p>
-                                        ${hotel.checkin ? `<p style="margin:0 0 5px 0; font-size:14px;">📅 入住: ${hotel.checkin}</p>` : ''}
-                                        ${hotel.checkout ? `<p style="margin:0 0 5px 0; font-size:14px;">📅 退房: ${hotel.checkout}</p>` : ''}
-                                        ${hotel.remarks ? `<p style="margin:0; font-size:14px;">📝 ${hotel.remarks.substring(0, 50)}${hotel.remarks.length > 50 ? '...' : ''}</p>` : ''}
+                                        <h3 style="margin:0 0 8px 0; color:#5A7863;"><i class="fas fa-hotel"></i> ${hotel.name}</h3>
+                                        <p style="margin:0 0 5px 0; font-size:14px; color:#666;"><i class="fas fa-map-marker-alt"></i> ${hotel.address}</p>
+                                        ${hotel.checkin ? `<p style="margin:0 0 5px 0; font-size:14px;"><i class="fas fa-calendar-check"></i> 入住: ${hotel.checkin}</p>` : ''}
+                                        ${hotel.checkout ? `<p style="margin:0 0 5px 0; font-size:14px;"><i class="fas fa-calendar-times"></i> 退房: ${hotel.checkout}</p>` : ''}
+                                        ${hotel.remarks ? `<p style="margin:0; font-size:14px;"><i class="fas fa-sticky-note"></i> ${hotel.remarks.substring(0, 50)}${hotel.remarks.length > 50 ? '...' : ''}</p>` : ''}
                                       </div>`
                         });
                         
@@ -1160,12 +1605,12 @@
                         
                         const infoWindow = new google.maps.InfoWindow({
                             content: `<div style="padding:12px; max-width:250px;">
-                                        <h3 style="margin:0 0 8px 0; color:var(--primary);">🚗 ${car.company}</h3>
-                                        <p style="margin:0 0 5px 0; font-size:14px; color:#666;">📍 取車: ${car.pickupLocation}</p>
-                                        ${car.returnLocation ? `<p style="margin:0 0 5px 0; font-size:14px;">📍 還車: ${car.returnLocation}</p>` : ''}
-                                        ${car.pickupTime ? `<p style="margin:0 0 5px 0; font-size:14px;">📅 取車時間: ${formatDateTime(car.pickupTime)}</p>` : ''}
-                                        ${car.returnTime ? `<p style="margin:0 0 5px 0; font-size:14px;">📅 還車時間: ${formatDateTime(car.returnTime)}</p>` : ''}
-                                        ${car.remarks ? `<p style="margin:0; font-size:14px;">📝 ${car.remarks.substring(0, 50)}${car.remarks.length > 50 ? '...' : ''}</p>` : ''}
+                                        <h3 style="margin:0 0 8px 0; color:#5A7863;"><i class="fas fa-car"></i> ${car.company}</h3>
+                                        <p style="margin:0 0 5px 0; font-size:14px; color:#666;"><i class="fas fa-map-marker-alt"></i> 取車: ${car.pickupLocation}</p>
+                                        ${car.returnLocation ? `<p style="margin:0 0 5px 0; font-size:14px;"><i class="fas fa-map-marker-alt"></i> 還車: ${car.returnLocation}</p>` : ''}
+                                        ${car.pickupTime ? `<p style="margin:0 0 5px 0; font-size:14px;"><i class="fas fa-calendar-check"></i> 取車時間: ${formatDateTime(car.pickupTime)}</p>` : ''}
+                                        ${car.returnTime ? `<p style="margin:0 0 5px 0; font-size:14px;"><i class="fas fa-calendar-times"></i> 還車時間: ${formatDateTime(car.returnTime)}</p>` : ''}
+                                        ${car.remarks ? `<p style="margin:0; font-size:14px;"><i class="fas fa-sticky-note"></i> ${car.remarks.substring(0, 50)}${car.remarks.length > 50 ? '...' : ''}</p>` : ''}
                                       </div>`
                         });
                         
@@ -1179,7 +1624,7 @@
             });
         }
         
-        // ★ API位置：計算交通時間函數 ★
+        // 計算交通時間函數
         function calculateTravelTimes() {
             if (!directionsService || activities.length < 2) return;
             
@@ -1225,7 +1670,7 @@
             locationsContainer.innerHTML = '';
             
             if (activities.length === 0) {
-                locationsContainer.innerHTML = '<p style="color: var(--text-light); text-align: center; margin-top: 20px; padding: 20px; background: rgba(138, 158, 168, 0.08); border-radius: var(--radius-sm);">請先在行程頁面添加活動地點</p>';
+                locationsContainer.innerHTML = '<div class="empty-state"><i class="fas fa-map-marker-alt"></i><p>請先在行程頁面添加活動地點</p></div>';
                 return;
             }
             
@@ -1238,18 +1683,18 @@
                 
                 let travelTimeHtml = '';
                 if (activity.travelTime) {
-                    travelTimeHtml = `<div style="margin-top: 8px;"><span style="background-color: rgba(163, 201, 184, 0.2); padding: 3px 8px; border-radius: 12px; font-size: 12px;">🚗 ${activity.travelTime}</span></div>`;
+                    travelTimeHtml = `<div style="margin-top: 8px;"><span style="background-color: rgba(144, 171, 139, 0.2); padding: 3px 8px; border-radius: 12px; font-size: 12px;"><i class="fas fa-car"></i> ${activity.travelTime}</span></div>`;
                 }
                 
                 locationItem.innerHTML = `
                     <div>
                         <div style="font-weight:bold;">${index + 1}. ${activity.title}</div>
-                        <div style="font-size:14px;color:var(--text-light);">📍 ${activity.location}</div>
-                        ${activity.displayDate ? `<div style="font-size:14px;color:var(--primary); margin-top:5px;">${activity.displayDate}</div>` : ''}
+                        <div style="font-size:14px;color:var(--text-light);"><i class="fas fa-map-marker-alt"></i> ${activity.location}</div>
+                        ${activity.displayDate ? `<div style="font-size:14px;color:var(--secondary); margin-top:5px;"><i class="fas fa-calendar"></i> ${activity.displayDate}</div>` : ''}
                         ${travelTimeHtml}
                     </div>
                     <div>
-                        ${activity.remarks ? `<div style="background: rgba(163, 201, 184, 0.2); padding: 5px 12px; border-radius: 20px; font-size: 12px; color: var(--dark);">有備註</div>` : ''}
+                        ${activity.remarks ? `<div style="background: rgba(144, 171, 139, 0.2); padding: 5px 12px; border-radius: 20px; font-size: 12px; color: var(--dark);"><i class="fas fa-sticky-note"></i> 有備註</div>` : ''}
                     </div>
                 `;
                 locationsContainer.appendChild(locationItem);
@@ -1288,7 +1733,7 @@
             document.getElementById('expense-category').value = '';
             document.getElementById('expense-date').value = '';
             
-            alert('花費已記錄！');
+            showNotification('花費已記錄！', 'success');
         }
         
         function deleteExpense(id) {
@@ -1299,6 +1744,7 @@
                 renderExpenses(); 
                 updateExpenseTotal();
                 saveExpensesToLocalStorage(); 
+                showNotification('支出記錄已刪除', 'info');
             }
         }
         
@@ -1312,7 +1758,7 @@
             list.innerHTML = '';
             
             if (expenses.length === 0) { 
-                list.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">尚未記錄任何花費</div>'; 
+                list.innerHTML = '<div class="empty-state"><i class="fas fa-receipt"></i><p>尚未記錄任何花費</p></div>'; 
                 return; 
             }
             
@@ -1350,19 +1796,29 @@
                     'other': '#616161'
                 };
                 
+                const categoryIcons = {
+                    'food': 'fas fa-utensils',
+                    'transportation': 'fas fa-bus',
+                    'accommodation': 'fas fa-hotel',
+                    'shopping': 'fas fa-shopping-bag',
+                    'leisure': 'fas fa-film',
+                    'other': 'fas fa-question-circle'
+                };
+                
                 item.innerHTML = `
                     <div>
                         <div style="font-weight:bold;">${expense.name}</div>
-                        <div style="font-size:14px;color:var(--text-light);">${expense.formattedDate || expense.date}</div>
+                        <div style="font-size:14px;color:var(--text-light);"><i class="fas fa-calendar"></i> ${expense.formattedDate || expense.date}</div>
                     </div>
-                    <div style="display:flex; align-items:center; gap:15px;">
+                    <div style="display:flex; align-items:center; gap:12px;">
                         <div style="padding:5px 12px; border-radius:20px; font-size:12px; font-weight:bold; 
                              background:${categoryColors[expense.category] || '#f5f5f5'}; 
-                             color:${categoryTextColors[expense.category] || '#616161'}">
+                             color:${categoryTextColors[expense.category] || '#616161'}; display:flex; align-items:center; gap:5px;">
+                            <i class="${categoryIcons[expense.category] || 'fas fa-question-circle'}"></i>
                             ${categoryNames[expense.category] || expense.category}
                         </div>
-                        <div style="font-weight:bold;color:#EA5455;font-size:20px;">${expense.amount.toLocaleString()} 元</div>
-                        <button class="delete-btn" onclick="deleteExpense(${expense.id})" title="刪除"></button>
+                        <div style="font-weight:bold;color:#EA5455;font-size:18px;">${expense.amount.toLocaleString()} 元</div>
+                        <button class="delete-btn" onclick="deleteExpense(${expense.id})" title="刪除"><i class="fas fa-trash"></i></button>
                     </div>`;
                 list.appendChild(item);
             });
@@ -1395,7 +1851,7 @@
                     renderDiaryEntries(); 
                     saveDiaryToLocalStorage(); 
                     resetDiaryForm(); 
-                    alert('筆記已新增！'); 
+                    showNotification('筆記已新增！', 'success'); 
                 };
                 reader.readAsDataURL(imageInput.files[0]);
             } else { 
@@ -1403,7 +1859,7 @@
                 renderDiaryEntries(); 
                 saveDiaryToLocalStorage(); 
                 resetDiaryForm(); 
-                alert('筆記已新增！'); 
+                showNotification('筆記已新增！', 'success'); 
             }
         }
         
@@ -1413,6 +1869,7 @@
                 diaryEntries.splice(index, 1); 
                 renderDiaryEntries(); 
                 saveDiaryToLocalStorage(); 
+                showNotification('筆記已刪除', 'info');
             }
         }
         
@@ -1421,7 +1878,7 @@
             list.innerHTML = '';
             
             if (diaryEntries.length === 0) { 
-                list.innerHTML = '<div style="text-align:center; padding:20px; color:#666;">尚未撰寫任何筆記</div>'; 
+                list.innerHTML = '<div class="empty-state"><i class="fas fa-book"></i><p>尚未撰寫任何筆記</p></div>'; 
                 return; 
             }
             
@@ -1439,12 +1896,12 @@
                 entryEl.innerHTML = `
                     <div style="display:flex; justify-content:space-between; align-items:flex-start; width:100%;">
                         <div style="flex-grow:1;">
-                            <div style="font-weight:bold;font-size:20px;margin-bottom:10px;color:var(--dark);">${entry.title}</div>
-                            <div style="font-size:14px; color:#7f8c8d;">📅 ${entry.date}</div>
+                            <div style="font-weight:bold;font-size:18px;margin-bottom:8px;color:var(--dark);"><i class="fas fa-sticky-note"></i> ${entry.title}</div>
+                            <div style="font-size:14px; color:#7f8c8d;"><i class="fas fa-calendar"></i> ${entry.date}</div>
                         </div>
-                        <button class="delete-btn" onclick="deleteDiaryEntry(${entry.id})" title="刪除"></button>
+                        <button class="delete-btn" onclick="deleteDiaryEntry(${entry.id})" title="刪除"><i class="fas fa-trash"></i></button>
                     </div>
-                    <div style="margin-top:15px; line-height:1.8; width:100%;">${entry.content.replace(/\n/g, '<br>')}</div>
+                    <div style="margin-top:12px; line-height:1.6; width:100%; font-size:14px;">${entry.content.replace(/\n/g, '<br>')}</div>
                     ${imageHTML}`;
                 list.appendChild(entryEl);
             });
@@ -1480,7 +1937,7 @@
             let flightsHtml = '';
             tripInfo.flights.forEach((flight, index) => {
                 flightsHtml += `
-                    <div class="boarding-pass" style="margin-bottom: 20px;">
+                    <div class="boarding-pass" style="margin-bottom: 15px;">
                         <div class="pass-header">
                             <div class="pass-airline">${flight.airline || '航空公司'}</div>
                             <div class="pass-flight">${flight.flightNumber || '航班號碼'}</div>
@@ -1489,13 +1946,13 @@
                             <div class="pass-from">
                                 <div class="pass-city">${flight.departureCity || '出發城市'}</div>
                                 <div class="pass-airport">${flight.departureAirport || '機場'}</div>
-                                <div style="margin-top: 10px; font-size: 18px; font-weight: 700;">${formatFlightTime(flight.departureTime)}</div>
+                                <div style="margin-top: 10px; font-size: 16px; font-weight: 700;">${formatFlightTime(flight.departureTime)}</div>
                             </div>
-                            <div class="pass-plane">✈️</div>
+                            <div class="pass-plane"><i class="fas fa-plane"></i></div>
                             <div class="pass-to">
                                 <div class="pass-city">${flight.arrivalCity || '到達城市'}</div>
                                 <div class="pass-airport">${flight.arrivalAirport || '機場'}</div>
-                                <div style="margin-top: 10px; font-size: 18px; font-weight: 700;">${formatFlightTime(flight.arrivalTime)}</div>
+                                <div style="margin-top: 10px; font-size: 16px; font-weight: 700;">${formatFlightTime(flight.arrivalTime)}</div>
                             </div>
                         </div>
                         <div class="pass-info">
@@ -1512,15 +1969,15 @@
                                 <div class="info-value">${flight.seat || '未指定'}</div>
                             </div>
                         </div>
-                        ${flight.remarks ? `<div style="margin-top: 15px; padding: 10px; background: rgba(255,255,255,0.1); border-radius: 8px; font-size: 14px;">📝 ${flight.remarks}</div>` : ''}
-                        <div style="display: flex; gap: 10px; margin-top: 15px;">
-                            <button class="edit-btn" onclick="editFlight(${flight.id})" style="background: var(--primary);"><i class="fas fa-edit"></i> 編輯</button>
+                        ${flight.remarks ? `<div style="margin-top: 12px; padding: 8px; background: rgba(255,255,255,0.1); border-radius: 8px; font-size: 13px;"><i class="fas fa-sticky-note"></i> ${flight.remarks}</div>` : ''}
+                        <div style="display: flex; gap: 10px; margin-top: 12px;">
+                            <button class="edit-btn" onclick="editFlight(${flight.id})" style="background: var(--secondary);"><i class="fas fa-edit"></i> 編輯</button>
                             <button class="edit-btn" onclick="deleteFlight(${flight.id})" style="background: #EA5455;"><i class="fas fa-trash"></i> 刪除</button>
                         </div>
                     </div>`;
             });
             
-            container.innerHTML = flightsHtml + `<button class="edit-btn" onclick="editFlight()" style="margin-top: 15px;"><i class="fas fa-plus"></i> 添加另一航班</button>`;
+            container.innerHTML = flightsHtml + `<button class="edit-btn" onclick="editFlight()" style="margin-top: 12px;"><i class="fas fa-plus"></i> 添加另一航班</button>`;
         }
         
         function renderHotels() {
@@ -1529,7 +1986,7 @@
             if (tripInfo.hotels.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
-                        <i class="fas fa-hotel"></i>
+                        <i class="fas fa-bed"></i>
                         <p>尚未添加酒店資訊</p>
                         <button class="edit-btn" onclick="editHotel()"><i class="fas fa-plus"></i> 添加酒店資訊</button>
                     </div>`;
@@ -1540,27 +1997,27 @@
             tripInfo.hotels.forEach((hotel, index) => {
                 hotelsHtml += `
                     <div class="hotel-card">
-                        <div class="hotel-name">${hotel.name || '未命名酒店'}</div>
-                        <div class="hotel-address">📍 ${hotel.address || '未設定地址'}</div>
-                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-top: 15px;">
-                            <div style="padding: 10px; background-color: rgba(138, 158, 168, 0.05); border-radius: 8px;">
-                                <div style="font-size: 12px; color: var(--text-light);">入住</div>
+                        <div class="hotel-name"><i class="fas fa-hotel"></i> ${hotel.name || '未命名酒店'}</div>
+                        <div class="hotel-address"><i class="fas fa-map-marker-alt"></i> ${hotel.address || '未設定地址'}</div>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-top: 12px;">
+                            <div style="padding: 8px; background-color: rgba(144, 171, 139, 0.05); border-radius: 8px;">
+                                <div style="font-size: 12px; color: var(--text-light);"><i class="fas fa-sign-in-alt"></i> 入住</div>
                                 <div style="font-weight: 600;">${hotel.checkin || '未設定'}</div>
                             </div>
-                            <div style="padding: 10px; background-color: rgba(138, 158, 168, 0.05); border-radius: 8px;">
-                                <div style="font-size: 12px; color: var(--text-light);">退房</div>
+                            <div style="padding: 8px; background-color: rgba(144, 171, 139, 0.05); border-radius: 8px;">
+                                <div style="font-size: 12px; color: var(--text-light);"><i class="fas fa-sign-out-alt"></i> 退房</div>
                                 <div style="font-weight: 600;">${hotel.checkout || '未設定'}</div>
                             </div>
                         </div>
-                        ${hotel.remarks ? `<div class="hotel-remarks">📝 ${hotel.remarks}</div>` : ''}
-                        <div style="display: flex; gap: 10px; margin-top: 15px;">
+                        ${hotel.remarks ? `<div class="hotel-remarks"><i class="fas fa-sticky-note"></i> ${hotel.remarks}</div>` : ''}
+                        <div style="display: flex; gap: 10px; margin-top: 12px;">
                             <button class="edit-btn" onclick="editHotel(${hotel.id})"><i class="fas fa-edit"></i> 編輯</button>
                             <button class="edit-btn" onclick="deleteHotel(${hotel.id})" style="background: #EA5455;"><i class="fas fa-trash"></i> 刪除</button>
                         </div>
                     </div>`;
             });
             
-            container.innerHTML = hotelsHtml + `<button class="edit-btn" onclick="editHotel()" style="margin-top: 15px;"><i class="fas fa-plus"></i> 添加另一酒店</button>`;
+            container.innerHTML = hotelsHtml + `<button class="edit-btn" onclick="editHotel()" style="margin-top: 12px;"><i class="fas fa-plus"></i> 添加另一酒店</button>`;
         }
         
         function renderCars() {
@@ -1569,7 +2026,7 @@
             if (tripInfo.cars.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
-                        <i class="fas fa-car"></i>
+                        <i class="fas fa-car-side"></i>
                         <p>尚未添加租車資訊</p>
                         <button class="edit-btn" onclick="editCar()"><i class="fas fa-plus"></i> 添加租車資訊</button>
                     </div>`;
@@ -1580,34 +2037,34 @@
             tripInfo.cars.forEach((car, index) => {
                 carsHtml += `
                     <div class="car-card">
-                        <div class="car-company">${car.company || '租車公司'}</div>
+                        <div class="car-company"><i class="fas fa-car"></i> ${car.company || '租車公司'}</div>
                         <div class="car-details">
                             <div class="car-detail-item">
-                                <div style="font-size: 12px; color: var(--text-light);">取車地點</div>
+                                <div style="font-size: 12px; color: var(--text-light);"><i class="fas fa-map-marker-alt"></i> 取車地點</div>
                                 <div style="font-weight: 600;">${car.pickupLocation || '未設定'}</div>
                             </div>
                             <div class="car-detail-item">
-                                <div style="font-size: 12px; color: var(--text-light);">還車地點</div>
+                                <div style="font-size: 12px; color: var(--text-light);"><i class="fas fa-map-marker-alt"></i> 還車地點</div>
                                 <div style="font-weight: 600;">${car.returnLocation || '未設定'}</div>
                             </div>
                             <div class="car-detail-item">
-                                <div style="font-size: 12px; color: var(--text-light);">取車時間</div>
+                                <div style="font-size: 12px; color: var(--text-light);"><i class="fas fa-calendar-check"></i> 取車時間</div>
                                 <div style="font-weight: 600;">${formatDateTime(car.pickupTime) || '未設定'}</div>
                             </div>
                             <div class="car-detail-item">
-                                <div style="font-size: 12px; color: var(--text-light);">還車時間</div>
+                                <div style="font-size: 12px; color: var(--text-light);"><i class="fas fa-calendar-times"></i> 還車時間</div>
                                 <div style="font-weight: 600;">${formatDateTime(car.returnTime) || '未設定'}</div>
                             </div>
                         </div>
-                        ${car.remarks ? `<div class="car-remarks">📝 ${car.remarks}</div>` : ''}
-                        <div style="display: flex; gap: 10px; margin-top: 15px;">
+                        ${car.remarks ? `<div class="car-remarks"><i class="fas fa-sticky-note"></i> ${car.remarks}</div>` : ''}
+                        <div style="display: flex; gap: 10px; margin-top: 12px;">
                             <button class="edit-btn" onclick="editCar(${car.id})"><i class="fas fa-edit"></i> 編輯</button>
                             <button class="edit-btn" onclick="deleteCar(${car.id})" style="background: #EA5455;"><i class="fas fa-trash"></i> 刪除</button>
                         </div>
                     </div>`;
             });
             
-            container.innerHTML = carsHtml + `<button class="edit-btn" onclick="editCar()" style="margin-top: 15px;"><i class="fas fa-plus"></i> 添加另一租車</button>`;
+            container.innerHTML = carsHtml + `<button class="edit-btn" onclick="editCar()" style="margin-top: 12px;"><i class="fas fa-plus"></i> 添加另一租車</button>`;
         }
         
         function renderOthers() {
@@ -1616,7 +2073,7 @@
             if (tripInfo.others.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
-                        <i class="fas fa-info-circle"></i>
+                        <i class="fas fa-sticky-note"></i>
                         <p>尚未添加其他資訊</p>
                         <button class="edit-btn" onclick="editOther()"><i class="fas fa-plus"></i> 添加其他資訊</button>
                     </div>`;
@@ -1627,16 +2084,16 @@
             tripInfo.others.forEach((other, index) => {
                 othersHtml += `
                     <div class="other-info-item">
-                        <div class="other-title">${other.title || '未命名'}</div>
+                        <div class="other-title"><i class="fas fa-info-circle"></i> ${other.title || '未命名'}</div>
                         <div class="other-content">${other.content.replace(/\n/g, '<br>') || '無內容'}</div>
-                        <div style="display: flex; gap: 10px; margin-top: 15px;">
+                        <div style="display: flex; gap: 10px; margin-top: 12px;">
                             <button class="edit-btn" onclick="editOther(${other.id})"><i class="fas fa-edit"></i> 編輯</button>
                             <button class="edit-btn" onclick="deleteOther(${other.id})" style="background: #EA5455;"><i class="fas fa-trash"></i> 刪除</button>
                         </div>
                     </div>`;
             });
             
-            container.innerHTML = othersHtml + `<button class="edit-btn" onclick="editOther()" style="margin-top: 15px;"><i class="fas fa-plus"></i> 添加其他資訊</button>`;
+            container.innerHTML = othersHtml + `<button class="edit-btn" onclick="editOther()" style="margin-top: 12px;"><i class="fas fa-plus"></i> 添加其他資訊</button>`;
         }
         
         function formatFlightTime(timeStr) {
@@ -1662,38 +2119,44 @@
             flightForm.innerHTML = `
                 <div class="input-group">
                     <label style="display:block; margin-bottom:5px; font-weight:600;">航班類型</label>
-                    <select id="flight-type" style="margin-bottom:15px;" onchange="toggleRoundTrip()">
+                    <select id="flight-type" style="margin-bottom:12px;" onchange="toggleRoundTrip()">
                         <option value="roundtrip" ${flightData.isRoundTrip ? 'selected' : ''}>來回航班</option>
                         <option value="oneway" ${!flightData.isRoundTrip ? 'selected' : ''}>單程航班</option>
                     </select>
                     
                     <div id="outbound-flight">
-                        <h4 style="margin:20px 0 10px 0; color:var(--dark);">去程航班</h4>
+                        <h4 style="margin:15px 0 8px 0; color:var(--dark);">去程航班</h4>
                         <input type="text" id="outbound-airline" placeholder="航空公司" value="${flightData.outboundAirline || ''}">
                         <input type="text" id="outbound-flight-number" placeholder="航班號碼" value="${flightData.outboundFlightNumber || ''}">
                         <input type="text" id="outbound-departure-city" placeholder="出發城市" value="${flightData.outboundDepartureCity || ''}">
                         <input type="text" id="outbound-departure-airport" placeholder="出發機場" value="${flightData.outboundDepartureAirport || ''}">
+                        <label class="date-label">出發時間</label>
                         <input type="datetime-local" id="outbound-departure-time" value="${flightData.outboundDepartureTime || ''}">
                         <input type="text" id="outbound-arrival-city" placeholder="到達城市" value="${flightData.outboundArrivalCity || ''}">
                         <input type="text" id="outbound-arrival-airport" placeholder="到達機場" value="${flightData.outboundArrivalAirport || ''}">
+                        <label class="date-label">到達時間</label>
                         <input type="datetime-local" id="outbound-arrival-time" value="${flightData.outboundArrivalTime || ''}">
-                        <input type="date" id="outbound-date" placeholder="日期" value="${flightData.outboundDate || ''}">
+                        <label class="date-label">日期</label>
+                        <input type="date" id="outbound-date" placeholder="請選擇日期" value="${flightData.outboundDate || ''}">
                         <input type="text" id="outbound-class" placeholder="艙等 (如: 經濟艙)" value="${flightData.outboundClass || ''}">
                         <input type="text" id="outbound-seat" placeholder="座位號碼" value="${flightData.outboundSeat || ''}">
                         <textarea id="outbound-remarks" placeholder="備註" rows="2">${flightData.outboundRemarks || ''}</textarea>
                     </div>
                     
                     <div id="inbound-flight" style="${flightData.isRoundTrip ? '' : 'display:none;'}">
-                        <h4 style="margin:20px 0 10px 0; color:var(--dark);">回程航班</h4>
+                        <h4 style="margin:15px 0 8px 0; color:var(--dark);">回程航班</h4>
                         <input type="text" id="inbound-airline" placeholder="航空公司" value="${flightData.inboundAirline || ''}">
                         <input type="text" id="inbound-flight-number" placeholder="航班號碼" value="${flightData.inboundFlightNumber || ''}">
                         <input type="text" id="inbound-departure-city" placeholder="出發城市" value="${flightData.inboundDepartureCity || ''}">
                         <input type="text" id="inbound-departure-airport" placeholder="出發機場" value="${flightData.inboundDepartureAirport || ''}">
+                        <label class="date-label">出發時間</label>
                         <input type="datetime-local" id="inbound-departure-time" value="${flightData.inboundDepartureTime || ''}">
                         <input type="text" id="inbound-arrival-city" placeholder="到達城市" value="${flightData.inboundArrivalCity || ''}">
                         <input type="text" id="inbound-arrival-airport" placeholder="到達機場" value="${flightData.inboundArrivalAirport || ''}">
+                        <label class="date-label">到達時間</label>
                         <input type="datetime-local" id="inbound-arrival-time" value="${flightData.inboundArrivalTime || ''}">
-                        <input type="date" id="inbound-date" placeholder="日期" value="${flightData.inboundDate || ''}">
+                        <label class="date-label">日期</label>
+                        <input type="date" id="inbound-date" placeholder="請選擇日期" value="${flightData.inboundDate || ''}">
                         <input type="text" id="inbound-class" placeholder="艙等 (如: 經濟艙)" value="${flightData.inboundClass || ''}">
                         <input type="text" id="inbound-seat" placeholder="座位號碼" value="${flightData.inboundSeat || ''}">
                         <textarea id="inbound-remarks" placeholder="備註" rows="2">${flightData.inboundRemarks || ''}</textarea>
@@ -1800,7 +2263,7 @@
             saveTripInfo();
             renderFlights();
             closeModal('flight-modal');
-            alert('航班資訊已儲存！');
+            showNotification('航班資訊已儲存！', 'success');
         }
         
         function deleteFlight(id) {
@@ -1815,6 +2278,7 @@
                 
                 saveTripInfo();
                 renderFlights();
+                showNotification('航班已刪除', 'info');
             }
         }
         
@@ -1872,7 +2336,7 @@
                 updateMap();
             }
             
-            alert('酒店資訊已儲存！');
+            showNotification('酒店資訊已儲存！', 'success');
         }
         
         function deleteHotel(id) {
@@ -1885,6 +2349,8 @@
                 if (map) {
                     updateMap();
                 }
+                
+                showNotification('酒店已刪除', 'info');
             }
         }
         
@@ -1945,7 +2411,7 @@
                 updateMap();
             }
             
-            alert('租車資訊已儲存！');
+            showNotification('租車資訊已儲存！', 'success');
         }
         
         function deleteCar(id) {
@@ -1958,6 +2424,8 @@
                 if (map) {
                     updateMap();
                 }
+                
+                showNotification('租車資訊已刪除', 'info');
             }
         }
         
@@ -2000,7 +2468,7 @@
             saveTripInfo();
             renderOthers();
             closeModal('other-modal');
-            alert('其他資訊已儲存！');
+            showNotification('其他資訊已儲存！', 'success');
         }
         
         function deleteOther(id) {
@@ -2008,12 +2476,66 @@
                 tripInfo.others = tripInfo.others.filter(o => o.id !== id);
                 saveTripInfo();
                 renderOthers();
+                showNotification('其他資訊已刪除', 'info');
             }
         }
         
         function closeModal(modalId) {
             document.getElementById(modalId).style.display = 'none';
         }
+        
+        // 通知功能
+        function showNotification(message, type = 'info') {
+            // 創建通知元素
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background-color: ${type === 'success' ? '#90AB8B' : type === 'info' ? '#5A7863' : '#EA5455'};
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+                z-index: 10001;
+                animation: slideIn 0.3s ease;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                max-width: 300px;
+            `;
+            
+            const icon = type === 'success' ? 'fas fa-check-circle' : 
+                        type === 'info' ? 'fas fa-info-circle' : 'fas fa-exclamation-circle';
+            
+            notification.innerHTML = `<i class="${icon}"></i><span>${message}</span>`;
+            document.body.appendChild(notification);
+            
+            // 3秒後移除通知
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => {
+                    if (notification.parentNode) {
+                        document.body.removeChild(notification);
+                    }
+                }, 300);
+            }, 3000);
+        }
+        
+        // 添加CSS動畫
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
 
         // ==================== 本地儲存功能 ====================
         function saveToLocalStorage() { 
@@ -2029,7 +2551,7 @@
             localStorage.setItem('travelDiary', JSON.stringify(diaryEntries)); 
         }
         
-        // ★ 新增：儲存旅程簡介數據 ★
+        // 儲存旅程簡介數據
         function saveTripInfo() {
             localStorage.setItem('tripInfo', JSON.stringify(tripInfo));
         }
@@ -2042,7 +2564,7 @@
                 renderItinerary(); 
                 updateMapLocations();
                 
-                // ★ 新增：載入後計算交通時間 ★
+                // 載入後計算交通時間
                 calculateTravelTimes();
             }
             
@@ -2061,7 +2583,7 @@
                 renderDiaryEntries(); 
             }
             
-            // ★ 新增：載入旅程簡介數據 ★
+            // 載入旅程簡介數據
             const savedTripInfo = localStorage.getItem('tripInfo');
             if (savedTripInfo) {
                 tripInfo = JSON.parse(savedTripInfo);
@@ -2085,9 +2607,12 @@
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('expense-date').value = today;
             
+            // 設置日期輸入框的placeholder
+            document.getElementById('time-input').setAttribute('placeholder', '請選擇日期和時間');
+            
             console.log('旅行規劃頁面已載入完成！');
-            console.log('請替換第15行的Google Maps API金鑰以啟用地圖和交通時間功能。');
+            console.log('請替換第16行的Google Maps API金鑰以啟用地圖和交通時間功能。');
         };
     </script>
 </body>
-            </html>
+</html>
