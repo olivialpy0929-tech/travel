@@ -302,7 +302,12 @@ function initMap() {
         
         // 添加示例標記
         const locations = [
-             ];
+            {name: '大皇宮', coords: { lat: 13.7500, lng: 100.4915 }},
+            {name: '鄭王廟', coords: { lat: 13.7437, lng: 100.4888 }},
+            {name: 'MBK購物中心', coords: { lat: 13.7448, lng: 100.5295 }},
+            {name: 'BKK機場', coords: { lat: 13.6811, lng: 100.7471 }},
+            {name: 'Siam Paragon', coords: { lat: 13.7462, lng: 100.5347 }}
+        ];
         
         locations.forEach(location => {
             const marker = new google.maps.Marker({
