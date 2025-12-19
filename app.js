@@ -18,16 +18,7 @@ const state = {
 };
 
 // DOM 完全加載後初始化應用程序
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM載入完成，初始化應用...');
-    
-    // 確保所有 DOM 元素已完全加載
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initApp);
-    } else {
-        initApp();
-    }
-});
+document.addEventListener('DOMContentLoaded', initApp);
 
 // 初始化應用程序
 function initApp() {
@@ -618,17 +609,23 @@ function closeAllModals() {
     document.querySelectorAll('.modal').forEach(modal => {
         modal.classList.remove('active');
     });
-    
-    // 重置表單
+
     const forms = ['activity-form', 'diary-form', 'budget-form', 'info-form'];
     forms.forEach(formId => {
         const form = document.getElementById(formId);
         if (form) {
             form.reset();
+            delete form.dataset.editingId; // Clean up editing state
         }
     });
     
-    // 設置默認日期
+    // Reset modal titles
+    if(document.getElementById('activity-modal')) document.getElementById('activity-modal').querySelector('h3').textContent = '添加活動';
+    if(document.getElementById('diary-modal-title')) document.getElementById('diary-modal-title').textContent = '添加日記';
+    if(document.getElementById('budget-modal-title')) document.getElementById('budget-modal-title').textContent = '添加預算項目';
+    if(document.getElementById('info-modal-title')) document.getElementById('info-modal-title').textContent = '添加資訊';
+
+
     const today = new Date().toISOString().split('T')[0];
     const activityDate = document.getElementById('activity-date');
     const diaryDate = document.getElementById('diary-date');
@@ -642,121 +639,139 @@ function closeAllModals() {
 // 添加活動到行程
 function addActivity(e) {
     e.preventDefault();
-    console.log('添加活動...');
-    
+    console.log('保存活動...');
+    const form = e.target;
+    const editingId = form.dataset.editingId ? parseInt(form.dataset.editingId) : null;
+
     try {
         const activity = {
-            id: Date.now(),
+            id: editingId || Date.now(),
             date: document.getElementById('activity-date').value,
             time: document.getElementById('activity-time').value,
             name: document.getElementById('activity-name').value,
             location: document.getElementById('activity-location').value,
             notes: document.getElementById('activity-notes').value
         };
-        
+
         if (!activity.name || !activity.date || !activity.time) {
             alert('請填寫所有必填欄位');
             return;
         }
+
+        if (editingId) {
+            const index = state.itinerary.findIndex(item => item.id === editingId);
+            if (index > -1) state.itinerary[index] = activity;
+        } else {
+            state.itinerary.push(activity);
+        }
         
-        state.itinerary.push(activity);
         saveToLocalStorage();
         renderItinerary();
         closeAllModals();
-        
-        // 更新地圖標記
-        if (state.currentPage === 'map-page' && state.mapInitialized) {
-            updateMapMarkers();
-        }
-        
-        // 更新倒數計時
         updateCountdown();
-        
-        console.log('活動添加成功:', activity);
+        console.log('活動保存成功:', activity);
+
     } catch (error) {
-        console.error('添加活動時出錯:', error);
-        alert('添加活動時發生錯誤，請稍後再試');
+        console.error('保存活動時出錯:', error);
+        alert('保存活動時發生錯誤，請稍後再試');
     }
 }
-
 // 添加日記條目
 function addDiaryEntry(e) {
     e.preventDefault();
-    console.log('添加日記條目...');
-    
+    console.log('保存日記條目...');
+    const form = e.target;
+    const editingId = form.dataset.editingId ? parseInt(form.dataset.editingId) : null;
+
     try {
         const entry = {
-            id: Date.now(),
+            id: editingId || Date.now(),
             date: document.getElementById('diary-date').value,
             title: document.getElementById('diary-title').value,
             content: document.getElementById('diary-content').value,
             image: document.getElementById('diary-image').value
         };
-        
+
         if (!entry.title || !entry.content || !entry.date) {
             alert('請填寫所有必填欄位');
             return;
         }
+
+        if (editingId) {
+            const index = state.diaryEntries.findIndex(item => item.id === editingId);
+            if (index > -1) state.diaryEntries[index] = entry;
+        } else {
+            state.diaryEntries.push(entry);
+        }
         
-        state.diaryEntries.push(entry);
         saveToLocalStorage();
         renderDiaryEntries();
         closeAllModals();
-        
-        console.log('日記條目添加成功:', entry);
+        console.log('日記條目保存成功:', entry);
+
     } catch (error) {
-        console.error('添加日記條目時出錯:', error);
-        alert('添加日記條目時發生錯誤，請稍後再試');
+        console.error('保存日記條目時出錯:', error);
+        alert('保存日記條目時發生錯誤，請稍後再試');
     }
 }
 
 // 添加預算項目
 function addBudgetItem(e) {
     e.preventDefault();
-    console.log('添加預算項目...');
-    
+    console.log('保存預算項目...');
+    const form = e.target;
+    const editingId = form.dataset.editingId ? parseInt(form.dataset.editingId) : null;
+
     try {
         const item = {
-            id: Date.now(),
+            id: editingId || Date.now(),
             category: document.getElementById('budget-category').value,
             description: document.getElementById('budget-description').value,
             amount: parseInt(document.getElementById('budget-amount').value) || 0,
             payment: document.getElementById('budget-payment').value,
             notes: document.getElementById('budget-notes').value
         };
-        
+
         if (!item.category || !item.description || item.amount <= 0 || !item.payment) {
             alert('請填寫所有必填欄位並輸入有效的金額');
             return;
         }
+
+        if (editingId) {
+            const index = state.budgetItems.findIndex(budgetItem => budgetItem.id === editingId);
+            if (index > -1) state.budgetItems[index] = item;
+        } else {
+            state.budgetItems.push(item);
+        }
         
-        state.budgetItems.push(item);
         saveToLocalStorage();
         renderBudgetItems();
         closeAllModals();
-        
-        console.log('預算項目添加成功:', item);
+        console.log('預算項目保存成功:', item);
+
     } catch (error) {
-        console.error('添加預算項目時出錯:', error);
-        alert('添加預算項目時發生錯誤，請稍後再試');
+        console.error('保存預算項目時出錯:', error);
+        alert('保存預算項目時發生錯誤，請稍後再試');
     }
 }
 
 // 添加資訊項目
 function addInfoItem(e) {
     e.preventDefault();
-    console.log('添加資訊項目...');
-    
+    console.log('保存資訊項目...');
+    const form = e.target;
+    const editingId = form.dataset.editingId ? parseInt(form.dataset.editingId) : null;
+
     try {
         const type = document.getElementById('info-type').value;
         if (!type) {
             alert('請選擇資訊類型');
             return;
         }
-        
-        let item = { id: Date.now(), type: type };
-        
-        switch(type) {
+
+        let item = { id: editingId || Date.now(), type: type };
+
+        switch (type) {
             case 'flight':
                 item.flightNumber = document.getElementById('flight-number').value;
                 item.departureAirport = document.getElementById('departure-airport').value;
@@ -782,31 +797,28 @@ function addInfoItem(e) {
                 item.details = document.getElementById('other-details').value;
                 break;
         }
-        
         item.notes = document.getElementById('info-notes').value;
-        state.infoItems[type].push(item);
         
-        // 更新地圖上的租車地點
-        if (type === 'car') {
-            const pickupLocation = document.getElementById('pickup-location');
-            const returnLocation = document.getElementById('return-location');
-            
-            if (pickupLocation) pickupLocation.textContent = item.pickUpLocation || '--';
-            if (returnLocation) returnLocation.textContent = item.returnLocation || '--';
-            
-            if (state.currentPage === 'map-page' && state.mapInitialized) {
-                updateMapMarkers();
-            }
+        if (editingId) {
+            const index = state.infoItems[type].findIndex(info => info.id === editingId);
+            if (index > -1) state.infoItems[type][index] = item;
+        } else {
+            state.infoItems[type].push(item);
         }
-        
+
         saveToLocalStorage();
         renderInfoItems();
         closeAllModals();
         
-        console.log('資訊項目添加成功:', item);
+        if (type === 'car') {
+            updateMapMarkers();
+        }
+
+        console.log('資訊項目保存成功:', item);
+
     } catch (error) {
-        console.error('添加資訊項目時出錯:', error);
-        alert('添加資訊項目時發生錯誤，請稍後再試');
+        console.error('保存資訊項目時出錯:', error);
+        alert('保存資訊項目時發生錯誤，請稍後再試');
     }
 }
 
@@ -815,19 +827,17 @@ function editActivity(id) {
     const activity = state.itinerary.find(item => item.id === id);
     if (!activity) return;
     
-    // 預填表單
+    const form = document.getElementById('activity-form');
+    form.dataset.editingId = activity.id;
+
+    document.getElementById('activity-modal').querySelector('h3').textContent = '編輯活動';
     document.getElementById('activity-date').value = activity.date;
     document.getElementById('activity-time').value = activity.time;
     document.getElementById('activity-name').value = activity.name;
     document.getElementById('activity-location').value = activity.location;
     document.getElementById('activity-notes').value = activity.notes || '';
     
-    // 移除舊活動
-    state.itinerary = state.itinerary.filter(item => item.id !== id);
-    
-    // 顯示編輯彈出視窗
     showModal('activity-modal');
-    
     console.log('編輯活動:', id);
 }
 
@@ -854,22 +864,19 @@ function deleteActivity(id) {
 function editDiaryEntry(id) {
     const entry = state.diaryEntries.find(item => item.id === id);
     if (!entry) return;
+
+    const form = document.getElementById('diary-form');
+    form.dataset.editingId = entry.id;
     
-    // 預填表單
+    document.getElementById('diary-modal-title').textContent = '編輯日記';
     document.getElementById('diary-date').value = entry.date;
     document.getElementById('diary-title').value = entry.title;
     document.getElementById('diary-content').value = entry.content;
     document.getElementById('diary-image').value = entry.image || '';
     
-    // 移除舊條目
-    state.diaryEntries = state.diaryEntries.filter(item => item.id !== id);
-    
-    // 顯示編輯彈出視窗
     showModal('diary-modal');
-    
     console.log('編輯日記條目:', id);
 }
-
 // 刪除日記條目
 function deleteDiaryEntry(id) {
     if (confirm('您確定要刪除此日記條目嗎？')) {
@@ -885,20 +892,18 @@ function deleteDiaryEntry(id) {
 function editBudgetItem(id) {
     const item = state.budgetItems.find(budget => budget.id === id);
     if (!item) return;
-    
-    // 預填表單
+
+    const form = document.getElementById('budget-form');
+    form.dataset.editingId = item.id;
+
+    document.getElementById('budget-modal-title').textContent = '編輯預算項目';
     document.getElementById('budget-category').value = item.category;
     document.getElementById('budget-description').value = item.description;
     document.getElementById('budget-amount').value = item.amount;
     document.getElementById('budget-payment').value = item.payment;
     document.getElementById('budget-notes').value = item.notes || '';
     
-    // 移除舊項目
-    state.budgetItems = state.budgetItems.filter(budget => budget.id !== id);
-    
-    // 顯示編輯彈出視窗
     showModal('budget-modal');
-    
     console.log('編輯預算項目:', id);
 }
 
@@ -917,45 +922,38 @@ function deleteBudgetItem(id) {
 function editInfoItem(type, id) {
     const item = state.infoItems[type].find(info => info.id === id);
     if (!item) return;
-    
-    // 顯示適當類型的彈出視窗
-    showInfoModal(type);
-    
-    // 根據類型預填表單
+
+    document.getElementById('info-form').dataset.editingId = id;
+    showInfoModal(type); // This sets up the correct form fields
+
     setTimeout(() => {
         switch(type) {
             case 'flight':
-                if (document.getElementById('flight-number')) document.getElementById('flight-number').value = item.flightNumber || '';
-                if (document.getElementById('departure-airport')) document.getElementById('departure-airport').value = item.departureAirport || '';
-                if (document.getElementById('arrival-airport')) document.getElementById('arrival-airport').value = item.arrivalAirport || '';
-                if (document.getElementById('departure-time')) document.getElementById('departure-time').value = item.departureTime || '';
-                if (document.getElementById('arrival-time')) document.getElementById('arrival-time').value = item.arrivalTime || '';
+                document.getElementById('flight-number').value = item.flightNumber || '';
+                document.getElementById('departure-airport').value = item.departureAirport || '';
+                document.getElementById('arrival-airport').value = item.arrivalAirport || '';
+                document.getElementById('departure-time').value = item.departureTime || '';
+                document.getElementById('arrival-time').value = item.arrivalTime || '';
                 break;
             case 'hotel':
-                if (document.getElementById('hotel-name')) document.getElementById('hotel-name').value = item.hotelName || '';
-                if (document.getElementById('hotel-address')) document.getElementById('hotel-address').value = item.address || '';
-                if (document.getElementById('check-in-time')) document.getElementById('check-in-time').value = item.checkInTime || '';
-                if (document.getElementById('check-out-time')) document.getElementById('check-out-time').value = item.checkOutTime || '';
+                document.getElementById('hotel-name').value = item.hotelName || '';
+                document.getElementById('hotel-address').value = item.address || '';
+                document.getElementById('check-in-time').value = item.checkInTime || '';
+                document.getElementById('check-out-time').value = item.checkOutTime || '';
                 break;
             case 'car':
-                if (document.getElementById('rental-company')) document.getElementById('rental-company').value = item.rentalCompany || '';
-                if (document.getElementById('pick-up-time')) document.getElementById('pick-up-time').value = item.pickUpTime || '';
-                if (document.getElementById('return-time')) document.getElementById('return-time').value = item.returnTime || '';
-                if (document.getElementById('pick-up-location')) document.getElementById('pick-up-location').value = item.pickUpLocation || '';
-                if (document.getElementById('return-location')) document.getElementById('return-location').value = item.returnLocation || '';
+                document.getElementById('rental-company').value = item.rentalCompany || '';
+                document.getElementById('pick-up-time').value = item.pickUpTime || '';
+                document.getElementById('return-time').value = item.returnTime || '';
+                document.getElementById('pick-up-location').value = item.pickUpLocation || '';
+                document.getElementById('return-location').value = item.returnLocation || '';
                 break;
             case 'other':
-                if (document.getElementById('other-title')) document.getElementById('other-title').value = item.title || '';
-                if (document.getElementById('other-details')) document.getElementById('other-details').value = item.details || '';
+                document.getElementById('other-title').value = item.title || '';
+                document.getElementById('other-details').value = item.details || '';
                 break;
         }
-        
-        if (document.getElementById('info-notes')) {
-            document.getElementById('info-notes').value = item.notes || '';
-        }
-        
-        // 移除舊項目
-        state.infoItems[type] = state.infoItems[type].filter(info => info.id !== id);
+        document.getElementById('info-notes').value = item.notes || '';
     }, 100);
     
     console.log('編輯資訊項目:', type, id);
@@ -1070,9 +1068,9 @@ function renderItinerary() {
                 </div>
             `;
             
-            // 添加拖放事件監聽器
+            // Adding this event listener to the parent is more efficient
+            activityList.addEventListener('dragover', handleDragOver);
             activityItem.addEventListener('dragstart', handleDragStart);
-            activityItem.addEventListener('dragover', handleDragOver);
             activityItem.addEventListener('drop', handleDrop);
             activityItem.addEventListener('dragend', handleDragEnd);
             
@@ -1474,29 +1472,28 @@ function handleDragOver(e) {
 function handleDrop(e) {
     e.preventDefault();
     
-    if (draggedItem !== this) {
-        // 獲取拖動項目和放置目標的ID
+    if (draggedItem && draggedItem !== this) {
         const draggedId = parseInt(draggedItem.getAttribute('data-id'));
         const targetId = parseInt(this.getAttribute('data-id'));
         
-        // 查找項目在狀態中的索引
         const draggedIndex = state.itinerary.findIndex(item => item.id === draggedId);
         const targetIndex = state.itinerary.findIndex(item => item.id === targetId);
         
-        // 重新排序數組
         if (draggedIndex !== -1 && targetIndex !== -1) {
             const [removed] = state.itinerary.splice(draggedIndex, 1);
             state.itinerary.splice(targetIndex, 0, removed);
             
-            // 保存並重新渲染
             saveToLocalStorage();
-            renderItinerary();
+            renderItinerary(); // Re-rendering is the simplest way to ensure all data is correct. We'll re-attach listeners.
             
             console.log('活動重新排序完成');
         }
     }
+    if (draggedItem) {
+        draggedItem.classList.remove('dragging');
+    }
+    draggedItem = null;
 }
-
 function handleDragEnd() {
     this.classList.remove('dragging');
     draggedItem = null;
