@@ -1,9 +1,9 @@
-/* Reset and Base Styles */
+/* 重置和基礎樣式 */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Segoe UI', 'Microsoft JhengHei', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 body {
@@ -26,7 +26,17 @@ body {
     border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-/* Header Styles */
+/* 頁面顯示修復 */
+.page {
+    display: none;
+}
+
+.page.active {
+    display: block;
+    animation: fadeIn 0.5s ease;
+}
+
+/* 標題樣式 */
 .header {
     padding: 20px;
     background: rgba(255, 255, 255, 0.9);
@@ -86,19 +96,10 @@ body {
     box-shadow: 0 0 0 2px rgba(74, 108, 247, 0.2);
 }
 
-/* Main Content */
+/* 主要內容 */
 .main-content {
     padding: 25px;
     min-height: 70vh;
-}
-
-.page {
-    display: none;
-}
-
-.page.active {
-    display: block;
-    animation: fadeIn 0.5s ease;
 }
 
 @keyframes fadeIn {
@@ -106,7 +107,7 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Itinerary Page */
+/* 行程頁面 */
 .itinerary-header {
     display: flex;
     justify-content: space-between;
@@ -298,7 +299,7 @@ body {
     color: #e53e3e;
 }
 
-/* Map Page */
+/* 地圖頁面 */
 .map-header {
     display: flex;
     justify-content: space-between;
@@ -347,6 +348,7 @@ body {
     overflow: hidden;
     box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.4);
+    min-height: 400px;
 }
 
 .map-sidebar {
@@ -403,7 +405,7 @@ body {
     border-radius: 8px;
 }
 
-/* Diary Page */
+/* 日記頁面 */
 .diary-header {
     display: flex;
     justify-content: space-between;
@@ -475,7 +477,7 @@ body {
     object-fit: cover;
 }
 
-/* Budget Page */
+/* 預算頁面 */
 .budget-header {
     display: flex;
     justify-content: space-between;
@@ -609,7 +611,7 @@ body {
     margin-right: 15px;
 }
 
-/* Info Page */
+/* 資訊頁面 */
 .info-header {
     margin-bottom: 25px;
 }
@@ -689,7 +691,7 @@ body {
     color: #4a5568;
 }
 
-/* Bottom Navigation */
+/* 底部導航 */
 .bottom-nav {
     display: flex;
     justify-content: space-around;
@@ -729,7 +731,7 @@ body {
     color: #4a5568;
 }
 
-/* Modals */
+/* 彈出視窗 */
 .modal {
     display: none;
     position: fixed;
@@ -834,7 +836,7 @@ body {
     justify-content: flex-end;
 }
 
-/* Responsive Design */
+/* 響應式設計 */
 @media (max-width: 768px) {
     .header-row {
         flex-direction: column;
