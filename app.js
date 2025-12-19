@@ -61,6 +61,9 @@ function initApp() {
         // 初始化天氣和匯率
         updateWeatherAndExchange();
         updateCountdown();
+
+        // 添加這一行：初始化滾動處理
+        initScrollHandling();
         
         console.log('應用初始化完成');
     } catch (error) {
@@ -247,12 +250,28 @@ function showPage(pageId) {
         } else if (pageId === 'info-page') {
             renderInfoItems();
         }
+
+         // 添加這一行：滾動到頂部
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
         
         console.log('頁面切換完成:', pageId);
     } else {
         console.error('頁面不存在:', pageId);
     }
 }
+
+// 窗口大小改變時調整佈局
+window.addEventListener('resize', function() {
+    // 如果在地圖頁面，重新調整地圖大小
+    if (state.currentPage === 'map-page' && state.mapInitialized) {
+        setTimeout(() => {
+            google.maps.event.trigger(state.map, 'resize');
+        }, 100);
+    }
+});
 
 // 初始化地圖
 function initMap() {
@@ -1633,6 +1652,23 @@ function updateCountdown() {
 // 定期更新天氣和匯率
 setInterval(updateWeatherAndExchange, 300000); // 每5分鐘更新一次
 setInterval(updateCountdown, 86400000); // 每天更新一次倒數計時
+// 初始化滾動處理
+function initScrollHandling() {
+    console.log('初始化滾動處理...');
+    
+    // 確保導航欄始終固定在底部
+    const bottomNav = document.querySelector('.bottom-nav');
+    if (bottomNav) {
+        // 設置導航欄位置
+        bottomNav.style.top = 'auto';
+        bottomNav.style.bottom = '0';
+        bottomNav.style.position = 'fixed';
+        
+        // 窗口大小改變時重新計算
+        window.addEventListener('resize', function() {
+            bottomNav.style.bottom = '0';
+        });
+    }
 
 // 全局錯誤處理
 window.addEventListener('error', function(e) {
