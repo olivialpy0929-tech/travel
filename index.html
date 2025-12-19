@@ -292,7 +292,111 @@
         <!-- ... 日記、預算、資訊彈出視窗 ... -->
 
     </div>
+<!-- =================== NEW CODE BLOCK TO ADD =================== -->
 
+        <!-- Diary Modal -->
+        <div id="diary-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="diary-modal-title">添加日記</h3>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="diary-form">
+                        <div class="form-group">
+                            <label for="diary-date">日期</label>
+                            <input type="date" id="diary-date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="diary-title">日記標題</label>
+                            <input type="text" id="diary-title" placeholder="例如：曼谷第一夜" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="diary-content">日記內容</label>
+                            <textarea id="diary-content" rows="4" placeholder="記錄下今天的美好回憶..." required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="diary-image">圖片連結 (可選)</label>
+                            <input type="text" id="diary-image" placeholder="https://example.com/image.jpg">
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary">保存日記</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Budget Modal -->
+        <div id="budget-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="budget-modal-title">添加預算項目</h3>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="budget-form">
+                        <div class="form-group">
+                            <label for="budget-category">類別</label>
+                            <select id="budget-category" required>
+                                <option value="food">飲食 🍜</option>
+                                <option value="shopping">購物 🛍️</option>
+                                <option value="leisure">娛樂 🎭</option>
+                                <option value="transport">交通 🚕</option>
+                                <option value="accommodation">住宿 🏨</option>
+                                <option value="other">其他</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="budget-description">項目描述</label>
+                            <input type="text" id="budget-description" placeholder="例如：水門市場海南雞飯" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="budget-amount">金額 (泰銖)</label>
+                            <input type="number" id="budget-amount" placeholder="例如：60" required min="0">
+                        </div>
+                        <div class="form-group">
+                            <label for="budget-payment">支付方式</label>
+                            <select id="budget-payment" required>
+                                <option value="cash">現金 💵</option>
+                                <option value="credit-card">信用卡 💳</option>
+                                <option value="e-wallet">電子錢包</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="budget-notes">備註 (可選)</label>
+                            <textarea id="budget-notes" placeholder="添加備註..."></textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary">保存項目</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Modal -->
+        <div id="info-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="info-modal-title">添加資訊</h3>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="info-form">
+                        <input type="hidden" id="info-type">
+                        <div id="info-form-fields">
+                            <!-- Fields will be dynamically generated here -->
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary">保存資訊</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+<!-- ================= END OF NEW CODE BLOCK =================== -->
+    
     <script src="app.js"></script>
 </body>
 </html>
