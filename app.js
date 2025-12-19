@@ -18,17 +18,15 @@ const state = {
 
 // 初始化應用程序
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM載入完成，初始化應用...');
     initApp();
-    loadSampleData();
     initEventListeners();
-    // 延遲初始化地圖，直到需要時
-    if (document.getElementById('map-page').classList.contains('active')) {
-        initMap();
-    }
 });
 
 // 初始化應用程序
 function initApp() {
+    console.log('初始化應用...');
+    
     // 設置表單的默認日期為今天
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('activity-date').value = today;
@@ -42,142 +40,22 @@ function initApp() {
     renderDiaryEntries();
     renderBudgetItems();
     renderInfoItems();
-}
-
-// 加載示例數據
-function loadSampleData() {
-    // 只有在沒有保存數據時才加載示例數據
-    if (state.itinerary.length === 0) {
-        state.itinerary = [
-            {
-                id: 1,
-                date: new Date().toISOString().split('T')[0],
-                time: '09:00',
-                name: '參觀大皇宮',
-                location: '曼谷, 泰國',
-                notes: '曼谷必看景點。YouTube: https://youtu.be/sample1'
-            },
-            {
-                id: 2,
-                date: new Date().toISOString().split('T')[0],
-                time: '13:00',
-                name: '街邊美食市場午餐',
-                location: '曼谷唐人街',
-                notes: '嘗試著名的泰式炒河粉和芒果糯米飯'
-            },
-            {
-                id: 3,
-                date: new Date(Date.now() + 86400000).toISOString().split('T')[0],
-                time: '10:00',
-                name: '參觀鄭王廟',
-                location: '曼谷, 泰國',
-                notes: '黎明寺。最好在早上參觀。'
-            },
-            {
-                id: 4,
-                date: new Date(Date.now() + 86400000).toISOString().split('T')[0],
-                time: '15:00',
-                name: 'MBK購物中心購物',
-                location: 'Pathum Wan, 曼谷',
-                notes: '購買紀念品和電子產品的好地方'
-            }
-        ];
-    }
     
-    if (state.diaryEntries.length === 0) {
-        state.diaryEntries = [
-            {
-                id: 1,
-                date: new Date().toISOString().split('T')[0],
-                title: '曼谷第一天',
-                content: '今天抵達曼谷！航班順利，酒店很漂亮。迫不及待想明天探索這座城市。',
-                image: 'https://images.unsplash.com/photo-1552465011-b4e30bf7349d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80'
-            }
-        ];
-    }
+    // 初始化天氣和匯率
+    updateWeatherAndExchange();
+    updateCountdown();
     
-    if (state.budgetItems.length === 0) {
-        state.budgetItems = [
-            {
-                id: 1,
-                category: 'food',
-                description: '餐廳晚餐',
-                amount: 1200,
-                payment: 'credit-card',
-                notes: '精緻用餐體驗'
-            },
-            {
-                id: 2,
-                category: 'shopping',
-                description: '紀念品',
-                amount: 2500,
-                payment: 'cash',
-                notes: '給家人的禮物'
-            },
-            {
-                id: 3,
-                category: 'transport',
-                description: '計程車費',
-                amount: 800,
-                payment: 'cash',
-                notes: '市內交通'
-            },
-            {
-                id: 4,
-                category: 'leisure',
-                description: '水療護理',
-                amount: 1500,
-                payment: 'credit-card',
-                notes: '傳統泰式按摩'
-            }
-        ];
-    }
-    
-    if (state.infoItems.flight.length === 0) {
-        state.infoItems.flight = [
-            {
-                id: 1,
-                flightNumber: 'CX701',
-                departureTime: '08:00',
-                arrivalTime: '10:30',
-                notes: '從香港到曼谷的直飛航班'
-            }
-        ];
-    }
-    
-    if (state.infoItems.hotel.length === 0) {
-        state.infoItems.hotel = [
-            {
-                id: 1,
-                address: '123 Sukhumvit Road, 曼谷',
-                checkInTime: '14:00',
-                checkOutTime: '12:00',
-                notes: '包含早餐'
-            }
-        ];
-    }
-    
-    if (state.infoItems.car.length === 0) {
-        state.infoItems.car = [
-            {
-                id: 1,
-                pickUpTime: '11:00',
-                returnTime: '19:00',
-                pickUpLocation: 'BKK 機場',
-                returnLocation: 'Siam Paragon',
-                notes: '豐田Yaris或同級車'
-            }
-        ];
-    }
-    
-    saveToLocalStorage();
+    console.log('應用初始化完成');
 }
 
 // 初始化事件監聽器
 function initEventListeners() {
-    // 導航按鈕 - 修復的問題：現在能正確切換頁面
+    console.log('初始化事件監聽器...');
+    
+    // 導航按鈕
     document.querySelectorAll('.nav-btn').forEach(btn => {
         btn.addEventListener('click', function() {
+            console.log('導航按鈕點擊:', this.getAttribute('data-page'));
             const pageId = this.getAttribute('data-page');
             showPage(pageId);
         });
@@ -185,20 +63,24 @@ function initEventListeners() {
     
     // 添加按鈕
     document.getElementById('add-activity').addEventListener('click', () => {
+        console.log('添加活動按鈕點擊');
         showModal('activity-modal');
     });
     
     document.getElementById('add-diary-entry').addEventListener('click', () => {
+        console.log('添加日記按鈕點擊');
         showModal('diary-modal');
     });
     
     document.getElementById('add-budget-item').addEventListener('click', () => {
+        console.log('添加預算項目按鈕點擊');
         showModal('budget-modal');
     });
     
     document.querySelectorAll('.add-info-btn').forEach(btn => {
         btn.addEventListener('click', function() {
             const section = this.getAttribute('data-section');
+            console.log('添加資訊按鈕點擊:', section);
             showInfoModal(section);
         });
     });
@@ -235,10 +117,14 @@ function initEventListeners() {
     
     // 顯示路線按鈕
     document.getElementById('show-route').addEventListener('click', showRouteOnMap);
+    
+    console.log('事件監聽器初始化完成');
 }
 
-// 顯示頁面 - 修復的導航功能
+// 顯示頁面 - 修復導航功能
 function showPage(pageId) {
+    console.log('切換到頁面:', pageId);
+    
     // 隱藏所有頁面
     document.querySelectorAll('.page').forEach(page => {
         page.classList.remove('active');
@@ -260,20 +146,26 @@ function showPage(pageId) {
         // 更新當前頁面狀態
         state.currentPage = pageId;
         
-        // 如果是地圖頁面，初始化地圖（如果尚未初始化）
-        if (pageId === 'map-page' && !state.mapInitialized) {
-            initMap();
+        // 如果是地圖頁面，初始化地圖
+        if (pageId === 'map-page') {
+            console.log('初始化地圖頁面...');
+            if (!state.mapInitialized) {
+                initMap();
+            } else {
+                updateMapMarkers();
+            }
         }
         
-        // 如果是地圖頁面，更新標記
-        if (pageId === 'map-page' && state.mapInitialized) {
-            updateMapMarkers();
-        }
+        console.log('頁面切換完成:', pageId);
+    } else {
+        console.error('頁面不存在:', pageId);
     }
 }
 
 // 初始化地圖
 function initMap() {
+    console.log('初始化地圖...');
+    
     // 檢查地圖容器是否存在
     if (!document.getElementById('map')) {
         console.error('地圖容器不存在');
@@ -285,6 +177,7 @@ function initMap() {
         const bangkokCoords = { lat: 13.7563, lng: 100.5018 };
         
         // 初始化地圖
+        // HIGHLIGHT: GOOGLE MAPS API INIT START
         state.map = new google.maps.Map(document.getElementById('map'), {
             zoom: 12,
             center: bangkokCoords,
@@ -297,55 +190,17 @@ function initMap() {
                 }
             ]
         });
+        // HIGHLIGHT: GOOGLE MAPS API INIT END
         
         state.mapInitialized = true;
-        
-        // 添加示例標記
-        const locations = [
-            {name: '大皇宮', coords: { lat: 13.7500, lng: 100.4915 }},
-            {name: '鄭王廟', coords: { lat: 13.7437, lng: 100.4888 }},
-            {name: 'MBK購物中心', coords: { lat: 13.7448, lng: 100.5295 }},
-            {name: 'BKK機場', coords: { lat: 13.6811, lng: 100.7471 }},
-            {name: 'Siam Paragon', coords: { lat: 13.7462, lng: 100.5347 }}
-        ];
-        
-        locations.forEach(location => {
-            const marker = new google.maps.Marker({
-                position: location.coords,
-                map: state.map,
-                title: location.name
-            });
-            
-            const infoWindow = new google.maps.InfoWindow({
-                content: `<b>${location.name}</b>`
-            });
-            
-            marker.addListener('click', () => {
-                infoWindow.open(state.map, marker);
-            });
-            
-            state.mapMarkers.push(marker);
-        });
-        
-        // 添加到地點列表
-        const locationsList = document.getElementById('locations-list');
-        locationsList.innerHTML = '';
-        locations.forEach(location => {
-            const li = document.createElement('li');
-            li.innerHTML = `<i class="fas fa-map-marker-alt"></i> ${location.name}`;
-            locationsList.appendChild(li);
-        });
-        
-        // 更新租車地點顯示
-        if (state.infoItems.car.length > 0) {
-            const carInfo = state.infoItems.car[0];
-            document.getElementById('pickup-location').textContent = carInfo.pickUpLocation;
-            document.getElementById('return-location').textContent = carInfo.returnLocation;
-        }
-        
         console.log('地圖初始化成功');
+        
+        // 更新標記
+        updateMapMarkers();
+        
     } catch (error) {
         console.error('初始化地圖時出錯:', error);
+        
         // 如果Google Maps API加載失敗，顯示錯誤訊息
         document.getElementById('map').innerHTML = `
             <div style="display: flex; justify-content: center; align-items: center; height: 100%; background: #f0f0f0; border-radius: 18px;">
@@ -353,6 +208,7 @@ function initMap() {
                     <i class="fas fa-map-marked-alt" style="font-size: 48px; color: #718096; margin-bottom: 15px;"></i>
                     <h3>地圖無法加載</h3>
                     <p>請檢查您的Google Maps API密鑰</p>
+                    <p style="font-size: 0.9rem; color: #a0aec0;">Error: ${error.message}</p>
                 </div>
             </div>
         `;
@@ -363,15 +219,24 @@ function initMap() {
 function updateMapMarkers() {
     if (!state.mapInitialized) return;
     
+    console.log('更新地圖標記...');
+    
     // 清除現有標記
     state.mapMarkers.forEach(marker => {
         marker.setMap(null);
     });
     state.mapMarkers = [];
     
-    // 從行程添加新標記
+    // 更新地點列表
+    const locationsList = document.getElementById('locations-list');
+    locationsList.innerHTML = '';
+    
+    // 從行程添加標記
+    const locations = [];
     state.itinerary.forEach(activity => {
         if (activity.location) {
+            locations.push(activity.name);
+            
             // 為演示生成曼谷附近的隨機座標
             const lat = 13.7563 + (Math.random() - 0.5) * 0.1;
             const lng = 100.5018 + (Math.random() - 0.5) * 0.1;
@@ -397,108 +262,102 @@ function updateMapMarkers() {
         }
     });
     
-    // 添加租車地點
+    // 更新地點列表
+    if (locations.length > 0) {
+        locations.forEach(location => {
+            const li = document.createElement('li');
+            li.innerHTML = `<i class="fas fa-map-marker-alt"></i> ${location}`;
+            locationsList.appendChild(li);
+        });
+    } else {
+        const li = document.createElement('li');
+        li.className = 'empty';
+        li.textContent = '尚未添加地點';
+        locationsList.appendChild(li);
+    }
+    
+    // 更新租車地點
     if (state.infoItems.car.length > 0) {
         const carInfo = state.infoItems.car[0];
-        
-        // 取車地點標記
-        const pickupMarker = new google.maps.Marker({
-            position: { lat: 13.6811, lng: 100.7471 },
-            map: state.map,
-            title: `取車: ${carInfo.pickUpLocation}`,
-            icon: {
-                url: 'http://maps.google.com/mapfiles/ms/icons/green-dot.png'
-            }
-        });
-        
-        const pickupInfoWindow = new google.maps.InfoWindow({
-            content: `<b>取車地點</b><br>${carInfo.pickUpLocation}`
-        });
-        
-        pickupMarker.addListener('click', () => {
-            pickupInfoWindow.open(state.map, pickupMarker);
-        });
-        
-        state.mapMarkers.push(pickupMarker);
-        
-        // 還車地點標記
-        const returnMarker = new google.maps.Marker({
-            position: { lat: 13.7462, lng: 100.5347 },
-            map: state.map,
-            title: `還車: ${carInfo.returnLocation}`,
-            icon: {
-                url: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png'
-            }
-        });
-        
-        const returnInfoWindow = new google.maps.InfoWindow({
-            content: `<b>還車地點</b><br>${carInfo.returnLocation}`
-        });
-        
-        returnMarker.addListener('click', () => {
-            returnInfoWindow.open(state.map, returnMarker);
-        });
-        
-        state.mapMarkers.push(returnMarker);
+        document.getElementById('pickup-location').textContent = carInfo.pickUpLocation || '--';
+        document.getElementById('return-location').textContent = carInfo.returnLocation || '--';
+    } else {
+        document.getElementById('pickup-location').textContent = '--';
+        document.getElementById('return-location').textContent = '--';
     }
 }
 
 // 在地圖上顯示路線
 function showRouteOnMap() {
-    if (!state.mapInitialized) return;
+    if (!state.mapInitialized) {
+        alert('地圖尚未初始化，請稍候再試');
+        return;
+    }
     
-    // 為演示，顯示連接一些點的路線
-    if (state.mapMarkers.length >= 2) {
-        const directionsService = new google.maps.DirectionsService();
-        const directionsRenderer = new google.maps.DirectionsRenderer();
-        directionsRenderer.setMap(state.map);
-        
-        const waypoints = [];
-        
-        // 添加行程中的地點作為途經點
-        state.itinerary.forEach((activity, index) => {
-            if (index > 0 && index < state.itinerary.length - 1 && activity.location) {
-                // 為演示生成曼谷附近的隨機座標
-                const lat = 13.7563 + (Math.random() - 0.5) * 0.1;
-                const lng = 100.5018 + (Math.random() - 0.5) * 0.1;
-                waypoints.push({
-                    location: { lat, lng },
-                    stopover: true
+    console.log('顯示路線...');
+    
+    if (state.itinerary.length < 2) {
+        alert('請至少添加兩個活動來計算路線');
+        return;
+    }
+    
+    // HIGHLIGHT: GOOGLE MAPS DIRECTIONS API START
+    const directionsService = new google.maps.DirectionsService();
+    const directionsRenderer = new google.maps.DirectionsRenderer();
+    directionsRenderer.setMap(state.map);
+    
+    const waypoints = [];
+    
+    // 添加活動地點作為途經點
+    state.itinerary.slice(1, -1).forEach(activity => {
+        if (activity.location) {
+            const lat = 13.7563 + (Math.random() - 0.5) * 0.1;
+            const lng = 100.5018 + (Math.random() - 0.5) * 0.1;
+            waypoints.push({
+                location: { lat, lng },
+                stopover: true
+            });
+        }
+    });
+    
+    const request = {
+        origin: { lat: 13.6811, lng: 100.7471 }, // BKK機場
+        destination: { lat: 13.7462, lng: 100.5347 }, // Siam Paragon
+        waypoints: waypoints,
+        travelMode: 'DRIVING',
+        optimizeWaypoints: true
+    };
+    
+    directionsService.route(request, function(result, status) {
+        if (status === 'OK') {
+            directionsRenderer.setDirections(result);
+            
+            // 計算總旅行時間
+            let totalDuration = 0;
+            if (result.routes[0] && result.routes[0].legs) {
+                result.routes[0].legs.forEach(leg => {
+                    if (leg.duration) {
+                        totalDuration += leg.duration.value;
+                    }
                 });
             }
-        });
-        
-        const request = {
-            origin: { lat: 13.6811, lng: 100.7471 }, // BKK機場
-            destination: { lat: 13.7462, lng: 100.5347 }, // Siam Paragon
-            waypoints: waypoints,
-            travelMode: 'DRIVING'
-        };
-        
-        directionsService.route(request, function(result, status) {
-            if (status === 'OK') {
-                directionsRenderer.setDirections(result);
-                
-                // 計算總旅行時間
-                let totalDuration = 0;
-                if (result.routes[0] && result.routes[0].legs) {
-                    result.routes[0].legs.forEach(leg => {
-                        if (leg.duration) {
-                            totalDuration += leg.duration.value;
-                        }
-                    });
-                }
-                
-                // 將秒轉換為分鐘
-                const totalMinutes = Math.round(totalDuration / 60);
-                document.getElementById('total-travel-time').textContent = `總時間: ${totalMinutes} 分鐘`;
-            } else {
-                console.error('路線請求失敗:', status);
-                // 如果API請求失敗，使用模擬數據
-                document.getElementById('total-travel-time').textContent = '總時間: 1小時 15分鐘';
-            }
-        });
-    }
+            
+            // 將秒轉換為分鐘
+            const totalMinutes = Math.round(totalDuration / 60);
+            document.getElementById('total-travel-time').textContent = `總時間: ${totalMinutes} 分鐘`;
+            
+            console.log('路線顯示成功，總時間:', totalMinutes, '分鐘');
+        } else {
+            console.error('路線請求失敗:', status);
+            
+            // 如果API請求失敗，使用模擬數據
+            const totalMinutes = 45 + Math.floor(Math.random() * 30);
+            document.getElementById('total-travel-time').textContent = `總時間: ${totalMinutes} 分鐘`;
+            
+            alert('無法計算路線，請檢查網絡連接或稍後再試');
+        }
+    });
+    // HIGHLIGHT: GOOGLE MAPS DIRECTIONS API END
 }
 
 // 顯示彈出視窗
@@ -506,6 +365,7 @@ function showModal(modalId) {
     const modal = document.getElementById(modalId);
     if (modal) {
         modal.classList.add('active');
+        console.log('顯示彈出視窗:', modalId);
     }
 }
 
@@ -532,6 +392,7 @@ function updateInfoFormFields(type) {
             ];
             document.getElementById('info-modal-title').textContent = '添加航班資訊';
             break;
+            
         case 'hotel':
             fields = [
                 {id: 'hotel-address', label: '酒店地址', type: 'text'},
@@ -540,6 +401,7 @@ function updateInfoFormFields(type) {
             ];
             document.getElementById('info-modal-title').textContent = '添加酒店資訊';
             break;
+            
         case 'car':
             fields = [
                 {id: 'pick-up-time', label: '取車時間', type: 'time'},
@@ -549,6 +411,7 @@ function updateInfoFormFields(type) {
             ];
             document.getElementById('info-modal-title').textContent = '添加租車資訊';
             break;
+            
         case 'other':
             fields = [
                 {id: 'other-title', label: '標題', type: 'text'},
@@ -569,7 +432,6 @@ function updateInfoFormFields(type) {
         const label = document.createElement('label');
         label.setAttribute('for', field.id);
         label.textContent = field.label;
-        
         formGroup.appendChild(label);
         
         if (field.type === 'textarea') {
@@ -604,11 +466,14 @@ function closeAllModals() {
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('activity-date').value = today;
     document.getElementById('diary-date').value = today;
+    
+    console.log('關閉所有彈出視窗');
 }
 
 // 添加活動到行程
 function addActivity(e) {
     e.preventDefault();
+    console.log('添加活動...');
     
     const activity = {
         id: Date.now(),
@@ -624,15 +489,21 @@ function addActivity(e) {
     renderItinerary();
     closeAllModals();
     
-    // 如果在地圖頁面，更新標記
+    // 更新地圖標記
     if (state.currentPage === 'map-page' && state.mapInitialized) {
         updateMapMarkers();
     }
+    
+    // 更新倒數計時
+    updateCountdown();
+    
+    console.log('活動添加成功:', activity);
 }
 
 // 添加日記條目
 function addDiaryEntry(e) {
     e.preventDefault();
+    console.log('添加日記條目...');
     
     const entry = {
         id: Date.now(),
@@ -646,11 +517,14 @@ function addDiaryEntry(e) {
     saveToLocalStorage();
     renderDiaryEntries();
     closeAllModals();
+    
+    console.log('日記條目添加成功:', entry);
 }
 
 // 添加預算項目
 function addBudgetItem(e) {
     e.preventDefault();
+    console.log('添加預算項目...');
     
     const item = {
         id: Date.now(),
@@ -665,11 +539,14 @@ function addBudgetItem(e) {
     saveToLocalStorage();
     renderBudgetItems();
     closeAllModals();
+    
+    console.log('預算項目添加成功:', item);
 }
 
 // 添加資訊項目
 function addInfoItem(e) {
     e.preventDefault();
+    console.log('添加資訊項目...');
     
     const type = document.getElementById('info-type').value;
     let item = { id: Date.now() };
@@ -680,17 +557,20 @@ function addInfoItem(e) {
             item.departureTime = document.getElementById('departure-time').value;
             item.arrivalTime = document.getElementById('arrival-time').value;
             break;
+            
         case 'hotel':
             item.address = document.getElementById('hotel-address').value;
             item.checkInTime = document.getElementById('check-in-time').value;
             item.checkOutTime = document.getElementById('check-out-time').value;
             break;
+            
         case 'car':
             item.pickUpTime = document.getElementById('pick-up-time').value;
             item.returnTime = document.getElementById('return-time').value;
             item.pickUpLocation = document.getElementById('pick-up-location').value;
             item.returnLocation = document.getElementById('return-location').value;
             break;
+            
         case 'other':
             item.title = document.getElementById('other-title').value;
             item.details = document.getElementById('other-details').value;
@@ -698,12 +578,13 @@ function addInfoItem(e) {
     }
     
     item.notes = document.getElementById('info-notes').value;
+    
     state.infoItems[type].push(item);
     
     // 更新地圖上的租車地點
     if (type === 'car') {
-        document.getElementById('pickup-location').textContent = item.pickUpLocation;
-        document.getElementById('return-location').textContent = item.returnLocation;
+        document.getElementById('pickup-location').textContent = item.pickUpLocation || '--';
+        document.getElementById('return-location').textContent = item.returnLocation || '--';
         
         if (state.currentPage === 'map-page' && state.mapInitialized) {
             updateMapMarkers();
@@ -713,6 +594,8 @@ function addInfoItem(e) {
     saveToLocalStorage();
     renderInfoItems();
     closeAllModals();
+    
+    console.log('資訊項目添加成功:', item);
 }
 
 // 編輯活動
@@ -732,6 +615,8 @@ function editActivity(id) {
     
     // 顯示編輯彈出視窗
     showModal('activity-modal');
+    
+    console.log('編輯活動:', id);
 }
 
 // 刪除活動
@@ -745,6 +630,11 @@ function deleteActivity(id) {
         if (state.currentPage === 'map-page' && state.mapInitialized) {
             updateMapMarkers();
         }
+        
+        // 更新倒數計時
+        updateCountdown();
+        
+        console.log('刪除活動:', id);
     }
 }
 
@@ -764,6 +654,8 @@ function editDiaryEntry(id) {
     
     // 顯示編輯彈出視窗
     showModal('diary-modal');
+    
+    console.log('編輯日記條目:', id);
 }
 
 // 刪除日記條目
@@ -772,6 +664,8 @@ function deleteDiaryEntry(id) {
         state.diaryEntries = state.diaryEntries.filter(item => item.id !== id);
         saveToLocalStorage();
         renderDiaryEntries();
+        
+        console.log('刪除日記條目:', id);
     }
 }
 
@@ -792,6 +686,8 @@ function editBudgetItem(id) {
     
     // 顯示編輯彈出視窗
     showModal('budget-modal');
+    
+    console.log('編輯預算項目:', id);
 }
 
 // 刪除預算項目
@@ -800,6 +696,8 @@ function deleteBudgetItem(id) {
         state.budgetItems = state.budgetItems.filter(item => item.id !== id);
         saveToLocalStorage();
         renderBudgetItems();
+        
+        console.log('刪除預算項目:', id);
     }
 }
 
@@ -819,27 +717,33 @@ function editInfoItem(type, id) {
                 document.getElementById('departure-time').value = item.departureTime || '';
                 document.getElementById('arrival-time').value = item.arrivalTime || '';
                 break;
+                
             case 'hotel':
                 document.getElementById('hotel-address').value = item.address || '';
                 document.getElementById('check-in-time').value = item.checkInTime || '';
                 document.getElementById('check-out-time').value = item.checkOutTime || '';
                 break;
+                
             case 'car':
                 document.getElementById('pick-up-time').value = item.pickUpTime || '';
                 document.getElementById('return-time').value = item.returnTime || '';
                 document.getElementById('pick-up-location').value = item.pickUpLocation || '';
                 document.getElementById('return-location').value = item.returnLocation || '';
                 break;
+                
             case 'other':
                 document.getElementById('other-title').value = item.title || '';
                 document.getElementById('other-details').value = item.details || '';
                 break;
         }
+        
         document.getElementById('info-notes').value = item.notes || '';
         
         // 移除舊項目
         state.infoItems[type] = state.infoItems[type].filter(info => info.id !== id);
     }, 100);
+    
+    console.log('編輯資訊項目:', type, id);
 }
 
 // 刪除資訊項目
@@ -853,6 +757,8 @@ function deleteInfoItem(type, id) {
         if (type === 'car' && state.currentPage === 'map-page' && state.mapInitialized) {
             updateMapMarkers();
         }
+        
+        console.log('刪除資訊項目:', type, id);
     }
 }
 
@@ -861,7 +767,24 @@ function renderItinerary() {
     const container = document.querySelector('.itinerary-container');
     if (!container) return;
     
+    // 移除空狀態訊息
+    const emptyState = container.querySelector('.empty-state');
+    if (emptyState) {
+        emptyState.remove();
+    }
+    
     container.innerHTML = '';
+    
+    if (state.itinerary.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-route fa-3x"></i>
+                <h3>尚未添加任何行程</h3>
+                <p>點擊"添加活動"按鈕開始規劃您的旅程</p>
+            </div>
+        `;
+        return;
+    }
     
     // 按日期分組活動
     const activitiesByDate = {};
@@ -882,11 +805,11 @@ function renderItinerary() {
         
         // 格式化日期
         const dateObj = new Date(date);
-        const formattedDate = dateObj.toLocaleDateString('zh-Hant', { 
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
+        const formattedDate = dateObj.toLocaleDateString('zh-Hant', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
         });
         
         // 日期標題
@@ -958,6 +881,8 @@ function renderItinerary() {
     
     // 初始化拖放功能
     initDragAndDrop();
+    
+    console.log('行程渲染完成，共', state.itinerary.length, '個活動');
 }
 
 // 渲染日記條目
@@ -965,16 +890,38 @@ function renderDiaryEntries() {
     const container = document.querySelector('.diary-container');
     if (!container) return;
     
+    // 移除空狀態訊息
+    const emptyState = container.querySelector('.empty-state');
+    if (emptyState) {
+        emptyState.remove();
+    }
+    
     container.innerHTML = '';
     
-    state.diaryEntries.forEach(entry => {
+    if (state.diaryEntries.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-book-open fa-3x"></i>
+                <h3>尚未撰寫日記</h3>
+                <p>記錄您的旅程點滴，添加第一則日記吧！</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // 按日期降序排序
+    const sortedEntries = [...state.diaryEntries].sort((a, b) => {
+        return new Date(b.date) - new Date(a.date);
+    });
+    
+    sortedEntries.forEach(entry => {
         const entryElement = document.createElement('div');
         entryElement.className = 'diary-entry';
         
-        const formattedDate = new Date(entry.date).toLocaleDateString('zh-Hant', { 
-            year: 'numeric', 
-            month: 'short', 
-            day: 'numeric' 
+        const formattedDate = new Date(entry.date).toLocaleDateString('zh-Hant', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
         });
         
         entryElement.innerHTML = `
@@ -1003,6 +950,8 @@ function renderDiaryEntries() {
         
         container.appendChild(entryElement);
     });
+    
+    console.log('日記渲染完成，共', state.diaryEntries.length, '則日記');
 }
 
 // 渲染預算項目
@@ -1010,7 +959,27 @@ function renderBudgetItems() {
     const container = document.querySelector('.budget-container');
     if (!container) return;
     
+    // 移除空狀態訊息
+    const emptyState = container.querySelector('.empty-state');
+    if (emptyState) {
+        emptyState.remove();
+    }
+    
     container.innerHTML = '';
+    
+    if (state.budgetItems.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-coins fa-3x"></i>
+                <h3>尚未添加預算項目</h3>
+                <p>開始追蹤您的旅行花費</p>
+            </div>
+        `;
+        
+        // 更新預算摘要
+        updateBudgetSummary();
+        return;
+    }
     
     let totalSpent = 0;
     
@@ -1057,12 +1026,27 @@ function renderBudgetItems() {
     });
     
     // 更新預算摘要
+    updateBudgetSummary();
+    
+    console.log('預算渲染完成，共', state.budgetItems.length, '個項目，總花費:', totalSpent);
+}
+
+// 更新預算摘要
+function updateBudgetSummary() {
+    let totalSpent = 0;
+    state.budgetItems.forEach(item => {
+        totalSpent += item.amount;
+    });
+    
+    // 默認總預算為15800泰銖，可根據需要調整
     const totalBudget = 15800;
     const remaining = totalBudget - totalSpent;
     
-    const spentElement = document.querySelector('.amount.spent');
-    const remainingElement = document.querySelector('.amount.remaining');
+    const totalElement = document.querySelector('.budget-summary .summary-card:nth-child(1) .amount');
+    const spentElement = document.querySelector('.budget-summary .summary-card:nth-child(2) .amount');
+    const remainingElement = document.querySelector('.budget-summary .summary-card:nth-child(3) .amount');
     
+    if (totalElement) totalElement.textContent = `฿${totalBudget.toLocaleString()}`;
     if (spentElement) spentElement.textContent = `฿${totalSpent.toLocaleString()}`;
     if (remainingElement) remainingElement.textContent = `฿${remaining.toLocaleString()}`;
 }
@@ -1070,200 +1054,188 @@ function renderBudgetItems() {
 // 獲取類別名稱
 function getCategoryName(category) {
     const categories = {
-        'food': '飲食',
-        'shopping': '購物',
-        'leisure': '娛樂',
-        'transport': '交通',
-        'accommodation': '住宿',
+        'food': '飲食 🍜',
+        'shopping': '購物 🛍️',
+        'leisure': '娛樂 🎭',
+        'transport': '交通 🚕',
+        'accommodation': '住宿 🏨',
         'other': '其他'
     };
+    
     return categories[category] || category;
 }
 
 // 獲取支付方式名稱
 function getPaymentName(payment) {
     const payments = {
-        'credit-card': '信用卡',
-        'cash': '現金',
+        'credit-card': '信用卡 💳',
+        'cash': '現金 💵',
         'debit-card': '轉帳卡',
         'e-wallet': '電子錢包'
     };
+    
     return payments[payment] || payment;
 }
 
 // 渲染資訊項目
 function renderInfoItems() {
+    console.log('渲染資訊項目...');
+    
     // 航班資訊
-    const flightContainer = document.getElementById('flight-info');
-    if (flightContainer) {
-        flightContainer.innerHTML = '';
-        
-        state.infoItems.flight.forEach(item => {
-            const itemElement = document.createElement('div');
-            itemElement.className = 'info-item';
-            
-            itemElement.innerHTML = `
-                <div class="info-field">
-                    <strong>航班編號:</strong>
-                    <span>${item.flightNumber}</span>
-                </div>
-                <div class="info-field">
-                    <strong>起飛時間:</strong>
-                    <span>${item.departureTime}</span>
-                </div>
-                <div class="info-field">
-                    <strong>到達時間:</strong>
-                    <span>${item.arrivalTime}</span>
-                </div>
-                ${item.notes ? `<div class="info-notes">${item.notes}</div>` : ''}
-                <div class="activity-actions" style="margin-top: 10px;">
-                    <button class="btn-icon edit-info" title="編輯">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn-icon delete delete-info" title="刪除">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            `;
-            
-            // 添加編輯和刪除事件監聽器
-            const editBtn = itemElement.querySelector('.edit-info');
-            const deleteBtn = itemElement.querySelector('.delete-info');
-            
-            editBtn.addEventListener('click', () => editInfoItem('flight', item.id));
-            deleteBtn.addEventListener('click', () => deleteInfoItem('flight', item.id));
-            
-            flightContainer.appendChild(itemElement);
-        });
-    }
+    renderInfoSection('flight', 'flight-info');
     
     // 酒店資訊
-    const hotelContainer = document.getElementById('hotel-info');
-    if (hotelContainer) {
-        hotelContainer.innerHTML = '';
-        
-        state.infoItems.hotel.forEach(item => {
-            const itemElement = document.createElement('div');
-            itemElement.className = 'info-item';
-            
-            itemElement.innerHTML = `
-                <div class="info-field">
-                    <strong>地址:</strong>
-                    <span>${item.address}</span>
-                </div>
-                <div class="info-field">
-                    <strong>入住時間:</strong>
-                    <span>${item.checkInTime}</span>
-                </div>
-                <div class="info-field">
-                    <strong>退房時間:</strong>
-                    <span>${item.checkOutTime}</span>
-                </div>
-                ${item.notes ? `<div class="info-notes">${item.notes}</div>` : ''}
-                <div class="activity-actions" style="margin-top: 10px;">
-                    <button class="btn-icon edit-info" title="編輯">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn-icon delete delete-info" title="刪除">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            `;
-            
-            // 添加編輯和刪除事件監聽器
-            const editBtn = itemElement.querySelector('.edit-info');
-            const deleteBtn = itemElement.querySelector('.delete-info');
-            
-            editBtn.addEventListener('click', () => editInfoItem('hotel', item.id));
-            deleteBtn.addEventListener('click', () => deleteInfoItem('hotel', item.id));
-            
-            hotelContainer.appendChild(itemElement);
-        });
-    }
+    renderInfoSection('hotel', 'hotel-info');
     
     // 租車資訊
-    const carContainer = document.getElementById('car-info');
-    if (carContainer) {
-        carContainer.innerHTML = '';
-        
-        state.infoItems.car.forEach(item => {
-            const itemElement = document.createElement('div');
-            itemElement.className = 'info-item';
-            
-            itemElement.innerHTML = `
-                <div class="info-field">
-                    <strong>取車時間:</strong>
-                    <span>${item.pickUpTime}</span>
-                </div>
-                <div class="info-field">
-                    <strong>還車時間:</strong>
-                    <span>${item.returnTime}</span>
-                </div>
-                <div class="info-field">
-                    <strong>取車地點:</strong>
-                    <span>${item.pickUpLocation}</span>
-                </div>
-                <div class="info-field">
-                    <strong>還車地點:</strong>
-                    <span>${item.returnLocation}</span>
-                </div>
-                ${item.notes ? `<div class="info-notes">${item.notes}</div>` : ''}
-                <div class="activity-actions" style="margin-top: 10px;">
-                    <button class="btn-icon edit-info" title="編輯">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn-icon delete delete-info" title="刪除">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            `;
-            
-            // 添加編輯和刪除事件監聽器
-            const editBtn = itemElement.querySelector('.edit-info');
-            const deleteBtn = itemElement.querySelector('.delete-info');
-            
-            editBtn.addEventListener('click', () => editInfoItem('car', item.id));
-            deleteBtn.addEventListener('click', () => deleteInfoItem('car', item.id));
-            
-            carContainer.appendChild(itemElement);
-        });
-    }
+    renderInfoSection('car', 'car-info');
     
     // 其他資訊
-    const otherContainer = document.getElementById('other-info');
-    if (otherContainer) {
-        otherContainer.innerHTML = '';
-        
-        state.infoItems.other.forEach(item => {
-            const itemElement = document.createElement('div');
-            itemElement.className = 'info-item';
-            
-            itemElement.innerHTML = `
-                <div class="info-field">
-                    <strong>${item.title}:</strong>
-                    <span>${item.details}</span>
-                </div>
-                ${item.notes ? `<div class="info-notes">${item.notes}</div>` : ''}
-                <div class="activity-actions" style="margin-top: 10px;">
-                    <button class="btn-icon edit-info" title="編輯">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn-icon delete delete-info" title="刪除">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            `;
-            
-            // 添加編輯和刪除事件監聽器
-            const editBtn = itemElement.querySelector('.edit-info');
-            const deleteBtn = itemElement.querySelector('.delete-info');
-            
-            editBtn.addEventListener('click', () => editInfoItem('other', item.id));
-            deleteBtn.addEventListener('click', () => deleteInfoItem('other', item.id));
-            
-            otherContainer.appendChild(itemElement);
-        });
+    renderInfoSection('other', 'other-info');
+}
+
+// 渲染單個資訊部分
+function renderInfoSection(type, containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    // 移除空狀態訊息
+    const emptyState = container.querySelector('.empty-state');
+    if (emptyState) {
+        emptyState.remove();
     }
+    
+    container.innerHTML = '';
+    
+    if (state.infoItems[type].length === 0) {
+        container.innerHTML = `
+            <div class="empty-state small">
+                <i class="fas fa-${getInfoIcon(type)}"></i>
+                <p>尚未添加${getInfoTypeName(type)}資訊</p>
+            </div>
+        `;
+        return;
+    }
+    
+    state.infoItems[type].forEach(item => {
+        const itemElement = document.createElement('div');
+        itemElement.className = 'info-item';
+        
+        let content = '';
+        
+        switch(type) {
+            case 'flight':
+                content = `
+                    <div class="info-field">
+                        <strong>航班編號:</strong>
+                        <span>${item.flightNumber}</span>
+                    </div>
+                    <div class="info-field">
+                        <strong>起飛時間:</strong>
+                        <span>${item.departureTime}</span>
+                    </div>
+                    <div class="info-field">
+                        <strong>到達時間:</strong>
+                        <span>${item.arrivalTime}</span>
+                    </div>
+                `;
+                break;
+                
+            case 'hotel':
+                content = `
+                    <div class="info-field">
+                        <strong>地址:</strong>
+                        <span>${item.address}</span>
+                    </div>
+                    <div class="info-field">
+                        <strong>入住時間:</strong>
+                        <span>${item.checkInTime}</span>
+                    </div>
+                    <div class="info-field">
+                        <strong>退房時間:</strong>
+                        <span>${item.checkOutTime}</span>
+                    </div>
+                `;
+                break;
+                
+            case 'car':
+                content = `
+                    <div class="info-field">
+                        <strong>取車時間:</strong>
+                        <span>${item.pickUpTime}</span>
+                    </div>
+                    <div class="info-field">
+                        <strong>還車時間:</strong>
+                        <span>${item.returnTime}</span>
+                    </div>
+                    <div class="info-field">
+                        <strong>取車地點:</strong>
+                        <span>${item.pickUpLocation}</span>
+                    </div>
+                    <div class="info-field">
+                        <strong>還車地點:</strong>
+                        <span>${item.returnLocation}</span>
+                    </div>
+                `;
+                break;
+                
+            case 'other':
+                content = `
+                    <div class="info-field">
+                        <strong>${item.title}:</strong>
+                        <span>${item.details}</span>
+                    </div>
+                `;
+                break;
+        }
+        
+        content += `
+            ${item.notes ? `<div class="info-notes">${item.notes}</div>` : ''}
+            <div class="activity-actions" style="margin-top: 10px;">
+                <button class="btn-icon edit-info" title="編輯">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn-icon delete delete-info" title="刪除">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        `;
+        
+        itemElement.innerHTML = content;
+        
+        // 添加編輯和刪除事件監聽器
+        const editBtn = itemElement.querySelector('.edit-info');
+        const deleteBtn = itemElement.querySelector('.delete-info');
+        
+        editBtn.addEventListener('click', () => editInfoItem(type, item.id));
+        deleteBtn.addEventListener('click', () => deleteInfoItem(type, item.id));
+        
+        container.appendChild(itemElement);
+    });
+}
+
+// 獲取資訊類型圖標
+function getInfoIcon(type) {
+    const icons = {
+        'flight': 'plane',
+        'hotel': 'hotel',
+        'car': 'car',
+        'other': 'sticky-note'
+    };
+    
+    return icons[type] || 'info-circle';
+}
+
+// 獲取資訊類型名稱
+function getInfoTypeName(type) {
+    const names = {
+        'flight': '航班',
+        'hotel': '酒店',
+        'car': '租車',
+        'other': '其他'
+    };
+    
+    return names[type] || type;
 }
 
 // 行程拖放功能
@@ -1271,7 +1243,6 @@ let draggedItem = null;
 
 function initDragAndDrop() {
     const activityItems = document.querySelectorAll('.activity-item');
-    
     activityItems.forEach(item => {
         item.addEventListener('dragstart', handleDragStart);
         item.addEventListener('dragover', handleDragOver);
@@ -1293,6 +1264,7 @@ function handleDragOver(e) {
 
 function handleDrop(e) {
     e.preventDefault();
+    
     if (draggedItem !== this) {
         // 獲取拖動項目和放置目標的ID
         const draggedId = parseInt(draggedItem.getAttribute('data-id'));
@@ -1310,6 +1282,8 @@ function handleDrop(e) {
             // 保存並重新渲染
             saveToLocalStorage();
             renderItinerary();
+            
+            console.log('活動重新排序完成');
         }
     }
 }
@@ -1330,43 +1304,121 @@ function saveToLocalStorage() {
     };
     
     localStorage.setItem('travelAppData', JSON.stringify(appData));
+    console.log('數據已保存到本地存儲');
 }
 
 function loadFromLocalStorage() {
     const savedData = localStorage.getItem('travelAppData');
     
     if (savedData) {
-        const appData = JSON.parse(savedData);
-        
-        const titleElement = document.getElementById('trip-title');
-        if (titleElement) titleElement.textContent = appData.tripTitle || '我的旅程';
-        
-        state.itinerary = appData.itinerary || [];
-        state.diaryEntries = appData.diaryEntries || [];
-        state.budgetItems = appData.budgetItems || [];
-        state.infoItems = appData.infoItems || {
-            flight: [],
-            hotel: [],
-            car: [],
-            other: []
-        };
+        try {
+            const appData = JSON.parse(savedData);
+            const titleElement = document.getElementById('trip-title');
+            
+            if (titleElement && appData.tripTitle) {
+                titleElement.textContent = appData.tripTitle;
+            }
+            
+            state.itinerary = appData.itinerary || [];
+            state.diaryEntries = appData.diaryEntries || [];
+            state.budgetItems = appData.budgetItems || [];
+            state.infoItems = appData.infoItems || {
+                flight: [],
+                hotel: [],
+                car: [],
+                other: []
+            };
+            
+            console.log('從本地存儲加載數據成功');
+        } catch (error) {
+            console.error('解析本地存儲數據時出錯:', error);
+            // 使用默認空數據
+            resetToEmptyState();
+        }
+    } else {
+        console.log('本地存儲中沒有找到數據，使用默認空狀態');
+        resetToEmptyState();
     }
 }
 
-// 更新天氣和匯率（模擬API調用）
+// 重置為空狀態
+function resetToEmptyState() {
+    state.itinerary = [];
+    state.diaryEntries = [];
+    state.budgetItems = [];
+    state.infoItems = {
+        flight: [],
+        hotel: [],
+        car: [],
+        other: []
+    };
+}
+
+// 更新天氣和匯率
 function updateWeatherAndExchange() {
-    // 使用模擬數據模擬API調用
+    console.log('更新天氣和匯率...');
+    
+    // HIGHLIGHT: EXCHANGE RATE API START
+    // 實際使用時，請替換為真實的API調用
+    // 例如：fetch('https://api.exchangerate-api.com/v4/latest/HKD')
+    //       .then(response => response.json())
+    //       .then(data => {
+    //           const rate = data.rates.THB;
+    //           document.getElementById('exchange-rate').textContent = `1 港幣 = ${rate} 泰銖`;
+    //       })
+    //       .catch(error => {
+    //           console.error('匯率API錯誤:', error);
+    //           // 使用模擬數據
+    //           const mockRate = (4.5 + Math.random() * 0.2 - 0.1).toFixed(2);
+    //           document.getElementById('exchange-rate').textContent = `1 港幣 = ${mockRate} 泰銖`;
+    //       });
+    // HIGHLIGHT: EXCHANGE RATE API END
+    
+    // 模擬匯率數據
     const mockExchangeRate = (4.5 + Math.random() * 0.2 - 0.1).toFixed(2);
     const exchangeElement = document.getElementById('exchange-rate');
-    if (exchangeElement) exchangeElement.textContent = `1 港幣 = ${mockExchangeRate} 泰銖`;
+    if (exchangeElement) {
+        exchangeElement.textContent = `1 港幣 = ${mockExchangeRate} 泰銖`;
+    }
     
+    // HIGHLIGHT: WEATHER API START
+    // 實際使用時，請替換為真實的API調用
+    // 例如：fetch('https://api.openweathermap.org/data/2.5/weather?q=Bangkok&appid=YOUR_API_KEY&units=metric')
+    //       .then(response => response.json())
+    //       .then(data => {
+    //           const temp = Math.round(data.main.temp);
+    //           const description = data.weather[0].description;
+    //           document.getElementById('weather-info').textContent = `曼谷: ${temp}°C, ${description}`;
+    //           
+    //           // 更新天氣圖標
+    //           const weatherIcon = document.querySelector('.weather i');
+    //           if (weatherIcon) {
+    //               const iconCode = data.weather[0].icon;
+    //               // 根據OpenWeatherMap圖標代碼設置對應的Font Awesome圖標
+    //               // 這裡需要根據實際情況進行映射
+    //           }
+    //       })
+    //       .catch(error => {
+    //           console.error('天氣API錯誤:', error);
+    //           // 使用模擬數據
+    //           const temperatures = [30, 31, 32, 33, 34];
+    //           const weatherConditions = ['晴朗', '多雲', '陰天', '小雨'];
+    //           const randomTemp = temperatures[Math.floor(Math.random() * temperatures.length)];
+    //           const randomWeather = weatherConditions[Math.floor(Math.random() * weatherConditions.length)];
+    //           document.getElementById('weather-info').textContent = `曼谷: ${randomTemp}°C, ${randomWeather}`;
+    //       });
+    // HIGHLIGHT: WEATHER API END
+    
+    // 模擬天氣數據
     const temperatures = [30, 31, 32, 33, 34];
     const weatherConditions = ['晴朗', '多雲', '陰天', '小雨'];
     const randomTemp = temperatures[Math.floor(Math.random() * temperatures.length)];
     const randomWeather = weatherConditions[Math.floor(Math.random() * weatherConditions.length)];
-    
     const weatherElement = document.getElementById('weather-info');
-    if (weatherElement) weatherElement.textContent = `曼谷: ${randomTemp}°C, ${randomWeather}`;
+    
+    if (weatherElement) {
+        weatherElement.textContent = `曼谷: ${randomTemp}°C, ${randomWeather}`;
+    }
     
     // 根據條件更新天氣圖標
     const weatherIcon = document.querySelector('.weather i');
@@ -1379,8 +1431,52 @@ function updateWeatherAndExchange() {
             weatherIcon.className = 'fas fa-sun';
         }
     }
+    
+    console.log('天氣和匯率更新完成');
 }
 
-// 初始化天氣和匯率更新
-setInterval(updateWeatherAndExchange, 30000); // 每30秒更新
-updateWeatherAndExchange(); // 初始更新
+// 更新旅程倒數計時
+function updateCountdown() {
+    const countdownElement = document.getElementById('countdown');
+    if (!countdownElement) return;
+    
+    if (state.itinerary.length === 0) {
+        countdownElement.textContent = '旅程倒數: -- 天';
+        return;
+    }
+    
+    // 找出最早的活動日期
+    let earliestDate = null;
+    state.itinerary.forEach(activity => {
+        const activityDate = new Date(activity.date);
+        if (!earliestDate || activityDate < earliestDate) {
+            earliestDate = activityDate;
+        }
+    });
+    
+    if (!earliestDate) {
+        countdownElement.textContent = '旅程倒數: -- 天';
+        return;
+    }
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    earliestDate.setHours(0, 0, 0, 0);
+    
+    const timeDiff = earliestDate.getTime() - today.getTime();
+    const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+    
+    if (daysDiff > 0) {
+        countdownElement.textContent = `旅程倒數: ${daysDiff} 天`;
+    } else if (daysDiff === 0) {
+        countdownElement.textContent = '旅程今天開始！';
+    } else {
+        countdownElement.textContent = '旅程已開始';
+    }
+    
+    console.log('倒數計時更新完成:', daysDiff, '天');
+}
+
+// 定期更新天氣和匯率
+setInterval(updateWeatherAndExchange, 300000); // 每5分鐘更新一次
+setInterval(updateCountdown, 86400000); // 每天更新一次倒數計時
