@@ -1263,7 +1263,11 @@ body {
         padding: 15px;
     }
     
-    .page-title h2 {
+    .itinerary-header h2,
+    .map-header h2,
+    .diary-header h2,
+    .budget-header h2,
+    .info-header h2 {
         font-size: 1.2rem;
     }
     
