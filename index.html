@@ -1,88 +1,361 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MY Trip</title>
+    <title>Travel Planner - My Trip</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
-    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_GOOGLE_API_KEY" async defer></script> <!-- Highlight: Google Maps API -->
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script> <!-- For drag sort -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <header>
-        <div class="exchange">港幣兌泰銖: <span id="exchange-rate">載入中...</span> 💰</div>
-        <h1 id="title" onclick="editTitle()">MY Trip</h1>
-        <div class="weather">曼谷天氣: <span id="weather">載入中...</span> ☀️</div>
-    </header>
+    <div class="app-container">
+        <!-- Header Section -->
+        <header class="header">
+            <div class="header-row">
+                <div class="exchange-rate">
+                    <i class="fas fa-money-bill-wave"></i>
+                    <span id="exchange-rate">1 HKD = 4.5 THB</span>
+                </div>
+                <div class="title-container">
+                    <h1 id="trip-title" contenteditable="true">My Trip</h1>
+                </div>
+                <div class="weather">
+                    <i class="fas fa-sun"></i>
+                    <span id="weather-info">Bangkok: 32°C</span>
+                </div>
+            </div>
+        </header>
 
-    <div id="home-page" class="page">
-        <!-- Itinerary form and list -->
-        <form id="itinerary-form">
-            <input type="date" id="date" required>
-            <input type="text" id="activity" placeholder="活動名稱" required>
-            <input type="text" id="location" placeholder="地點" required>
-            <textarea id="remarks" placeholder="備註 (YouTube URL 等)"></textarea>
-            <button type="submit">添加</button>
-        </form>
-        <div id="itinerary-list"></div> <!-- Drag-sort here -->
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Home/Itinerary Page -->
+            <section id="home-page" class="page active">
+                <div class="itinerary-header">
+                    <h2><i class="fas fa-route"></i> Trip Itinerary</h2>
+                    <button id="add-activity" class="btn-primary">
+                        <i class="fas fa-plus"></i> Add Activity
+                    </button>
+                </div>
+                
+                <div class="itinerary-container">
+                    <!-- Itinerary days will be dynamically generated here -->
+                </div>
+            </section>
+
+            <!-- Map Page -->
+            <section id="map-page" class="page">
+                <div class="map-header">
+                    <h2><i class="fas fa-map-marked-alt"></i> Trip Map</h2>
+                    <div class="map-controls">
+                        <button id="show-route" class="btn-secondary">
+                            <i class="fas fa-directions"></i> Show Route
+                        </button>
+                        <div class="travel-time">
+                            <i class="fas fa-car"></i>
+                            <span id="total-travel-time">Total: 45 min</span>
+                        </div>
+                    </div>
+                </div>
+                <div id="map-container">
+                    <div id="map"></div>
+                    <div class="map-sidebar">
+                        <h3><i class="fas fa-map-pin"></i> Locations</h3>
+                        <ul id="locations-list">
+                            <!-- Locations will be dynamically added here -->
+                        </ul>
+                        <div class="rental-locations">
+                            <h4><i class="fas fa-car"></i> Car Rental</h4>
+                            <div class="rental-item">
+                                <strong>Pick-up:</strong> <span id="pickup-location">BKK Airport</span>
+                            </div>
+                            <div class="rental-item">
+                                <strong>Return:</strong> <span id="return-location">Siam Paragon</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Diary Page -->
+            <section id="diary-page" class="page">
+                <div class="diary-header">
+                    <h2><i class="fas fa-book"></i> Travel Diary</h2>
+                    <button id="add-diary-entry" class="btn-primary">
+                        <i class="fas fa-plus"></i> Add Entry
+                    </button>
+                </div>
+                <div class="diary-container">
+                    <!-- Diary entries will be dynamically generated here -->
+                </div>
+            </section>
+
+            <!-- Budget Page -->
+            <section id="budget-page" class="page">
+                <div class="budget-header">
+                    <h2><i class="fas fa-wallet"></i> Budget Planning</h2>
+                    <button id="add-budget-item" class="btn-primary">
+                        <i class="fas fa-plus"></i> Add Item
+                    </button>
+                </div>
+                
+                <div class="budget-summary">
+                    <div class="summary-card">
+                        <h3>Total Budget</h3>
+                        <div class="amount">฿15,800</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Spent</h3>
+                        <div class="amount spent">฿8,450</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Remaining</h3>
+                        <div class="amount remaining">฿7,350</div>
+                    </div>
+                </div>
+                
+                <div class="budget-container">
+                    <!-- Budget items will be dynamically generated here -->
+                </div>
+            </section>
+
+            <!-- Info Page -->
+            <section id="info-page" class="page">
+                <div class="info-header">
+                    <h2><i class="fas fa-info-circle"></i> Trip Information</h2>
+                </div>
+                
+                <div class="info-sections">
+                    <!-- Flight Info -->
+                    <div class="info-section">
+                        <div class="section-header">
+                            <h3><i class="fas fa-plane"></i> Flight Details</h3>
+                            <button class="btn-icon add-info-btn" data-section="flight">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <div class="info-content" id="flight-info">
+                            <!-- Flight info items will be dynamically generated here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Hotel Info -->
+                    <div class="info-section">
+                        <div class="section-header">
+                            <h3><i class="fas fa-hotel"></i> Hotel Information</h3>
+                            <button class="btn-icon add-info-btn" data-section="hotel">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <div class="info-content" id="hotel-info">
+                            <!-- Hotel info items will be dynamically generated here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Car Rental Info -->
+                    <div class="info-section">
+                        <div class="section-header">
+                            <h3><i class="fas fa-car"></i> Car Rental</h3>
+                            <button class="btn-icon add-info-btn" data-section="car">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <div class="info-content" id="car-info">
+                            <!-- Car rental info items will be dynamically generated here -->
+                        </div>
+                    </div>
+                    
+                    <!-- Other Info -->
+                    <div class="info-section">
+                        <div class="section-header">
+                            <h3><i class="fas fa-ellipsis-h"></i> Other Information</h3>
+                            <button class="btn-icon add-info-btn" data-section="other">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        <div class="info-content" id="other-info">
+                            <!-- Other info items will be dynamically generated here -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Navigation Bar -->
+        <nav class="bottom-nav">
+            <button class="nav-btn active" data-page="home-page">
+                <i class="fas fa-home"></i>
+                <span>Home</span>
+            </button>
+            <button class="nav-btn" data-page="map-page">
+                <i class="fas fa-map"></i>
+                <span>Map</span>
+            </button>
+            <button class="nav-btn" data-page="diary-page">
+                <i class="fas fa-book"></i>
+                <span>Diary</span>
+            </button>
+            <button class="nav-btn" data-page="budget-page">
+                <i class="fas fa-wallet"></i>
+                <span>Budget</span>
+            </button>
+            <button class="nav-btn" data-page="info-page">
+                <i class="fas fa-info-circle"></i>
+                <span>Info</span>
+            </button>
+        </nav>
+
+        <!-- Modals -->
+        <div id="activity-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Add Activity</h3>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="activity-form">
+                        <div class="form-group">
+                            <label for="activity-date">Date</label>
+                            <input type="date" id="activity-date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="activity-name">Activity Name</label>
+                            <input type="text" id="activity-name" placeholder="e.g., Visit Grand Palace" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="activity-time">Time</label>
+                            <input type="time" id="activity-time" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="activity-location">Location</label>
+                            <input type="text" id="activity-location" placeholder="e.g., Bangkok, Thailand">
+                        </div>
+                        <div class="form-group">
+                            <label for="activity-notes">Notes (optional)</label>
+                            <textarea id="activity-notes" placeholder="Add notes, YouTube URL, or other information"></textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary">Save Activity</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div id="diary-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Add Diary Entry</h3>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="diary-form">
+                        <div class="form-group">
+                            <label for="diary-date">Date</label>
+                            <input type="date" id="diary-date" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="diary-title">Title</label>
+                            <input type="text" id="diary-title" placeholder="Entry title" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="diary-content">Content</label>
+                            <textarea id="diary-content" rows="5" placeholder="Write about your day..." required></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="diary-image">Image URL (optional)</label>
+                            <input type="text" id="diary-image" placeholder="Paste image URL here">
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary">Save Entry</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div id="budget-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Add Budget Item</h3>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="budget-form">
+                        <div class="form-group">
+                            <label for="budget-category">Category</label>
+                            <select id="budget-category" required>
+                                <option value="">Select Category</option>
+                                <option value="food">Food</option>
+                                <option value="shopping">Shopping</option>
+                                <option value="leisure">Leisure</option>
+                                <option value="transport">Transport</option>
+                                <option value="accommodation">Accommodation</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="budget-description">Description</label>
+                            <input type="text" id="budget-description" placeholder="e.g., Dinner at restaurant" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="budget-amount">Amount (THB)</label>
+                            <input type="number" id="budget-amount" min="0" step="1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="budget-payment">Payment Method</label>
+                            <select id="budget-payment" required>
+                                <option value="">Select Payment</option>
+                                <option value="credit-card">Credit Card</option>
+                                <option value="cash">Cash</option>
+                                <option value="debit-card">Debit Card</option>
+                                <option value="e-wallet">E-Wallet</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="budget-notes">Notes (optional)</label>
+                            <textarea id="budget-notes" placeholder="Add any notes"></textarea>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary">Save Item</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div id="info-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 id="info-modal-title">Add Information</h3>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="info-form">
+                        <div class="form-group">
+                            <label for="info-type">Information Type</label>
+                            <select id="info-type" required>
+                                <option value="">Select Type</option>
+                                <option value="flight">Flight</option>
+                                <option value="hotel">Hotel</option>
+                                <option value="car">Car Rental</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div id="info-form-fields">
+                            <!-- Dynamic form fields will be added here based on info type -->
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn-primary">Save Information</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div id="map-page" class="page hidden">
-        <div id="map" style="height:400px;"></div>
-        <ul id="location-list"></ul>
-    </div>
-
-    <div id="diary-page" class="page hidden">
-        <form id="diary-form">
-            <textarea id="diary-text" placeholder="寫日記..."></textarea>
-            <input type="file" id="diary-image" accept="image/*">
-            <button type="submit">添加</button>
-        </form>
-        <div id="diary-list"></div>
-    </div>
-
-    <div id="budget-page" class="page hidden">
-        <form id="budget-form">
-            <input type="text" id="expense-amount" placeholder="金額 (THB)" required>
-            <select id="category">
-                <option>food</option>
-                <option>shopping</option>
-                <option>leisure</option>
-            </select>
-            <select id="payment">
-                <option>credit card</option>
-                <option>cash</option>
-            </select>
-            <textarea id="budget-remarks" placeholder="備註"></textarea>
-            <button type="submit">添加</button>
-        </form>
-        <div id="budget-list"></div>
-        <p>總支出: <span id="total-budget">0</span> THB</p>
-    </div>
-
-    <div id="info-page" class="page hidden">
-        <!-- Flight -->
-        <section>✈️ 航班 <button onclick="addInfo('flight')">+</button></section>
-        <div id="flight-list"></div>
-        <!-- Hotel -->
-        <section>🏨 酒店 <button onclick="addInfo('hotel')">+</button></section>
-        <div id="hotel-list"></div>
-        <!-- Car Rental -->
-        <section>🚗 租車 <button onclick="addInfo('car')">+</button></section>
-        <div id="car-list"></div>
-        <!-- Others -->
-        <section>📝 其他 <button onclick="addInfo('others')">+</button></section>
-        <div id="others-list"></div>
-    </div>
-
-    <nav class="bottom-nav">
-        <button onclick="showPage('home')">Home</button>
-        <button onclick="showPage('map')">Map</button>
-        <button onclick="showPage('diary')">Diary</button>
-        <button onclick="showPage('budget')">Budget</button>
-        <button onclick="showPage('info')">Info</button>
-    </nav>
-
-    <script src="app.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
