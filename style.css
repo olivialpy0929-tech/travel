@@ -1,0 +1,438 @@
+/* style.css */
+
+/* NEW & IMPROVED: 5. UI - Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&family=Poppins:wght@400;600&display=swap');
+
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    /* NEW & IMPROVED: 5. UI - Apply new font */
+    font-family: 'Poppins', 'Segoe UI', 'Microsoft JhengHei', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* NEW & IMPROVED: 5. UI - Pastel gradient background */
+body {
+    background: linear-gradient(135deg, #fff4f4 0%, #f0f8ff 100%);
+    min-height: 100vh;
+    padding: 10px;
+    color: #4A5568; /* Softer text color */
+    position: relative;
+    overflow-x: hidden;
+    /* NEW & IMPROVED: 4. Navigation Bar - Add padding to prevent content from hiding behind the fixed nav bar */
+    padding-bottom: 90px;
+}
+
+/* NEW & IMPROVED: 5. UI - Cute doodle accents */
+.decoration-element {
+    position: fixed;
+    font-size: 2.5rem;
+    opacity: 0.08; /* Softer opacity */
+    z-index: -1;
+    pointer-events: none;
+    animation: float 20s infinite ease-in-out;
+    color: #a0aec0; /* Softer color */
+}
+.decoration-element.lotus { top: 10%; left: 5%; animation-delay: 0s; }
+.decoration-element.elephant { top: 70%; right: 10%; animation-delay: 5s; }
+.decoration-element.palm { bottom: 15%; left: 15%; animation-delay: 10s; }
+.decoration-element.wave { bottom: 5%; right: 5%; animation-delay: 15s; }
+@keyframes float {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-30px) rotate(5deg); }
+}
+
+.app-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    /* NEW & IMPROVED: 5. UI - Glassmorphism style for main container */
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 28px; /* Increased border-radius */
+    box-shadow: 0 8px 32px 0 rgba(100, 108, 128, 0.15);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+}
+
+.page { display: none; }
+.page.active { display: block; animation: fadeIn 0.5s ease; }
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* NEW & IMPROVED: 1. Header Alignment & 5. UI - Redesigned Header */
+.header {
+    padding: 15px 20px;
+    background: transparent; /* Make header transparent to show container's glass effect */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    text-align: center;
+}
+
+#trip-title {
+    font-size: 2rem; /* Slightly smaller for balance */
+    color: #2d3748;
+    background: transparent;
+    border: none;
+    outline: none;
+    text-align: center;
+    padding: 5px 10px;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    max-width: 90%;
+    margin: 0 auto 15px auto; /* Add margin-bottom */
+    font-family: 'Comfortaa', cursive; /* NEW & IMPROVED: 5. UI - Header font */
+}
+#trip-title:focus {
+    background: rgba(255, 255, 255, 0.7);
+    box-shadow: 0 0 0 2px rgba(74, 108, 247, 0.2);
+}
+
+.header-widgets {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
+}
+
+.widget-card {
+    flex: 1;
+    /* NEW & IMPROVED: 1. Header Alignment & 5. UI - Compact, rounded neumorphic/glassmorphic cards */
+    background: rgba(255, 255, 255, 0.5);
+    padding: 8px 12px;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-weight: 600;
+    color: #4A5568;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    font-size: 13px; /* Reduced font size */
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    min-height: 40px;
+}
+.widget-card i {
+    color: #6a8cff;
+    font-size: 1rem;
+}
+/* Specific alignment for left and right widgets */
+.widget-card.exchange-rate { justify-content: flex-start; }
+.widget-card.weather { justify-content: flex-end; }
+
+/* NEW & IMPROVED: 3. Layout - Class to hide widgets on other pages */
+.header-widgets.hidden {
+    display: none;
+}
+
+/* Main content */
+.main-content {
+    padding: 20px;
+    min-height: 70vh;
+}
+
+/* Itinerary Page */
+.itinerary-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* NEW & IMPROVED: 5. UI - Softer day section cards */
+.day-section {
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 24px; /* Increased border-radius */
+    padding: 20px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+}
+.day-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(74, 108, 247, 0.15);
+}
+.day-title {
+    font-size: 1.3rem;
+    color: #2d3748;
+    font-family: 'Comfortaa', cursive;
+}
+.day-date {
+    font-size: 0.9rem;
+    color: #718096;
+    background: rgba(255, 255, 255, 0.5);
+    padding: 4px 12px;
+    border-radius: 20px;
+}
+
+.activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* NEW & IMPROVED: 2. Size & 5. UI - Compact and refined activity cards */
+.activity-item {
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 20px; /* Increased border-radius */
+    padding: 12px 15px;
+    display: flex;
+    align-items: center; /* Vertically center all items */
+    gap: 12px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    transition: all 0.3s ease;
+    cursor: move;
+}
+.activity-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.07);
+}
+
+/* NEW & IMPROVED: 2. Size - Smaller time badge */
+.activity-time {
+    background: rgba(255, 255, 255, 0.8);
+    color: #4a6cf7;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 13px; /* Smaller font */
+    text-align: center;
+    flex-shrink: 0; /* Prevent from shrinking */
+    height: 28px; /* Fixed height */
+    line-height: 20px;
+}
+
+.activity-details {
+    flex-grow: 1;
+    min-width: 0; /* Allow flex item to shrink */
+}
+.activity-name {
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 4px;
+    color: #2d3748;
+}
+.activity-location {
+    color: #718096;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+.activity-notes {
+    color: #4a5568;
+    font-size: 0.9rem;
+    background: rgba(240, 245, 255, 0.6);
+    padding: 8px;
+    border-radius: 8px;
+    margin-top: 8px;
+    border-left: 3px solid #6a8cff;
+}
+
+/* NEW & IMPROVED: 2. Size - Smaller action icons */
+.activity-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+.btn-icon {
+    background: transparent;
+    border: none;
+    width: 28px; /* Smaller button size */
+    height: 28px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #a0aec0; /* Lighter icon color */
+    font-size: 1rem; /* Smaller icon font-size */
+}
+.btn-icon:hover {
+    background: rgba(255, 255, 255, 0.7);
+    color: #4a6cf7;
+    transform: scale(1.1);
+}
+.btn-icon.delete:hover {
+    color: #e53e3e;
+}
+
+/* NEW & IMPROVED: 4. Navigation Bar - Fixed at the bottom */
+.bottom-nav {
+    display: flex;
+    justify-content: space-around;
+    /* Glassmorphism style */
+    background: rgba(255, 255, 255, 0.65);
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 -5px 20px rgba(100, 108, 128, 0.1);
+    /* Fixed positioning */
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    z-index: 100;
+    padding: 10px 5px;
+    /* Rounded top corners for a "dock" effect */
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+}
+
+.nav-btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background: transparent;
+    border: none;
+    padding: 5px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: #718096;
+    font-weight: 500;
+    position: relative;
+}
+.nav-btn i { font-size: 1.2rem; }
+.nav-btn span { font-size: 0.75rem; }
+.nav-btn.active {
+    color: #4a6cf7;
+}
+.nav-btn.active::after { /* Active indicator */
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    width: 6px;
+    height: 6px;
+    background: #4a6cf7;
+    border-radius: 50%;
+}
+.nav-btn:hover:not(.active) {
+    background: rgba(74, 108, 247, 0.1);
+}
+
+/* Other styles (buttons, modals, etc.) with UI refresh */
+.btn-primary {
+    padding: 10px 20px;
+    border-radius: 14px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    font-size: 0.95rem;
+    background: linear-gradient(135deg, #4a6cf7, #6a8cff);
+    color: white;
+    box-shadow: 0 4px 15px rgba(74, 108, 247, 0.3);
+}
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(74, 108, 247, 0.4);
+}
+
+/* All other cards (map, diary, budget, info) */
+.map-sidebar, .diary-entry, .summary-card, .budget-item, .info-section, .info-item {
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 24px;
+    box-shadow: 0 8px 32px 0 rgba(100, 108, 128, 0.1);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 20px;
+}
+#map {
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px 0 rgba(100, 108, 128, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Modal styles with UI refresh */
+.modal {
+    display: none;
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+.modal.active { display: flex; animation: fadeIn 0.3s ease; }
+.modal-content {
+    background: rgba(255, 255, 255, 0.85);
+    border-radius: 24px;
+    width: 100%; max-width: 500px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    animation: modalSlideIn 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+@keyframes modalSlideIn {
+    from { opacity: 0; transform: translateY(-30px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    body {
+        padding: 0;
+        padding-bottom: 80px; /* Ensure space for nav bar */
+    }
+    .app-container {
+        border-radius: 0;
+        min-height: 100vh;
+    }
+    .header-widgets {
+        gap: 10px;
+    }
+    .widget-card {
+        padding: 6px 8px;
+        font-size: 11px;
+        flex-direction: column;
+        gap: 2px;
+        text-align: center;
+    }
+    .widget-card i {
+        font-size: 0.9rem;
+    }
+    .bottom-nav {
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+    }
+    #map-container {
+        flex-direction: column;
+        height: auto;
+    }
+    #map { height: 350px; }
+}
+
+/* Fallback for browsers that don't support backdrop-filter */
+@supports not ((-webkit-backdrop-filter: none) or (backdrop-filter: none)) {
+  .app-container, .widget-card, .bottom-nav, .modal-content, .day-section, .activity-item, .map-sidebar, .diary-entry, .summary-card, .budget-item, .info-section, .info-item {
+    background: rgba(255, 255, 255, 0.95);
+  }
+  .body {
+    background: #f7f9fc;
+  }
+}
