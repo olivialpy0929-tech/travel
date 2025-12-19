@@ -24,6 +24,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // 延遲初始化地圖，直到需要時
     if (document.getElementById('map-page').classList.contains('active')) {
         initMap();
+        // 替換為您的實際 API 金鑰
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAPr1fdJUrgy-b4lMzy_Zb8W-ihMY_Or9U&callback=initMap" async defer></script>
     }
 });
 
