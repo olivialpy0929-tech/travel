@@ -1,4 +1,24 @@
 /* 重置和基礎樣式 */
+:root {
+    --font-display: 'Lora', serif;
+    --font-body: 'Poppins', sans-serif;
+}
+
+body {
+    font-family: var(--font-body);
+    /* ... */
+}
+
+/* Apply the display font to your main titles */
+#trip-title,
+.day-title span { /* For "第 1 天" */
+    font-family: var(--font-display);
+    font-weight: 600;
+}
+
+#trip-title {
+    font-size: 2.8rem; /* Make it bigger and more prominent */
+}
 * {
     margin: 0;
     padding: 0;
@@ -280,25 +300,29 @@ body {
 .itinerary-container {
     display: flex;
     flex-direction: column;
-    gap: 25px;
+    gap: 40px; /* Increase from 25px */
+}
+
+/* Example for activity items within a day */
+.activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px; /* Increase from 16px */
 }
 
 /* 天數區塊 */
 .day-section {
-    background: rgba(255, 255, 255, 0.8);
-    border-radius: 24px;
+    background: #FFFFFF; /* A clean white or a slightly different off-white like #FAF8F6 */
+    border-radius: 20px; /* A slightly smaller radius can feel more modern */
     padding: 25px;
-    box-shadow: 
-        0 8px 30px rgba(0, 0, 0, 0.06),
-        inset 0 1px 0 rgba(255, 255, 255, 0.9);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
+    border: 1px solid #EAE6E1; /* A very subtle border */
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.05); /* Soft, diffuse shadow */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .day-section:hover {
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.1);
-    transform: translateY(-2px);
+    transform: translateY(-5px);
+    box-shadow: 0 8px 35px rgba(0, 0, 0, 0.07);
 }
 
 .day-header {
@@ -336,23 +360,17 @@ body {
 }
 
 .activity-item {
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 20px;
-    padding: 18px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    transition: all 0.3s ease;
-    position: relative;
-    cursor: move;
-    backdrop-filter: blur(10px);
+     background: #FFFFFF; /* A clean white or a slightly different off-white like #FAF8F6 */
+    border-radius: 20px; /* A slightly smaller radius can feel more modern */
+    padding: 25px;
+    border: 1px solid #EAE6E1; /* A very subtle border */
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.05); /* Soft, diffuse shadow */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .activity-item:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    transform: translateY(-5px);
+    box-shadow: 0 8px 35px rgba(0, 0, 0, 0.07);
 }
 
 .activity-item.dragging {
@@ -418,26 +436,22 @@ body {
 }
 
 .btn-icon {
-    background: rgba(255, 255, 255, 0.9);
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    width: 36px;
-    height: 36px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background: transparent; /* No background */
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%; /* Make them circles */
     cursor: pointer;
-    transition: all 0.3s ease;
-    color: #8b7d7d;
-    font-size: 0.9rem;
-    backdrop-filter: blur(5px);
+    transition: background-color 0.2s ease;
+    color: #A59E97; /* Use the secondary text color */
+    font-size: 1rem;
 }
 
 .btn-icon:hover {
-    background: linear-gradient(135deg, #ff6b8b, #ff8fa3);
-    color: white;
-    transform: scale(1.1) rotate(5deg);
-    box-shadow: 0 4px 15px rgba(255, 107, 139, 0.3);
+    background-color: #EAE6E1; /* A subtle hover effect */
+    color: #3D352E; /* Darken icon on hover */
+    transform: none; /* Remove the rotation/scale effect */
+    box-shadow: none;
 }
 
 .btn-icon.delete:hover {
@@ -618,15 +632,12 @@ body {
 }
 
 .diary-entry {
-    background: rgba(255, 255, 255, 0.85);
-    border-radius: 24px;
+    background: #FFFFFF; /* A clean white or a slightly different off-white like #FAF8F6 */
+    border-radius: 20px; /* A slightly smaller radius can feel more modern */
     padding: 25px;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-    backdrop-filter: blur(10px);
+    border: 1px solid #EAE6E1; /* A very subtle border */
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.05); /* Soft, diffuse shadow */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .diary-entry::before {
@@ -641,7 +652,7 @@ body {
 
 .diary-entry:hover {
     transform: translateY(-5px);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 35px rgba(0, 0, 0, 0.07);
 }
 
 .diary-header-row {
@@ -750,21 +761,17 @@ body {
 }
 
 .budget-item {
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 18px;
-    padding: 20px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
+    background: #FFFFFF; /* A clean white or a slightly different off-white like #FAF8F6 */
+    border-radius: 20px; /* A slightly smaller radius can feel more modern */
+    padding: 25px;
+    border: 1px solid #EAE6E1; /* A very subtle border */
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.05); /* Soft, diffuse shadow */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .budget-item:hover {
-    transform: translateX(5px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    transform: translateY(-5px);
+    box-shadow: 0 8px 35px rgba(0, 0, 0, 0.07);
 }
 
 .budget-info {
@@ -852,12 +859,12 @@ body {
 }
 
 .info-section {
-    background: rgba(255, 255, 255, 0.85);
-    border-radius: 24px;
+    background: #FFFFFF; /* A clean white or a slightly different off-white like #FAF8F6 */
+    border-radius: 20px; /* A slightly smaller radius can feel more modern */
     padding: 25px;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    backdrop-filter: blur(10px);
+    border: 1px solid #EAE6E1; /* A very subtle border */
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.05); /* Soft, diffuse shadow */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .section-header {
@@ -894,8 +901,8 @@ body {
 }
 
 .info-item:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+    transform: translateY(-5px);
+    box-shadow: 0 8px 35px rgba(0, 0, 0, 0.07);
 }
 
 .info-field {
