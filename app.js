@@ -1666,7 +1666,7 @@ function initScrollHandling() {
             bottomNav.style.bottom = '0';
         });
     }
-
+}
 // 全局錯誤處理
 window.addEventListener('error', function(e) {
     console.error('全局錯誤:', e.error);
