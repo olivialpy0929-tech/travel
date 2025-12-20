@@ -647,6 +647,7 @@ function addActivity(e) {
             date: document.getElementById('activity-date').value,
             time: document.getElementById('activity-time').value,
             name: document.getElementById('activity-name').value,
+            type: document.getElementById('activity-type').value,
             location: document.getElementById('activity-location').value,
             notes: document.getElementById('activity-notes').value
         };
@@ -832,6 +833,7 @@ function editActivity(id) {
     document.getElementById('activity-date').value = activity.date;
     document.getElementById('activity-time').value = activity.time;
     document.getElementById('activity-name').value = activity.name;
+    document.getElementById('activity-type').value = activity.type;
     document.getElementById('activity-location').value = activity.location;
     document.getElementById('activity-notes').value = activity.notes || '';
     
