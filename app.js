@@ -1,4 +1,17 @@
 // 應用程序狀態
+// At the top of app.js, near your `state` object
+
+function getActivityTypeDetails(type) {
+    const types = {
+        'food': { icon: 'fas fa-utensils', color: '#f59e0b' }, // Amber
+        'shopping': { icon: 'fas fa-shopping-bag', color: '#ec4899' }, // Pink
+        'sightseeing': { icon: 'fas fa-landmark', color: '#8b5cf6' }, // Violet
+        'travel': { icon: 'fas fa-plane-departure', color: '#3b82f6' }, // Blue
+        'accommodation': { icon: 'fas fa-bed', color: '#10b981' }, // Emerald
+        'other': { icon: 'fas fa-star', color: '#64748b' } // Slate
+    };
+    return types[type] || types['other'];
+}
 const state = {
     currentPage: 'home-page',
     itinerary: [],
@@ -1048,25 +1061,30 @@ function renderItinerary() {
             activityItem.setAttribute('data-id', activity.id);
             activityItem.draggable = true;
             
-            activityItem.innerHTML = `
-                <div class="activity-time">${activity.time}</div>
-                <div class="activity-details">
-                    <div class="activity-name">${activity.name}</div>
-                    <div class="activity-location">
-                        <i class="fas fa-map-marker-alt"></i>
-                        <span>${activity.location || '未指定地點'}</span>
-                    </div>
-                    ${activity.notes ? `<div class="activity-notes">${activity.notes}</div>` : ''}
-                </div>
-                <div class="activity-actions">
-                    <button class="btn-icon edit-activity" title="編輯">
-                        <i class="fas fa-edit"></i>
-                    </button>
-                    <button class="btn-icon delete delete-activity" title="刪除">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            `;
+        activityItem.innerHTML = `
+            <div class="activity-timeline-marker">
+              <div class="timeline-dot" style="border-color: ${typeDetails.color}; color: ${typeDetails.color};">
+                <i class="${typeDetails.icon}"></i>
+              </div>
+              <div class="activity-time">${activity.time}</div>
+            </div>
+            <div class="activity-details">
+              <div class="activity-name">${activity.name}</div>
+              <div class="activity-location">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>${activity.location || '未指定地點'}</span>
+              </div>
+              ${activity.notes ? `<div class="activity-notes">${activity.notes}</div>` : ''}
+           </div>
+           <div class="activity-actions">
+             <button class="btn-icon edit-activity" title="編輯">
+                <i class="fas fa-edit"></i>
+             </button>
+             <button class="btn-icon delete delete-activity" title="刪除">
+                <i class="fas fa-trash"></i>
+            </button>
+           </div>
+    `;
             
             // Adding this event listener to the parent is more efficient
             activityList.addEventListener('dragover', handleDragOver);
