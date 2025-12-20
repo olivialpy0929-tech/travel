@@ -1068,7 +1068,10 @@ function renderItinerary() {
 
             const typeDetails = getActivityTypeDetails(activity.type);
             
-        activityItem.innerHTML = `
+        // In app.js, inside the renderItinerary function
+// REPLACE the old activityItem.innerHTML with this:
+
+activityItem.innerHTML = `
     <div class="activity-timeline-marker">
         <div class="timeline-dot" style="border-color: ${typeDetails.color}; color: ${typeDetails.color};">
             <i class="${typeDetails.icon}"></i>
