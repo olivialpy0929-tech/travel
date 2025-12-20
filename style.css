@@ -1194,6 +1194,46 @@ body {
     .day-title {
         font-size: 1.2rem;
     }
+
+    /* =================== NEW COMPACT STYLES FOR MOBILE =================== */
+
+    /* Make the timeline line thinner and closer to the edge */
+    .activity-list::before {
+        left: 5px;
+        width: 2px;
+    }
+
+    /* Reduce the left padding to bring everything closer to the edge */
+    .activity-list {
+        padding-left: 20px;
+        gap: 15px; /* Slightly reduce the gap between cards */
+    }
+
+    /* Reduce the padding and gap inside the activity card itself */
+    .activity-item {
+        padding: 10px 15px; /* Reduce vertical and horizontal padding */
+        gap: 12px;          /* Reduce gap between timeline marker and details */
+        border-radius: 14px;
+    }
+
+    /* Shrink the timeline marker area */
+    .activity-timeline-marker {
+        width: 65px;  /* Reduce width from 75px */
+        left: -35px;  /* Adjust the pull to the left */
+    }
+
+    /* Make the icon and time text slightly smaller */
+    .timeline-dot {
+        width: 16px;
+        height: 16px;
+        font-size: 0.6rem;
+    }
+    .activity-time {
+        font-size: 13px;
+        margin-left: 8px;
+    }
+
+/* ==================================================================== */
     
     .activity-item {
         flex-direction: column;
