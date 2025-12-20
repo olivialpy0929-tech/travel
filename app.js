@@ -1069,29 +1069,35 @@ function renderItinerary() {
             const typeDetails = getActivityTypeDetails(activity.type);
             
         activityItem.innerHTML = `
-            <div class="activity-timeline-marker">
-              <div class="timeline-dot" style="border-color: ${typeDetails.color}; color: ${typeDetails.color};">
-                <i class="${typeDetails.icon}"></i>
-              </div>
-              <div class="activity-time">${activity.time}</div>
-            </div>
-            <div class="activity-details">
-              <div class="activity-name">${activity.name}</div>
-              <div class="activity-location">
+    <div class="activity-timeline-marker">
+        <div class="timeline-dot" style="border-color: ${typeDetails.color}; color: ${typeDetails.color};">
+            <i class="${typeDetails.icon}"></i>
+        </div>
+        <div class="activity-time">${activity.time}</div>
+    </div>
+
+    <!-- THIS IS THE NEW WRAPPER DIV -->
+    <div class="activity-content-wrapper">
+        <div class="activity-details">
+            <div class="activity-name">${activity.name}</div>
+            <div class="activity-location">
                 <i class="fas fa-map-marker-alt"></i>
                 <span>${activity.location || '未指定地點'}</span>
-              </div>
-              ${activity.notes ? `<div class="activity-notes">${activity.notes}</div>` : ''}
-           </div>
-           <div class="activity-actions">
-             <button class="btn-icon edit-activity" title="編輯">
+            </div>
+            ${activity.notes ? `<div class="activity-notes">${activity.notes}</div>` : ''}
+        </div>
+
+        <div class="activity-actions">
+            <button class="btn-icon edit-activity" title="編輯">
                 <i class="fas fa-edit"></i>
-             </button>
-             <button class="btn-icon delete delete-activity" title="刪除">
+            </button>
+            <button class="btn-icon delete delete-activity" title="刪除">
                 <i class="fas fa-trash"></i>
             </button>
-           </div>
-    `;
+        </div>
+    </div>
+    <!-- END OF THE NEW WRAPPER DIV -->
+`;
             
             // Adding this event listener to the parent is more efficient
             activityList.addEventListener('dragover', handleDragOver);
