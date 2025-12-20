@@ -1350,6 +1350,47 @@ body {
 
 /* ====================================================================================== */
 
+/* =================== PASTE THIS AT THE END OF YOUR CSS, BEFORE @media =================== */
+
+/* --- Step 4: Collapsible Day Sections --- */
+
+/* Make the day header clickable */
+.day-header {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.day-header:hover {
+    background-color: #f8f7f5; /* A very slight hover effect */
+}
+
+/* The activity list will be the part that collapses */
+.activity-list {
+    /* ... existing styles ... */
+    max-height: 2000px; /* A large value to allow animation */
+    overflow: hidden;
+    transition: max-height 0.5s ease-in-out, padding-top 0.5s ease-in-out, padding-bottom 0.5s ease-in-out;
+}
+
+/* The "collapsed" state */
+.day-section.is-collapsed .activity-list {
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-top: -25px; /* Hide the margin-bottom from the day-header */
+}
+
+/* Style the day title icon to show open/closed state */
+.day-title .toggle-icon {
+    transition: transform 0.3s ease;
+}
+
+.day-section.is-collapsed .day-title .toggle-icon {
+    transform: rotate(-90deg);
+}
+
+/* ====================================================================================== */
+
 @media (max-width: 480px) {
     body {
         padding: 5px;
