@@ -1072,27 +1072,32 @@ function renderItinerary() {
 // REPLACE the old activityItem.innerHTML with this:
 
 activityItem.innerHTML = `
-    <div class="activity-timeline-marker">
-        <div class="timeline-dot" style="border-color: ${typeDetails.color}; color: ${typeDetails.color};">
-            <i class="${typeDetails.icon}"></i>
-        </div>
-        <div class="activity-time">${activity.time}</div>
+    <div class="activity-time" style="background-color: ${typeDetails.color}1A; color: ${typeDetails.color};">
+        ${activity.time}
     </div>
-    <div class="activity-details">
-        <div class="activity-name">${activity.name}</div>
+
+    <div class="activity-content">
+        <div class="activity-header">
+            <div class="activity-title">
+                <i class="${typeDetails.icon}" style="color: ${typeDetails.color};"></i>
+                <span>${activity.name}</span>
+            </div>
+            <div class="activity-actions">
+                <button class="btn-icon edit-activity" title="編輯">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="btn-icon delete delete-activity" title="刪除">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </div>
+        
         <div class="activity-location">
             <i class="fas fa-map-marker-alt"></i>
             <span>${activity.location || '未指定地點'}</span>
         </div>
+        
         ${activity.notes ? `<div class="activity-notes">${activity.notes}</div>` : ''}
-    </div>
-    <div class="activity-actions">
-        <button class="btn-icon edit-activity" title="編輯">
-            <i class="fas fa-edit"></i>
-        </button>
-        <button class="btn-icon delete delete-activity" title="刪除">
-            <i class="fas fa-trash"></i>
-        </button>
     </div>
 `;
             
