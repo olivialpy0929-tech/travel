@@ -348,94 +348,110 @@ body {
 }
 
 
-/* --- 2. Activity List and Standardized Cards --- */
-
-.activity-list {
-    display: flex;
-    flex-direction: column;
-    gap: 16px; /* Standardized 16px gap between activity cards */
-    padding-left: 0; /* Remove old timeline padding */
-    position: static; /* Reset from timeline styles */
-}
-
-.activity-list::before {
-    display: none; /* Completely remove the old timeline line */
-}
-
+/* --- 1. The Main Activity Card --- */
 .activity-item {
+    position: relative; /* Crucial for positioning the time badge */
     background: #FFFFFF;
-    border-radius: 16px;
-    padding: 16px;
+    border-radius: 18px;
+    padding: 16px 20px 16px 24px; /* Top, Right, Bottom, Left - Tighter padding */
     border: 1px solid rgba(0, 0, 0, 0.04);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
-    display: flex; /* Main layout: flex */
-    gap: 12px;
-    align-items: flex-start; /* Align time pill and content to the top */
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
 }
 
-/* The new time pill (top-left) */
+/* --- 2. The "Hanging" Time Badge --- */
 .activity-time {
-    padding: 5px 10px;
+    position: absolute;
+    top: 16px;
+    left: -12px; /* Pulls it outside the card for the overlap effect */
+    padding: 4px 10px;
     border-radius: 10px;
     font-weight: 600;
     font-size: 13px;
-    flex-shrink: 0; /* Prevent it from shrinking */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    z-index: 2; /* Ensures it sits on top */
 }
 
-/* Wrapper for all content to the right of the time pill */
-.activity-content {
-    flex-grow: 1;
-    min-width: 0; /* Important for flex text wrapping */
-    display: flex;
-    flex-direction: column;
-    gap: 8px; /* Space between header, location, and notes */
-}
+/* --- 3. Internal Card Layout & Alignment --- */
 
-/* Top row inside the card (title + actions) */
-.activity-header {
+/* This is the main content area to the right of the time badge's original position */
+.activity-main-content {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
-    gap: 10px;
+    align-items: flex-start; /* Align details and buttons to the top */
+    gap: 12px;
+    margin-left: 20px; /* Create space for the hanging time badge */
 }
 
-/* Title and Icon */
+/* Wrapper for the text content */
+.activity-details-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 8px; /* Standardized vertical gap */
+    flex-grow: 1; /* Allows it to take up available space */
+    min-width: 0; /* Ensures text wrapping works correctly */
+}
+
+/* --- 4. Strict Text Alignment --- */
+
+/* Common styles for the title and location rows */
+.activity-title,
+.activity-location {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Space between icon and text */
+}
+
+/* Give the icons a fixed width to force text alignment */
+.activity-title i,
+.activity-location i {
+    flex-shrink: 0;
+    width: 16px; /* KEY: This makes all text line up perfectly */
+    text-align: center;
+}
+
+/* Specific text styles */
 .activity-title {
     font-weight: 600;
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     color: #3D352E;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-.activity-title i {
-    font-size: 0.9em;
 }
 
-/* Location with pin icon */
 .activity-location {
-    color: #8b7d7d;
     font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    gap: 6px;
+    color: #8b7d7d;
 }
+
+.activity-location i {
+    color: #A59E97;
+}
+
+/* --- 5. Action Buttons & Final Touches --- */
 
 .activity-actions {
     display: flex;
-    gap: 4px;
+    gap: 6px;
     flex-shrink: 0;
 }
 
 .btn-icon {
-    background: #f1f1f1;
-    border-radius: 8px;
-    width: 30px;
-    height: 30px;
-    font-size: 13px;
+    background: #f4f4f5; /* Slightly softer grey */
+    border: 1px solid #EAE6E1;
+    border-radius: 10px;
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+    color: #71717a;
 }
 .btn-icon:hover {
-    background: #e7e7e7;
+    background: #e4e4e7;
+    color: #3f3f46;
+}
+
+/* Bonus: Fix for the random checkmark on day headers (if still present) */
+.day-title .toggle-icon {
+    font-family: "Font Awesome 6 Free" !important; /* Force the correct font */
+    font-weight: 900;
 }
 
 /* --- 3. Softened Bottom Navigation Active State --- */
