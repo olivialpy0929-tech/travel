@@ -362,53 +362,57 @@ body {
 /* --- 2. The Main Flexbox Layout Wrapper --- */
 .activity-content-wrapper {
     display: flex;
-    justify-content: space-between; /* Pushes details left, actions right */
-    align-items: flex-start; /* Aligns both columns to the top */
-    gap: 12px;
+    justify-content: space-between;   /* 左右推開 */
+    align-items: flex-start;          /* 頂部對齊（允許左邊換行時右邊按鈕保持頂部） */
+    gap: 12px;                        /* 左右間距，取代原本的 margin */
+    width: 100%;
 }
 
 /* --- 3. Left Column (All Details) --- */
 .activity-details-column {
+    flex: 1;                          /* 自動填滿剩餘寬度 */
+    min-width: 0;                     /* 重要！允許內部文字換行不撐爆 */
     display: flex;
     flex-direction: column;
-    gap: 10px; /* Vertical space between header, location, and notes */
-    flex-grow: 1; /* Allows it to take up available space */
-    min-width: 0; /* CRITICAL for graceful text wrapping */
+    gap: 6px;                         /* 標題與地點間距 */
 }
 
 /* --- 4. Header (Time + Title) --- */
 .activity-header {
     display: flex;
-    align-items: center;
-    gap: 10px; /* Space between time pill and title */
+    align-items: center;              /* 垂直置中 */
+    gap: 10px;                        /* 時間、icon、名稱之間的間距 */
+    flex-wrap: wrap;                  /* 手機窄屏時允許換行 */
 }
 
 .activity-time {
+    flex-shrink: 0;                   /* 不被壓縮 */
     padding: 4px 10px;
-    border-radius: 10px;
+    border-radius: 12px;
+    font-size: 14px;
     font-weight: 600;
-    font-size: 13px;
-    flex-shrink: 0; /* Prevents the time from shrinking */
+    min-width: 60px;
+    text-align: center;
 }
 
 .activity-title {
-    font-weight: 600;
-    font-size: 1.05rem;
-    color: #3D352E;
     display: flex;
     align-items: center;
-    gap: 8px; /* Space between icon and text */
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+    flex: 1;
 }
 
 /* --- 5. Location and Notes --- */
 .activity-location {
-    font-size: 0.9rem;
-    color: #8b7d7d;
     display: flex;
     align-items: center;
-    gap: 8px; /* Space between pin icon and text */
-    /* Add margin to align with the text of the title */
-    margin-left: 64px; /* Adjust this value if your time pill width changes */
+    gap: 6px;
+    font-size: 14px;
+    color: #666;
+    margin-top: 4px;
 }
 
 .activity-notes {
@@ -426,25 +430,26 @@ body {
 /* --- 6. Right Column (Action Buttons) --- */
 .activity-actions {
     display: flex;
-    gap: 6px;
-    flex-shrink: 0; /* Prevents buttons from shrinking */
+    gap: 8px;
+    flex-shrink: 0;                   /* 不被壓縮 */
+    align-self: flex-start;           /* 與頂部對齊（可改成 center 讓按鈕垂直置中） */
 }
 
-.btn-icon {
-    background: #f4f4f5;
-    border: 1px solid transparent;
-    border-radius: 10px;
-    width: 34px;
-    height: 34px;
-    font-size: 14px;
-    color: #71717a;
-    transition: all 0.2s ease;
+.activity-actions .btn-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    background: rgba(0,0,0,0.05);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
 }
 
-.btn-icon:hover {
-    background: #e4e4e7;
-    color: #3f3f46;
-    border-color: #ddd;
+.activity-actions .btn-icon:hover {
+    background: rgba(0,0,0,0.1);
 }
 /* Bonus: Fix for the random checkmark on day headers (if still present) */
 .day-title .toggle-icon {
