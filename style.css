@@ -352,115 +352,6 @@ body {
     font-weight: 500;
 }
 
-/* 活動列表 */
-.activity-list {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.activity-item {
-     background: #FFFFFF; /* A clean white or a slightly different off-white like #FAF8F6 */
-    border-radius: 20px; /* A slightly smaller radius can feel more modern */
-    padding: 25px;
-    border: 1px solid #EAE6E1; /* A very subtle border */
-    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.05); /* Soft, diffuse shadow */
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.activity-item:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 35px rgba(0, 0, 0, 0.07);
-}
-
-.activity-item.dragging {
-    opacity: 0.6;
-    transform: rotate(2deg);
-}
-
-/* 活動時間徽章 */
-.activity-time {
-    background: linear-gradient(135deg, rgba(255, 107, 139, 0.12), rgba(255, 150, 170, 0.12));
-    color: #ff6b8b;
-    padding: 6px 10px;
-    border-radius: 12px;
-    font-weight: 600;
-    min-width: 70px;
-    text-align: center;
-    font-size: 13px;
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-/* 活動詳情 */
-.activity-details {
-    flex-grow: 1;
-    min-width: 0; /* Ensures text wrapping works correctly */
-    /* The "padding-top: 5px" property has been REMOVED */
-}
-
-.activity-name {
-    font-weight: 600;
-    font-size: 1.1rem;
-    margin-bottom: 6px;
-    color: #5a4d4d;
-}
-
-.activity-location {
-    color: #8b7d7d;
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-bottom: 8px;
-}
-
-.activity-notes {
-    color: #6d5d5d;
-    font-size: 0.92rem;
-    background: rgba(247, 250, 252, 0.9);
-    padding: 12px;
-    border-radius: 12px;
-    margin-top: 10px;
-    border-left: 3px solid #ff6b8b;
-    backdrop-filter: blur(5px);
-}
-
-/* 活動操作按鈕 */
-.activity-actions {
-    display: flex;
-    gap: 8px;
-    flex-shrink: 0;
-}
-
-.btn-icon {
-    background: transparent; /* No background */
-    border: none;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%; /* Make them circles */
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-    color: #A59E97; /* Use the secondary text color */
-    font-size: 1rem;
-}
-
-.btn-icon:hover {
-    background-color: #EAE6E1; /* A subtle hover effect */
-    color: #3D352E; /* Darken icon on hover */
-    transform: none; /* Remove the rotation/scale effect */
-    box-shadow: none;
-}
-
-.btn-icon.delete:hover {
-    background: linear-gradient(135deg, #ff6b6b, #ff8f8f);
-    transform: scale(1.1) rotate(-5deg);
-    box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
-}
-
 /* 地圖頁面 */
 .map-header {
     display: flex;
@@ -1194,46 +1085,6 @@ body {
     .day-title {
         font-size: 1.2rem;
     }
-
-    /* =================== FINAL POLISHED MOBILE TIMELINE =================== */
-
-    /* Make the entire "day" section more compact */
-    .day-section {
-        padding: 15px;
-    }
-
-    /* Bring the timeline line closer to the edge */
-    .activity-list::before {
-        left: 10px;
-    }
-
-    /* Adjust the list area */
-    .activity-list {
-        padding-left: 25px;
-        gap: 12px;
-    }   
-
-    /* --- THE KEY CHANGES ARE HERE --- */
-
-    /* --- THIS IS THE SECOND KEY CHANGE --- */
-    /* Create a NEW wrapper for the main content and the buttons */
-    .activity-content-wrapper {
-        display: flex;          /* Make it a horizontal flex container */
-        justify-content: space-between; /* Push details left, buttons right */
-        align-items: flex-start; /* Align them to the top */
-        gap: 10px;
-    }
-
-    /* The details (title, location, notes) now live inside the wrapper */
-    .activity-details {
-        flex-grow: 1; /* Allow it to take up available space */
-    }  
-
-    /* The buttons also live inside the wrapper */
-    .activity-actions {
-        flex-shrink: 0; /* Prevent buttons from shrinking */
-        /* Remove align-self and margin-top as they are no longer needed */
-    }
     
     .activity-item {
         flex-direction: column;
@@ -1417,8 +1268,12 @@ body {
 
 /* The activity list will be the part that collapses */
 .activity-list {
-    /* ... existing styles ... */
-    max-height: 2000px; /* A large value to allow animation */
+    position: relative;
+    padding-left: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    max-height: 2000px;
     overflow: hidden;
     transition: max-height 0.5s ease-in-out, padding-top 0.5s ease-in-out, padding-bottom 0.5s ease-in-out;
 }
