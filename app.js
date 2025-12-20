@@ -1038,11 +1038,16 @@ function renderItinerary() {
         dayHeader.className = 'day-header';
         dayHeader.innerHTML = `
             <div class="day-title">
-                <i class="fas fa-calendar-day" style="color: ${state.colors[index % state.colors.length]}"></i>
+                <i class="fas fa-chevron-down toggle-icon" style="color: ${state.colors[index % state.colors.length]}; font-size: 0.9em; width: 1.2em;"></i>
                 <span>第 ${index + 1} 天</span>
             </div>
             <div class="day-date">${formattedDate}</div>
         `;
+
+        // Add this click listener right after setting the innerHTML:
+        dayHeader.addEventListener('click', () => {
+        daySection.classList.toggle('is-collapsed');
+        });
         
         daySection.appendChild(dayHeader);
         
