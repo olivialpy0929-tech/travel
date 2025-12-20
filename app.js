@@ -1604,36 +1604,53 @@ function resetToEmptyState() {
 function updateWeatherAndExchange() {
     console.log('更新天氣和匯率...');
     
+    async function updateExchangeRate() {
+    const exchangeElement = document.getElementById('exchange-rate');
+    if (!exchangeElement) return;
+
     try {
-        // 模擬匯率數據
-        const mockExchangeRate = (4.5 + Math.random() * 0.2 - 0.1).toFixed(2);
-        const exchangeElement = document.getElementById('exchange-rate');
-        if (exchangeElement) {
-            exchangeElement.textContent = `1 港幣 = ${mockExchangeRate} 泰銖`;
+        const response = await fetch('https://api.frankfurter.app/latest?from=HKD&to=THB');
+        if (!response.ok) throw new Error('Network error');
+
+        const data = await response.json();
+        const rate = data.rates.THB;
+
+        if (rate) {
+            exchangeElement.textContent = `1 港幣 = ${rate.toFixed(3)} 泰銖`;
+        } else {
+            exchangeElement.textContent = '匯率載入失敗';
         }
+    } catch (error) {
+        console.error('無法載入匯率:', error);
+        exchangeElement.textContent = '離線模式';
+    }
+}
+
+// 頁面載入時立即更新
+updateExchangeRate();
+
+// 可選：每小時自動更新一次（保持最新）
+setInterval(updateExchangeRate, 3600000); // 1小時 = 3600000 ms
         
-        // 模擬天氣數據
-        const temperatures = [30, 31, 32, 33, 34];
-        const weatherConditions = ['晴朗', '多雲', '陰天', '小雨'];
-        const randomTemp = temperatures[Math.floor(Math.random() * temperatures.length)];
-        const randomWeather = weatherConditions[Math.floor(Math.random() * weatherConditions.length)];
-        
-        const weatherElement = document.getElementById('weather-info');
-        if (weatherElement) {
-            weatherElement.textContent = `曼谷: ${randomTemp}°C, ${randomWeather}`;
-        }
-        
-        // 根據條件更新天氣圖標
-        const weatherIcon = document.querySelector('.widget:nth-child(3) i');
-        if (weatherIcon) {
-            if (randomWeather.includes('雨')) {
-                weatherIcon.className = 'fas fa-cloud-rain';
-            } else if (randomWeather.includes('雲')) {
-                weatherIcon.className = 'fas fa-cloud';
-            } else {
-                weatherIcon.className = 'fas fa-sun';
-            }
-        }
+        async function getBangkokWeather() {
+    try {
+        const url = 'https://api.open-meteo.com/v1/forecast?latitude=13.7563&longitude=100.5018&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,weather_code&timezone=Asia%2FBangkok';
+        const response = await fetch(url);
+        const data = await response.json();
+
+        // Current temperature
+        const currentTemp = data.current.temperature_2m;
+        const currentCode = data.current.weather_code; // Use this for icons
+
+        console.log(`曼谷現在: ${currentTemp}°C`);
+
+        // You can also get daily max/min, etc.
+    } catch (error) {
+        console.error('Weather fetch error:', error);
+    }
+}
+
+getBangkokWeather();
         
         console.log('天氣和匯率更新完成');
     } catch (error) {
