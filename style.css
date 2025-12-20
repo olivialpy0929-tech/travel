@@ -398,7 +398,8 @@ body {
 /* 活動詳情 */
 .activity-details {
     flex-grow: 1;
-    min-width: 0; /* 確保文本不會溢出 */
+    min-width: 0; /* Ensures text wrapping works correctly */
+    /* The "padding-top: 5px" property has been REMOVED */
 }
 
 .activity-name {
@@ -1293,13 +1294,13 @@ body {
 
 /* Redesign the activity item into a "Card" */
 .activity-item {
-    display: flex; /* Use flexbox for alignment */
-    align-items: flex-start; /* Align items to the top */
-    gap: 20px;
-    position: relative; /* Crucial for positioning the timeline dot */
+    display: flex;
+    align-items: center; /* CHANGE: Align items vertically to the center */
+    gap: 15px;           /* TWEAK: Slightly reduce the gap */
+    position: relative;
     background: #FFFFFF;
-    border-radius: 20px;
-    padding: 20px;
+    border-radius: 16px; /* TWEAK: Slightly smaller radius for a sharper look */
+    padding: 12px 20px;  /* CHANGE: Reduce vertical padding significantly */
     border: 1px solid #EAE6E1;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -1313,13 +1314,12 @@ body {
 /* This new container will hold the timeline dot and the activity time */
 .activity-timeline-marker {
     display: flex;
-    flex-direction: column;
-    align-items: center;
+    align-items: center; /* This will center the dot and time horizontally */
     flex-shrink: 0;
-    width: 75px; /* Fixed width for alignment */
+    width: 75px;
     position: relative;
-    left: -48px; /* Pull the marker left to sit on the timeline */
-    top: 5px;
+    left: -48px;
+    /* The "top: 5px;" property has been REMOVED */
 }
 
 /* The dot on the timeline */
@@ -1328,22 +1328,23 @@ body {
     height: 18px;
     border-radius: 50%;
     background-color: #fff;
-    border: 2px solid; /* Border color will be set by JS */
-    z-index: 2; /* Make sure dot is on top of the line */
+    border: 2px solid;
+    z-index: 2;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.7rem; /* Icon size inside the dot */
-    margin-bottom: 8px;
+    font-size: 0.7rem;
+    /* margin-bottom has been REMOVED */
 }
 
 /* Style for the activity time, now under the dot */
 .activity-time {
-    background: none; /* Remove the old background */
-    color: #8b7d7d; /* A softer color */
+    background: none;
+    color: #8b7d7d;
     font-weight: 600;
-    font-size: 13px;
+    font-size: 14px; /* TWEAK: Make it slightly larger and easier to read */
     padding: 0;
+    margin-left: 10px; /* ADD: Create space between the dot and the time */
 }
 
 /* Adjustments for the rest of the card content */
