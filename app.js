@@ -1071,36 +1071,38 @@ function renderItinerary() {
         // In app.js, inside the renderItinerary function
 // REPLACE the old activityItem.innerHTML with this:
 
+// In app.js -> renderItinerary()
+// REPLACE the old innerHTML with this new, final 3-column structure:
+
 activityItem.innerHTML = `
-    <!-- This new wrapper is the key to the main layout -->
-    <div class="activity-content-wrapper">
-        
-        <!-- Left Column: All text details -->
-        <div class="activity-details-column">
-            <div class="activity-header">
-                <span class="activity-time" style="background-color: ${typeDetails.color}20; color: ${typeDetails.color};">${activity.time}</span>
-                <h4 class="activity-title">
-                    <i class="${typeDetails.icon}" style="color: ${typeDetails.color};"></i>
-                    <span>${activity.name}</span>
-                </h4>
-            </div>
-            <div class="activity-location">
-                <i class="fas fa-map-marker-alt"></i>
-                <span>${activity.location || '未指定地點'}</span>
-            </div>
-             ${activity.notes ? `<div class="activity-notes">${activity.notes}</div>` : ''}
-        </div>
+    <!-- Column 1: Time (Fixed Width, Vertically Centered) -->
+    <div class="activity-time-column">
+        <span class="activity-time" style="background-color: ${typeDetails.color}20; color: ${typeDetails.color};">
+            ${activity.time}
+        </span>
+    </div>
 
-        <!-- Right Column: Action Buttons -->
-        <div class="activity-actions">
-            <button class="btn-icon edit-activity" title="編輯">
-                <i class="fas fa-edit"></i>
-            </button>
-            <button class="btn-icon delete delete-activity" title="刪除">
-                <i class="fas fa-trash"></i>
-            </button>
+    <!-- Column 2: Details (Flexible Width, Stacks Vertically) -->
+    <div class="activity-details-column">
+        <h4 class="activity-title">
+            <i class="${typeDetails.icon}" style="color: ${typeDetails.color};"></i>
+            <span>${activity.name}</span>
+        </h4>
+        <div class="activity-location">
+            <i class="fas fa-map-marker-alt"></i>
+            <span>${activity.location || '未指定地點'}</span>
         </div>
+        ${activity.notes ? `<div class="activity-notes">${activity.notes}</div>` : ''}
+    </div>
 
+    <!-- Column 3: Actions (Fixed Width, Top Aligned) -->
+    <div class="activity-actions-column">
+        <button class="btn-icon edit-activity" title="編輯">
+            <i class="fas fa-edit"></i>
+        </button>
+        <button class="btn-icon delete delete-activity" title="刪除">
+            <i class="fas fa-trash"></i>
+        </button>
     </div>
 `;
 
