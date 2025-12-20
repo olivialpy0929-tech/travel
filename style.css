@@ -1195,45 +1195,54 @@ body {
         font-size: 1.2rem;
     }
 
-    /* =================== NEW COMPACT STYLES FOR MOBILE =================== */
+    /* =================== AGGRESSIVE COMPACT STYLES FOR MOBILE TIMELINE =================== */
 
-    /* Make the timeline line thinner and closer to the edge */
+    /* Make the entire "day" section more compact */
+    .day-section {
+        padding: 15px; /* Reduce padding from 20px */
+    }
+
+    /* Bring the timeline line much closer to the edge */
     .activity-list::before {
-        left: 5px;
-        width: 2px;
+        left: 10px; /* Position line */
     }
 
-    /* Reduce the left padding to bring everything closer to the edge */
+    /* Make the overall list area more compact */
     .activity-list {
-        padding-left: 20px;
-        gap: 15px; /* Slightly reduce the gap between cards */
+        padding-left: 25px; /* Reduce space for timeline */
+        gap: 12px;          /* Reduce space between cards */
     }
 
-    /* Reduce the padding and gap inside the activity card itself */
+    /* --- THIS IS THE MOST IMPORTANT PART --- */
+    /* Drastically reduce padding and change structure of the activity card */
     .activity-item {
-        padding: 10px 15px; /* Reduce vertical and horizontal padding */
-        gap: 12px;          /* Reduce gap between timeline marker and details */
-        border-radius: 14px;
+        flex-direction: column; /* STACK the content vertically */
+        align-items: stretch;   /* Make children take full width */
+        gap: 10px;              /* Reduce gap between elements */
+        padding: 12px 15px;     /* Much smaller padding */
     }
 
-    /* Shrink the timeline marker area */
+    /* Reposition the timeline marker and time for the new stacked layout */
     .activity-timeline-marker {
-        width: 65px;  /* Reduce width from 75px */
-        left: -35px;  /* Adjust the pull to the left */
+        width: auto;      /* Let it be as wide as its content */
+        left: -40px;      /* Adjust to sit on the timeline line */
+        top: -1px;        /* Nudge to align perfectly */
+        order: -1;        /* Make sure it's the first item */
+        margin-bottom: 5px; /* Add a little space below it */
     }
 
-    /* Make the icon and time text slightly smaller */
-    .timeline-dot {
-        width: 16px;
-        height: 16px;
-        font-size: 0.6rem;
-    }
-    .activity-time {
-        font-size: 13px;
-        margin-left: 8px;
+    /* Make the main details area take up its own space now */
+    .activity-details {
+        min-width: 100%; /* Take full width */
     }
 
-/* ==================================================================== */
+    /* Put the Edit/Delete buttons on the far right edge */
+    .activity-actions {
+        align-self: flex-end; /* Push to the right */
+        margin-top: 5px;      /* Add a little space above */
+    }
+
+/* ==================================================================================== */
     
     .activity-item {
         flex-direction: column;
