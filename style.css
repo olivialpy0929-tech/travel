@@ -1195,54 +1195,63 @@ body {
         font-size: 1.2rem;
     }
 
-    /* =================== AGGRESSIVE COMPACT STYLES FOR MOBILE TIMELINE =================== */
+    /* =================== FINAL POLISHED MOBILE TIMELINE =================== */
 
     /* Make the entire "day" section more compact */
     .day-section {
-        padding: 15px; /* Reduce padding from 20px */
+        padding: 15px;
     }
 
-    /* Bring the timeline line much closer to the edge */
+    /* Bring the timeline line closer to the edge */
     .activity-list::before {
-        left: 10px; /* Position line */
+        left: 10px;
     }
 
-    /* Make the overall list area more compact */
+    /* Adjust the list area */
     .activity-list {
-        padding-left: 25px; /* Reduce space for timeline */
-        gap: 12px;          /* Reduce space between cards */
-    }
+        padding-left: 25px;
+        gap: 12px;
+    }   
 
-    /* --- THIS IS THE MOST IMPORTANT PART --- */
-    /* Drastically reduce padding and change structure of the activity card */
+    /* --- THE KEY CHANGES ARE HERE --- */
+
+    /* This is the main container for the activity */
     .activity-item {
-        flex-direction: column; /* STACK the content vertically */
-        align-items: stretch;   /* Make children take full width */
-        gap: 10px;              /* Reduce gap between elements */
-        padding: 12px 15px;     /* Much smaller padding */
+        display: flex;         /* Use flexbox */
+        flex-direction: column;/* Stack items vertically */
+        align-items: stretch;  /* Children fill the width */
+        gap: 8px;              /* A small gap between the time and the content */
+        padding: 12px 15px;    /* Compact padding */
     }
 
-    /* Reposition the timeline marker and time for the new stacked layout */
+    /* This is the container for the icon and time */
     .activity-timeline-marker {
-        width: auto;      /* Let it be as wide as its content */
-        left: -40px;      /* Adjust to sit on the timeline line */
-        top: -1px;        /* Nudge to align perfectly */
-        order: -1;        /* Make sure it's the first item */
-        margin-bottom: 5px; /* Add a little space below it */
+        width: auto;
+        position: relative;
+        left: -40px;          /* Pull it left to sit on the timeline */
+        padding-left: 40px;   /* !! THIS IS THE ALIGNMENT TRICK !! Pushes content back to align with text below */
+        order: -1;            /* Ensure it's the first item */
     }
 
-    /* Make the main details area take up its own space now */
+    /* --- THIS IS THE SECOND KEY CHANGE --- */
+    /* Create a NEW wrapper for the main content and the buttons */
+    .activity-content-wrapper {
+        display: flex;          /* Make it a horizontal flex container */
+        justify-content: space-between; /* Push details left, buttons right */
+        align-items: flex-start; /* Align them to the top */
+        gap: 10px;
+    }
+
+    /* The details (title, location, notes) now live inside the wrapper */
     .activity-details {
-        min-width: 100%; /* Take full width */
-    }
+        flex-grow: 1; /* Allow it to take up available space */
+    }  
 
-    /* Put the Edit/Delete buttons on the far right edge */
+    /* The buttons also live inside the wrapper */
     .activity-actions {
-        align-self: flex-end; /* Push to the right */
-        margin-top: 5px;      /* Add a little space above */
+        flex-shrink: 0; /* Prevent buttons from shrinking */
+        /* Remove align-self and margin-top as they are no longer needed */
     }
-
-/* ==================================================================================== */
     
     .activity-item {
         flex-direction: column;
