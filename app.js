@@ -1065,6 +1065,8 @@ function renderItinerary() {
             activityItem.className = 'activity-item';
             activityItem.setAttribute('data-id', activity.id);
             activityItem.draggable = true;
+
+            const typeDetails = getActivityTypeDetails(activity.type);
             
         activityItem.innerHTML = `
             <div class="activity-timeline-marker">
