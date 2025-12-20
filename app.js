@@ -1072,22 +1072,26 @@ function renderItinerary() {
 // REPLACE the old activityItem.innerHTML with this:
 
 activityItem.innerHTML = `
-    <div class="activity-time" style="background-color: ${typeDetails.color}20; color: ${typeDetails.color};">
-        ${activity.time}
-    </div>
-
-    <div class="activity-main-content">
-        <div class="activity-details-wrapper">
-            <div class="activity-title">
-                <i class="${typeDetails.icon}"></i>
-                <span>${activity.name}</span>
+    <!-- This new wrapper is the key to the main layout -->
+    <div class="activity-content-wrapper">
+        
+        <!-- Left Column: All text details -->
+        <div class="activity-details-column">
+            <div class="activity-header">
+                <span class="activity-time" style="background-color: ${typeDetails.color}20; color: ${typeDetails.color};">${activity.time}</span>
+                <h4 class="activity-title">
+                    <i class="${typeDetails.icon}" style="color: ${typeDetails.color};"></i>
+                    <span>${activity.name}</span>
+                </h4>
             </div>
             <div class="activity-location">
                 <i class="fas fa-map-marker-alt"></i>
                 <span>${activity.location || '未指定地點'}</span>
             </div>
-            ${activity.notes ? `<div class="activity-notes">${activity.notes}</div>` : ''}
+             ${activity.notes ? `<div class="activity-notes">${activity.notes}</div>` : ''}
         </div>
+
+        <!-- Right Column: Action Buttons -->
         <div class="activity-actions">
             <button class="btn-icon edit-activity" title="編輯">
                 <i class="fas fa-edit"></i>
@@ -1096,6 +1100,7 @@ activityItem.innerHTML = `
                 <i class="fas fa-trash"></i>
             </button>
         </div>
+
     </div>
 `;
 
