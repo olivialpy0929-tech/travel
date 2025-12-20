@@ -1215,24 +1215,6 @@ body {
 
     /* --- THE KEY CHANGES ARE HERE --- */
 
-    /* This is the main container for the activity */
-    .activity-item {
-        display: flex;         /* Use flexbox */
-        flex-direction: column;/* Stack items vertically */
-        align-items: stretch;  /* Children fill the width */
-        gap: 8px;              /* A small gap between the time and the content */
-        padding: 12px 15px;    /* Compact padding */
-    }
-
-    /* This is the container for the icon and time */
-    .activity-timeline-marker {
-        width: auto;
-        position: relative;
-        left: -40px;          /* Pull it left to sit on the timeline */
-        padding-left: 40px;   /* !! THIS IS THE ALIGNMENT TRICK !! Pushes content back to align with text below */
-        order: -1;            /* Ensure it's the first item */
-    }
-
     /* --- THIS IS THE SECOND KEY CHANGE --- */
     /* Create a NEW wrapper for the main content and the buttons */
     .activity-content-wrapper {
@@ -1359,28 +1341,28 @@ body {
 
 .activity-item {
     display: flex;
-    align-items: center;  /* KEY: This vertically centers the left and right columns */
-    gap: 15px;
+    align-items: center;
     position: relative;
     background: #FFFFFF;
     border-radius: 16px;
-    padding: 15px 20px;   /* A balanced padding for both mobile and desktop */
+    padding: 15px;
     border: 1px solid #EAE6E1;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
 }
 
-/* The left column: timeline marker (icon + time) */
+/* The left column: icon + time (NOW POSITIONED CORRECTLY) */
 .activity-timeline-marker {
     display: flex;
-    flex-direction: column; /* Stack the icon and time vertically */
-    align-items: center;    /* Center them horizontally */
+    flex-direction: column;
+    align-items: center;
     flex-shrink: 0;
-    width: 60px;
-    position: relative;
-    left: -40px;
+    width: auto;
+    position: absolute; /* This is the key change */
+    left: -22px;      /* This positions it on the timeline line */
+    z-index: 1;
 }
 
-/* The dot/icon for the timeline */
+/* The colored dot/icon */
 .timeline-dot {
     width: 18px;
     height: 18px;
@@ -1392,29 +1374,29 @@ body {
     align-items: center;
     justify-content: center;
     font-size: 0.7rem;
-    margin-bottom: 5px; /* Space between icon and time */
+    margin-bottom: 5px;
 }
 
-/* The time text */
+/* The time text below the icon */
 .activity-time {
     color: #8b7d7d;
     font-weight: 600;
     font-size: 13px;
-    background: none;
-    padding: 0;
 }
 
-/* The middle column: activity details (name, location) */
+/* The middle column: name, location, notes */
 .activity-details {
-    flex-grow: 1; /* This makes it take up all available space */
+    flex-grow: 1; /* Allows it to take up all available space */
     min-width: 0;
+    padding-left: 5px; /* Adds a tiny bit of space away from the marker */
 }
 
-/* The right column: action buttons */
+/* The right column: edit/delete buttons */
 .activity-actions {
-    flex-shrink: 0; /* Prevent buttons from shrinking */
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0; /* Prevents buttons from shrinking */
 }
-
 /* ========================================================================= */
 
 /* ====================================================================================== */
