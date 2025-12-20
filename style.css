@@ -331,7 +331,6 @@ body {
     align-items: center;
     margin-bottom: 25px;
     padding-bottom: 20px;
-    border-bottom: 2px dashed rgba(255, 107, 139, 0.15);
 }
 
 .day-title {
@@ -1175,14 +1174,16 @@ body {
 .activity-list::before {
     content: '';
     position: absolute;
-    top: 20px;
-    bottom: 20px;
-    left: 8px; /* Position the line */
+    left: 8px; /* Position of the line */
+    top: 0;    /* Start from the very top */
+    bottom: 0; /* Go to the very bottom */
     width: 2px;
-    background-color: #EAE6E1; /* A soft, subtle line color */
-    z-index: 1;
+    /* This creates a dashed line using a background gradient */
+    background-image: linear-gradient(to bottom, #EAE6E1 60%, transparent 40%);
+    background-size: 2px 10px; /* Adjusts the dash and gap size */
+    background-repeat: repeat-y;
+    z-index: 1; /* Make sure it's behind the cards and markers */
 }
-
 /* Redesign the activity item into a "Card" */
 
 .activity-item:hover {
@@ -1199,6 +1200,7 @@ body {
     padding: 15px;
     border: 1px solid #EAE6E1;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+    z-index: 2;
 }
 
 /* The left column: icon + time (NOW POSITIONED CORRECTLY) */
@@ -1210,7 +1212,7 @@ body {
     width: auto;
     position: absolute; /* This is the key change */
     left: -22px;      /* This positions it on the timeline line */
-    z-index: 1;
+    z-index: 3;
 }
 
 /* The colored dot/icon */
