@@ -300,41 +300,28 @@ body {
 .itinerary-container {
     display: flex;
     flex-direction: column;
-    gap: 40px; /* Increase from 25px */
+    gap: 24px; /* Standardized 24px gap between day sections */
 }
 
-/* Example for activity items within a day */
-.activity-list {
-    display: flex;
-    flex-direction: column;
-    gap: 20px; /* Increase from 16px */
-}
-
-/* 天數區塊 */
 .day-section {
-    background: #FFFFFF; /* A clean white or a slightly different off-white like #FAF8F6 */
-    border-radius: 20px; /* A slightly smaller radius can feel more modern */
-    padding: 25px;
-    border: 1px solid #EAE6E1; /* A very subtle border */
-    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.05); /* Soft, diffuse shadow */
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.day-section:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 35px rgba(0, 0, 0, 0.07);
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 20px;
+    padding: 20px;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.07);
+    backdrop-filter: blur(10px);
 }
 
 .day-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 25px;
-    padding-bottom: 20px;
+    margin-bottom: 20px; /* Space between header and first activity */
+    cursor: pointer;
 }
 
 .day-title {
-    font-size: 1.4rem;
+    font-size: 1.3rem;
     color: #5a4d4d;
     display: flex;
     align-items: center;
@@ -342,13 +329,126 @@ body {
     font-weight: 600;
 }
 
+.day-title .toggle-icon {
+    transition: transform 0.3s ease;
+    color: #A59E97; /* Soft grey for the chevron */
+}
+
+.day-section.is-collapsed .day-title .toggle-icon {
+    transform: rotate(-90deg);
+}
+
 .day-date {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     color: #8b7d7d;
-    background: rgba(255, 107, 139, 0.1);
-    padding: 8px 16px;
-    border-radius: 20px;
+    background: rgba(255, 107, 139, 0.08); /* Consistent soft pastel pink */
+    padding: 8px 14px;
+    border-radius: 16px;
     font-weight: 500;
+}
+
+
+/* --- 2. Activity List and Standardized Cards --- */
+
+.activity-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px; /* Standardized 16px gap between activity cards */
+    padding-left: 0; /* Remove old timeline padding */
+    position: static; /* Reset from timeline styles */
+}
+
+.activity-list::before {
+    display: none; /* Completely remove the old timeline line */
+}
+
+.activity-item {
+    background: #FFFFFF;
+    border-radius: 16px;
+    padding: 16px;
+    border: 1px solid rgba(0, 0, 0, 0.04);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+    display: flex; /* Main layout: flex */
+    gap: 12px;
+    align-items: flex-start; /* Align time pill and content to the top */
+}
+
+/* The new time pill (top-left) */
+.activity-time {
+    padding: 5px 10px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 13px;
+    flex-shrink: 0; /* Prevent it from shrinking */
+}
+
+/* Wrapper for all content to the right of the time pill */
+.activity-content {
+    flex-grow: 1;
+    min-width: 0; /* Important for flex text wrapping */
+    display: flex;
+    flex-direction: column;
+    gap: 8px; /* Space between header, location, and notes */
+}
+
+/* Top row inside the card (title + actions) */
+.activity-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+/* Title and Icon */
+.activity-title {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: #3D352E;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.activity-title i {
+    font-size: 0.9em;
+}
+
+/* Location with pin icon */
+.activity-location {
+    color: #8b7d7d;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.activity-actions {
+    display: flex;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.btn-icon {
+    background: #f1f1f1;
+    border-radius: 8px;
+    width: 30px;
+    height: 30px;
+    font-size: 13px;
+}
+.btn-icon:hover {
+    background: #e7e7e7;
+}
+
+/* --- 3. Softened Bottom Navigation Active State --- */
+
+.nav-btn.active {
+    /* REMOVE OLD STYLES: background, color, box-shadow */
+    background: rgba(255, 107, 139, 0.1); /* Very light pastel pink */
+    color: #d6336c; /* A deeper, more sophisticated pink for text/icon */
+    box-shadow: none; /* Remove the shadow */
+}
+
+.nav-btn.active i {
+    transform: none; /* Remove the scaling effect */
 }
 
 /* 地圖頁面 */
