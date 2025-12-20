@@ -1351,36 +1351,36 @@ body {
 }
 
 /* Redesign the activity item into a "Card" */
-.activity-item {
-    display: flex;
-    align-items: center; /* CHANGE: Align items vertically to the center */
-    gap: 15px;           /* TWEAK: Slightly reduce the gap */
-    position: relative;
-    background: #FFFFFF;
-    border-radius: 16px; /* TWEAK: Slightly smaller radius for a sharper look */
-    padding: 12px 20px;  /* CHANGE: Reduce vertical padding significantly */
-    border: 1px solid #EAE6E1;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
 
 .activity-item:hover {
     transform: translateY(-4px);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.07);
 }
 
-/* This new container will hold the timeline dot and the activity time */
-.activity-timeline-marker {
+.activity-item {
     display: flex;
-    align-items: center; /* This will center the dot and time horizontally */
-    flex-shrink: 0;
-    width: 75px;
+    align-items: center;  /* KEY: This vertically centers the left and right columns */
+    gap: 15px;
     position: relative;
-    left: -48px;
-    /* The "top: 5px;" property has been REMOVED */
+    background: #FFFFFF;
+    border-radius: 16px;
+    padding: 15px 20px;   /* A balanced padding for both mobile and desktop */
+    border: 1px solid #EAE6E1;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
 }
 
-/* The dot on the timeline */
+/* The left column: timeline marker (icon + time) */
+.activity-timeline-marker {
+    display: flex;
+    flex-direction: column; /* Stack the icon and time vertically */
+    align-items: center;    /* Center them horizontally */
+    flex-shrink: 0;
+    width: 60px;
+    position: relative;
+    left: -40px;
+}
+
+/* The dot/icon for the timeline */
 .timeline-dot {
     width: 18px;
     height: 18px;
@@ -1392,28 +1392,30 @@ body {
     align-items: center;
     justify-content: center;
     font-size: 0.7rem;
-    /* margin-bottom has been REMOVED */
+    margin-bottom: 5px; /* Space between icon and time */
 }
 
-/* Style for the activity time, now under the dot */
+/* The time text */
 .activity-time {
-    background: none;
     color: #8b7d7d;
     font-weight: 600;
-    font-size: 14px; /* TWEAK: Make it slightly larger and easier to read */
+    font-size: 13px;
+    background: none;
     padding: 0;
-    margin-left: 10px; /* ADD: Create space between the dot and the time */
 }
 
-/* Adjustments for the rest of the card content */
+/* The middle column: activity details (name, location) */
 .activity-details {
-    padding-top: 5px; /* Align details with the time text */
+    flex-grow: 1; /* This makes it take up all available space */
+    min-width: 0;
 }
 
+/* The right column: action buttons */
 .activity-actions {
-    margin-left: auto; /* Push edit/delete buttons to the far right */
-    padding-top: 5px;
+    flex-shrink: 0; /* Prevent buttons from shrinking */
 }
+
+/* ========================================================================= */
 
 /* ====================================================================================== */
 
