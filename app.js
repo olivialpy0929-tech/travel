@@ -1072,34 +1072,33 @@ function renderItinerary() {
 // REPLACE the old activityItem.innerHTML with this:
 
 activityItem.innerHTML = `
-    <div class="activity-time" style="background-color: ${typeDetails.color}1A; color: ${typeDetails.color};">
+    <div class="activity-time" style="background-color: ${typeDetails.color}20; color: ${typeDetails.color};">
         ${activity.time}
     </div>
 
-    <div class="activity-content">
-        <div class="activity-header">
+    <div class="activity-main-content">
+        <div class="activity-details-wrapper">
             <div class="activity-title">
-                <i class="${typeDetails.icon}" style="color: ${typeDetails.color};"></i>
+                <i class="${typeDetails.icon}"></i>
                 <span>${activity.name}</span>
             </div>
-            <div class="activity-actions">
-                <button class="btn-icon edit-activity" title="編輯">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button class="btn-icon delete delete-activity" title="刪除">
-                    <i class="fas fa-trash"></i>
-                </button>
+            <div class="activity-location">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>${activity.location || '未指定地點'}</span>
             </div>
+            ${activity.notes ? `<div class="activity-notes">${activity.notes}</div>` : ''}
         </div>
-        
-        <div class="activity-location">
-            <i class="fas fa-map-marker-alt"></i>
-            <span>${activity.location || '未指定地點'}</span>
+        <div class="activity-actions">
+            <button class="btn-icon edit-activity" title="編輯">
+                <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn-icon delete delete-activity" title="刪除">
+                <i class="fas fa-trash"></i>
+            </button>
         </div>
-        
-        ${activity.notes ? `<div class="activity-notes">${activity.notes}</div>` : ''}
     </div>
 `;
+
             
             // Adding this event listener to the parent is more efficient
             activityList.addEventListener('dragover', handleDragOver);
