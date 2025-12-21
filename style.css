@@ -1,44 +1,31 @@
-/* 重置和基礎樣式 */
+/* =================================
+   1. Reset, Fonts & Base Styles
+   ================================= */
 :root {
     --font-display: 'Lora', serif;
     --font-body: 'Poppins', sans-serif;
 }
 
-body {
-    font-family: var(--font-body);
-    /* ... */
-}
-
-/* Apply the display font to your main titles */
-#trip-title,
-.day-title span { /* For "第 1 天" */
-    font-family: var(--font-display);
-    font-weight: 600;
-}
-
-#trip-title {
-    font-size: 2.8rem; /* Make it bigger and more prominent */
-}
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Comfortaa', 'Poppins', 'Segoe UI', 'Microsoft JhengHei', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-/* --- Replace with this --- */
 body {
-    background: #FAF9F6; /* A beautiful, warm off-white */;
+    font-family: var(--font-body), 'Segoe UI', 'Microsoft JhengHei', Tahoma, Geneva, Verdana, sans-serif;
+    background: #FAF9F6;
     min-height: 100vh;
     padding: 10px;
-    padding-bottom: 100px; /* Add space for the fixed bottom nav */
-    color: #3D352E;
-    color: #A59E97; /* A soft gray for subtitles, dates, etc. */
+    padding-bottom: 100px; /* Space for fixed bottom nav */
+    color: #3D352E; /* Primary text color */
     position: relative;
     overflow-x: hidden;
 }
 
-/* 手繪風背景裝飾 */
+/* =================================
+   2. Background Decorations
+   ================================= */
 .bg-decorations {
     position: fixed;
     top: 0;
@@ -52,36 +39,16 @@ body {
 .doodle {
     position: absolute;
     opacity: 0.08;
-    font-size: 1.8rem;
     animation: float 25s infinite ease-in-out;
 }
 
-.doodle.wave {
-    top: 10%;
-    right: 5%;
-    color: #4a6cf7;
-    animation-delay: 0s;
-}
-
-.doodle.leaf {
-    bottom: 20%;
-    left: 8%;
-    color: #38a169;
-    animation-delay: 5s;
-}
-
-.doodle.dot1, .doodle.dot2, .doodle.dot3 {
-    width: 8px;
-    height: 8px;
-    background: #ff6b8b;
-    border-radius: 50%;
-    animation: float 15s infinite ease-in-out;
-}
-
+/* Specific doodle styles */
+.doodle.wave { top: 10%; right: 5%; color: #4a6cf7; animation-delay: 0s; }
+.doodle.leaf { bottom: 20%; left: 8%; color: #38a169; animation-delay: 5s; }
+.doodle.dot1, .doodle.dot2, .doodle.dot3 { width: 8px; height: 8px; background: #ff6b8b; border-radius: 50%; animation: float 15s infinite ease-in-out; }
 .doodle.dot1 { top: 30%; left: 15%; animation-delay: 2s; }
 .doodle.dot2 { top: 60%; right: 20%; animation-delay: 8s; }
 .doodle.dot3 { bottom: 40%; right: 10%; animation-delay: 12s; }
-
 .doodle.temple { top: 15%; left: 10%; animation-delay: 10s; }
 .doodle.boat { bottom: 10%; right: 15%; animation-delay: 15s; }
 
@@ -90,27 +57,28 @@ body {
     50% { transform: translateY(-20px) rotate(5deg); }
 }
 
-/* 應用容器 */
-/* 替換現有的 .app-container 樣式 */
+/* =================================
+   3. Main Layout & Structure
+   ================================= */
 .app-container {
     max-width: 1200px;
-    margin: 0 auto;
+    margin: 10px auto 0;
     background: rgba(255, 255, 255, 0.7);
     border-radius: 28px;
-    box-shadow: 
-        0 20px 40px rgba(0, 0, 0, 0.08),
-        inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
     overflow: hidden;
     backdrop-filter: blur(15px);
     border: 1px solid rgba(255, 255, 255, 0.3);
     position: relative;
     z-index: 1;
-    padding-bottom: 20px; /* Reset padding to a normal value */
-    min-height: calc(100vh - 40px); /* Adjust height slightly */
-    margin-top: 10px;
+    min-height: calc(100vh - 40px);
 }
 
-/* 頁面顯示 */
+.main-content {
+    padding: 25px;
+    min-height: calc(100vh - 200px);
+}
+
 .page {
     display: none;
 }
@@ -125,7 +93,38 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* 標頭樣式 */
+/* Shared section header style */
+.section-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.section-page-header h2 {
+    color: #5a4d4d;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    font-size: 1.5rem;
+    font-family: var(--font-display);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #8b7d7d;
+}
+.empty-state i { margin-bottom: 20px; color: #d8e2ff; }
+.empty-state.small { padding: 30px 20px; }
+.empty-state.small i { font-size: 2rem; margin-bottom: 10px; }
+
+/* =================================
+   4. Header, Title & Widgets
+   ================================= */
 .header {
     padding: 20px 25px 15px;
     background: rgba(255, 255, 255, 0.85);
@@ -138,22 +137,24 @@ body {
 }
 
 .title-container {
-    text-align: center;
+    display: flex; /* Changed from text-align */
+    justify-content: center; /* Center items horizontally */
+    align-items: center; /* Center items vertically */
+    gap: 10px;
 }
 
 #trip-title {
+    font-family: var(--font-display);
+    font-weight: 600;
     font-size: 2.2rem;
     color: #5a4d4d;
     background: transparent;
     border: none;
     outline: none;
     text-align: center;
-    padding: 8px 20px;
+    padding: 8px 15px;
     border-radius: 20px;
     transition: all 0.3s ease;
-    max-width: 500px;
-    margin: 0 auto;
-    font-weight: 600;
     letter-spacing: -0.5px;
 }
 
@@ -172,7 +173,20 @@ body {
     50% { transform: translateY(-3px); }
 }
 
-/* 小工具行 */
+#share-trip-btn {
+    font-size: 1.2rem; /* Made slightly larger to match title */
+    color: #8b7d7d;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 5px;
+    transition: color 0.3s ease;
+}
+#share-trip-btn:hover {
+    color: #ff6b8b;
+}
+
+/* Widgets */
 .widget-row {
     display: flex;
     justify-content: space-between;
@@ -186,9 +200,7 @@ body {
     background: rgba(255, 255, 255, 0.9);
     padding: 12px 16px;
     border-radius: 18px;
-    box-shadow: 
-        0 4px 12px rgba(0, 0, 0, 0.06),
-        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.8);
     display: flex;
     align-items: center;
     gap: 10px;
@@ -211,54 +223,10 @@ body {
     min-width: 20px;
 }
 
-/* 主要內容 */
-/* 確保主內容區域有足夠高度 */
-.main-content {
-    padding: 25px;
-    min-height: calc(100vh - 200px);
-}
-
-/* 空狀態 */
-.empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    color: #8b7d7d;
-}
-
-.empty-state i {
-    margin-bottom: 20px;
-    color: #d8e2ff;
-}
-
-.empty-state.small {
-    padding: 30px 20px;
-}
-
-.empty-state.small i {
-    font-size: 2rem;
-    margin-bottom: 10px;
-}
-
-/* 行程頁面 */
-.itinerary-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 25px;
-    flex-wrap: wrap;
-    gap: 15px;
-}
-
-.itinerary-header h2 {
-    color: #5a4d4d;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 600;
-    font-size: 1.5rem;
-}
-
-.btn-primary, .btn-secondary {
+/* =================================
+   5. Buttons & Form Controls
+   ================================= */
+.btn-primary, .btn-secondary, .btn {
     padding: 14px 28px;
     border-radius: 18px;
     border: none;
@@ -266,6 +234,7 @@ body {
     cursor: pointer;
     display: flex;
     align-items: center;
+    justify-content: center;
     gap: 10px;
     transition: all 0.3s ease;
     font-size: 1rem;
@@ -297,10 +266,34 @@ body {
     transform: translateY(-3px);
 }
 
+.btn-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    background: rgba(0,0,0,0.05);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    color: #6d5d5d;
+    transition: all 0.2s ease;
+}
+
+.btn-icon:hover {
+    background: rgba(0,0,0,0.1);
+    color: #3D352E;
+}
+
+
+/* =================================
+   6. Itinerary Page & Timeline
+   ================================= */
 .itinerary-container {
     display: flex;
     flex-direction: column;
-    gap: 24px; /* Standardized 24px gap between day sections */
+    gap: 24px;
 }
 
 .day-section {
@@ -316,9 +309,11 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px; /* Space between header and first activity */
+    margin-bottom: 25px;
     cursor: pointer;
+    transition: background-color 0.2s ease;
 }
+.day-header:hover { background-color: rgba(0,0,0,0.02); }
 
 .day-title {
     font-size: 1.3rem;
@@ -329,90 +324,143 @@ body {
     font-weight: 600;
 }
 
-.day-title .toggle-icon {
-    transition: transform 0.3s ease;
-    color: #A59E97; /* Soft grey for the chevron */
+.day-title span {
+    font-family: var(--font-display);
+    font-weight: 600;
 }
 
-.day-section.is-collapsed .day-title .toggle-icon {
-    transform: rotate(-90deg);
+.day-title .toggle-icon {
+    transition: transform 0.3s ease;
+    color: #A59E97;
+    font-family: "Font Awesome 6 Free" !important;
+    font-weight: 900;
 }
+.day-section.is-collapsed .day-title .toggle-icon { transform: rotate(-90deg); }
+
 
 .day-date {
     font-size: 0.9rem;
     color: #8b7d7d;
-    background: rgba(255, 107, 139, 0.08); /* Consistent soft pastel pink */
+    background: rgba(255, 107, 139, 0.08);
     padding: 8px 14px;
     border-radius: 16px;
     font-weight: 500;
 }
 
-
-/* --- 1. The Main Activity Card Container --- */
-.activity-item {
-    background: #FFFFFF;
-    border-radius: 18px;
-    /* Strict, consistent padding on all sides */
-    padding: 16px;
-    border: 1px solid rgba(0, 0, 0, 0.05);
-    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.06);
-    overflow: hidden; /* Prevents any strange overflows */
-}
-
-/* --- 2. The Main Flexbox Layout Wrapper --- */
-.activity-content-wrapper {
-    display: flex;
-    justify-content: space-between;   /* 左右推開 */
-    align-items: flex-start;          /* 頂部對齊（允許左邊換行時右邊按鈕保持頂部） */
-    gap: 12px;                        /* 左右間距，取代原本的 margin */
-    width: 100%;
-}
-
-/* --- 3. Left Column (All Details) --- */
-.activity-details-column {
-    flex: 1;                          /* 自動填滿剩餘寬度 */
-    min-width: 0;                     /* 重要！允許內部文字換行不撐爆 */
+/* Activity List (Timeline Container) */
+.activity-list {
+    position: relative;
+    padding-left: 30px;
     display: flex;
     flex-direction: column;
-    gap: 6px;                         /* 標題與地點間距 */
+    gap: 25px;
+    max-height: 2000px; /* For collapse animation */
+    overflow: hidden;
+    transition: max-height 0.5s ease-in-out, padding-top 0.5s ease-in-out, padding-bottom 0.5s ease-in-out, margin-top 0.5s ease-in-out;
 }
 
-/* --- 4. Header (Time + Title) --- */
+/* Collapsed State */
+.day-section.is-collapsed .activity-list {
+    max-height: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-top: -25px; /* Hide the margin-bottom from day-header */
+}
+
+/* Vertical Timeline Line */
+.activity-list::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 10px;
+    bottom: 10px;
+    width: 2px;
+    background-image: linear-gradient(to bottom, #EAE6E1 60%, transparent 40%);
+    background-size: 2px 10px;
+    background-repeat: repeat-y;
+    z-index: 1;
+}
+
+/* Activity Item Card */
+.activity-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+    position: relative;
+    background: #FFFFFF;
+    border-radius: 16px;
+    padding: 15px;
+    border: 1px solid #EAE6E1;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    z-index: 2;
+}
+
+.activity-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.07);
+}
+
+/* Marker on the timeline */
+.activity-timeline-marker {
+    position: absolute;
+    left: -22px;
+    top: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background-color: #fff;
+    border: 2px solid; /* color set in JS */
+    z-index: 3;
+    font-size: 0.7rem;
+}
+.activity-timeline-marker i {
+    font-size: 10px;
+}
+
+/* Main Content Wrapper */
+.activity-content-wrapper {
+    flex-grow: 1;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.activity-details-column {
+    flex: 1;
+    min-width: 0;
+}
+
 .activity-header {
     display: flex;
-    align-items: center;              /* 垂直置中 */
-    gap: 10px;                        /* 時間、icon、名稱之間的間距 */
-    flex-wrap: wrap;                  /* 手機窄屏時允許換行 */
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
 }
 
 .activity-time {
-    flex-shrink: 0;                   /* 不被壓縮 */
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 14px;
+    color: #8b7d7d;
     font-weight: 600;
-    min-width: 60px;
-    text-align: center;
+    font-size: 14px;
 }
 
 .activity-title {
-    display: flex;
-    align-items: center;
-    gap: 8px;
     font-size: 16px;
     font-weight: 600;
     margin: 0;
-    flex: 1;
 }
 
-/* --- 5. Location and Notes --- */
 .activity-location {
     display: flex;
     align-items: center;
     gap: 6px;
     font-size: 14px;
     color: #666;
-    margin-top: 4px;
+    margin-bottom: 8px;
 }
 
 .activity-notes {
@@ -423,71 +471,19 @@ body {
     border-radius: 10px;
     border-left: 3px solid #EAE6E1;
     margin-top: 4px;
-    /* Aligns with location text */
-    margin-left: 64px; /* Adjust this value if your time pill width changes */
 }
+.activity-notes a { color: #ff6b8b; text-decoration: none; }
+.activity-notes a:hover { text-decoration: underline; }
 
-/* --- 6. Right Column (Action Buttons) --- */
 .activity-actions {
     display: flex;
     gap: 8px;
-    flex-shrink: 0;                   /* 不被壓縮 */
-    align-self: flex-start;           /* 與頂部對齊（可改成 center 讓按鈕垂直置中） */
+    flex-shrink: 0;
 }
 
-.activity-actions .btn-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 12px;
-    background: rgba(0,0,0,0.05);
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 16px;
-}
-
-.activity-actions .btn-icon:hover {
-    background: rgba(0,0,0,0.1);
-}
-/* Bonus: Fix for the random checkmark on day headers (if still present) */
-.day-title .toggle-icon {
-    font-family: "Font Awesome 6 Free" !important; /* Force the correct font */
-    font-weight: 900;
-}
-
-/* --- 3. Softened Bottom Navigation Active State --- */
-
-.nav-btn.active {
-    /* REMOVE OLD STYLES: background, color, box-shadow */
-    background: rgba(255, 107, 139, 0.1); /* Very light pastel pink */
-    color: #d6336c; /* A deeper, more sophisticated pink for text/icon */
-    box-shadow: none; /* Remove the shadow */
-}
-
-.nav-btn.active i {
-    transform: none; /* Remove the scaling effect */
-}
-
-/* 地圖頁面 */
-.map-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 25px;
-    flex-wrap: wrap;
-    gap: 15px;
-}
-
-.map-header h2 {
-    color: #5a4d4d;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 600;
-}
-
+/* =================================
+   7. Map Page
+   ================================= */
 .map-controls {
     display: flex;
     align-items: center;
@@ -509,454 +505,91 @@ body {
     backdrop-filter: blur(10px);
 }
 
-#map-container {
-    display: flex;
-    gap: 20px;
-    height: 500px;
-}
+#map-container { display: flex; gap: 20px; height: 500px; }
+#map { flex: 3; border-radius: 22px; overflow: hidden; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08); border: 1px solid rgba(255, 255, 255, 0.4); min-height: 400px; position: relative; }
+.map-loading { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(255, 255, 255, 0.9); color: #8b7d7d; }
+.map-loading i { margin-bottom: 15px; }
 
-#map {
-    flex: 3;
-    border-radius: 22px;
-    overflow: hidden;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    min-height: 400px;
-    position: relative;
-}
+.map-sidebar { flex: 1; background: rgba(255, 255, 255, 0.85); border-radius: 22px; padding: 25px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06); border: 1px solid rgba(255, 255, 255, 0.3); overflow-y: auto; backdrop-filter: blur(10px); }
+.map-sidebar h3 { margin-bottom: 20px; color: #5a4d4d; display: flex; align-items: center; gap: 10px; font-weight: 600; }
+.map-sidebar h4 { margin-top: 20px; margin-bottom: 12px; color: #6d5d5d; font-weight: 500; }
 
-.map-loading {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background: rgba(255, 255, 255, 0.9);
-    color: #8b7d7d;
-}
+#locations-list { list-style: none; }
+#locations-list li { padding: 14px; background: rgba(255, 255, 255, 0.9); border-radius: 14px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); border-left: 4px solid #ff6b8b; transition: all 0.3s ease; backdrop-filter: blur(5px); }
+#locations-list li:hover { transform: translateX(5px); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); }
+#locations-list li.empty { border-left-color: #e2e8f0; color: #a0aec0; font-style: italic; }
 
-.map-loading i {
-    margin-bottom: 15px;
-}
+.rental-locations { background: linear-gradient(135deg, rgba(255, 107, 139, 0.05), rgba(255, 150, 170, 0.05)); padding: 20px; border-radius: 18px; margin-top: 25px; border: 1px solid rgba(255, 107, 139, 0.1); backdrop-filter: blur(5px); }
+.rental-item { margin-top: 12px; padding: 10px; background: rgba(255, 255, 255, 0.9); border-radius: 12px; display: flex; justify-content: space-between; }
 
-.map-sidebar {
-    flex: 1;
-    background: rgba(255, 255, 255, 0.85);
-    border-radius: 22px;
-    padding: 25px;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    overflow-y: auto;
-    backdrop-filter: blur(10px);
-}
+/* =================================
+   8. Diary Page
+   ================================= */
+.diary-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px; }
+.diary-entry { background: #FFFFFF; border-radius: 20px; padding: 25px; border: 1px solid #EAE6E1; box-shadow: 0 4px 25px rgba(0, 0, 0, 0.05); transition: transform 0.3s ease, box-shadow 0.3s ease; position: relative; }
+.diary-entry:hover { transform: translateY(-5px); box-shadow: 0 8px 35px rgba(0, 0, 0, 0.07); }
+.diary-entry::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: linear-gradient(90deg, #ff6b8b, #38a169); border-radius: 20px 20px 0 0;}
+.diary-header-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+.diary-title { font-size: 1.25rem; font-weight: 600; color: #5a4d4d; }
+.diary-date { color: #8b7d7d; font-size: 0.9rem; background: rgba(255, 107, 139, 0.1); padding: 6px 14px; border-radius: 16px; flex-shrink: 0; }
+.diary-content { color: #6d5d5d; line-height: 1.6; margin-bottom: 20px; font-size: 0.95rem; }
+.diary-image { width: 100%; border-radius: 16px; margin-top: 20px; max-height: 220px; object-fit: cover; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08); }
 
-.map-sidebar h3 {
-    margin-bottom: 20px;
-    color: #5a4d4d;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 600;
-}
+/* =================================
+   9. Budget Page
+   ================================= */
+.budget-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 25px; margin-bottom: 35px; }
+.summary-card { background: rgba(255, 255, 255, 0.85); border-radius: 22px; padding: 25px; text-align: center; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06); border: 1px solid rgba(255, 255, 255, 0.3); transition: all 0.3s ease; backdrop-filter: blur(10px); }
+.summary-card:hover { transform: translateY(-5px); box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1); }
+.summary-card h3 { color: #8b7d7d; font-size: 0.95rem; margin-bottom: 15px; font-weight: 500; }
+.summary-card .amount { font-size: 2rem; font-weight: 700; color: #5a4d4d; }
+.summary-card .spent { color: #e53e3e; }
+.summary-card .remaining { color: #38a169; }
 
-.map-sidebar h4 {
-    margin-top: 20px;
-    margin-bottom: 12px;
-    color: #6d5d5d;
-    font-weight: 500;
-}
+.budget-container { display: flex; flex-direction: column; gap: 16px; }
+.budget-item { background: #FFFFFF; border-radius: 20px; padding: 25px; border: 1px solid #EAE6E1; box-shadow: 0 4px 25px rgba(0, 0, 0, 0.05); transition: transform 0.3s ease, box-shadow 0.3s ease; display: flex; justify-content: space-between; align-items: flex-start; gap: 15px; }
+.budget-item:hover { transform: translateY(-5px); box-shadow: 0 8px 35px rgba(0, 0, 0, 0.07); }
+.budget-info { flex-grow: 1; }
+.budget-category { display: inline-block; padding: 6px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; margin-bottom: 12px; }
+.budget-category.food { background: rgba(56, 161, 105, 0.12); color: #38a169; }
+.budget-category.shopping { background: rgba(237, 137, 54, 0.12); color: #ed8936; }
+.budget-category.leisure { background: rgba(66, 153, 225, 0.12); color: #4299e1; }
+.budget-category.transport { background: rgba(159, 122, 234, 0.12); color: #9f7aea; }
+.budget-category.accommodation { background: rgba(245, 101, 101, 0.12); color: #f56565; }
+.budget-category.other { background: rgba(160, 174, 192, 0.12); color: #a0aec0; }
+.budget-description { font-weight: 600; color: #5a4d4d; margin-bottom: 8px; font-size: 1.05rem; }
+.budget-payment { color: #8b7d7d; font-size: 0.9rem; display: flex; align-items: center; gap: 8px; }
+.budget-amount { font-size: 1.35rem; font-weight: 700; color: #5a4d4d; white-space: nowrap; }
 
-#locations-list {
-    list-style: none;
-}
+/* =================================
+   10. Info Page
+   ================================= */
+.info-sections { display: flex; flex-direction: column; gap: 30px; }
+.info-section { background: #FFFFFF; border-radius: 20px; padding: 25px; border: 1px solid #EAE6E1; box-shadow: 0 4px 25px rgba(0, 0, 0, 0.05); }
+.info-section .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 20px; border-bottom: 2px dashed rgba(255, 107, 139, 0.15); }
+.info-section .section-header h3 { color: #5a4d4d; display: flex; align-items: center; gap: 10px; font-weight: 600; }
+.info-content { display: flex; flex-direction: column; gap: 18px; }
+.info-item { background: rgba(255, 255, 255, 0.95); border-radius: 18px; padding: 20px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04); border: 1px solid rgba(255, 255, 255, 0.4); transition: all 0.3s ease; backdrop-filter: blur(5px); }
+.info-item:hover { transform: translateY(-5px); box-shadow: 0 8px 35px rgba(0, 0, 0, 0.07); }
+.info-field { margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 8px; }
+.info-field strong { min-width: 120px; color: #6d5d5d; font-weight: 500; }
+.info-field span { color: #5a4d4d; }
+.info-notes { background: rgba(247, 250, 252, 0.9); padding: 14px; border-radius: 14px; margin-top: 15px; color: #6d5d5d; border-left: 3px solid #ff6b8b; backdrop-filter: blur(5px); }
 
-#locations-list li {
-    padding: 14px;
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 14px;
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    border-left: 4px solid #ff6b8b;
-    transition: all 0.3s ease;
-    backdrop-filter: blur(5px);
-}
-
-#locations-list li:hover {
-    transform: translateX(5px);
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-}
-
-#locations-list li.empty {
-    border-left-color: #e2e8f0;
-    color: #a0aec0;
-    font-style: italic;
-}
-
-.rental-locations {
-    background: linear-gradient(135deg, rgba(255, 107, 139, 0.05), rgba(255, 150, 170, 0.05));
-    padding: 20px;
-    border-radius: 18px;
-    margin-top: 25px;
-    border: 1px solid rgba(255, 107, 139, 0.1);
-    backdrop-filter: blur(5px);
-}
-
-.rental-item {
-    margin-top: 12px;
-    padding: 10px;
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 12px;
-    display: flex;
-    justify-content: space-between;
-}
-
-/* 日記頁面 */
-.diary-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 25px;
-    flex-wrap: wrap;
-    gap: 15px;
-}
-
-.diary-header h2 {
-    color: #5a4d4d;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 600;
-}
-
-.diary-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-    gap: 25px;
-}
-
-.diary-entry {
-    background: #FFFFFF; /* A clean white or a slightly different off-white like #FAF8F6 */
-    border-radius: 20px; /* A slightly smaller radius can feel more modern */
-    padding: 25px;
-    border: 1px solid #EAE6E1; /* A very subtle border */
-    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.05); /* Soft, diffuse shadow */
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.diary-entry::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 4px;
-    background: linear-gradient(90deg, #ff6b8b, #38a169);
-}
-
-.diary-entry:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 35px rgba(0, 0, 0, 0.07);
-}
-
-.diary-header-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 20px;
-}
-
-.diary-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #5a4d4d;
-}
-
-.diary-date {
-    color: #8b7d7d;
-    font-size: 0.9rem;
-    background: rgba(255, 107, 139, 0.1);
-    padding: 6px 14px;
-    border-radius: 16px;
-}
-
-.diary-content {
-    color: #6d5d5d;
-    line-height: 1.6;
-    margin-bottom: 20px;
-    font-size: 0.95rem;
-}
-
-.diary-image {
-    width: 100%;
-    border-radius: 16px;
-    margin-top: 20px;
-    max-height: 220px;
-    object-fit: cover;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-}
-
-/* 預算頁面 */
-.budget-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 25px;
-    flex-wrap: wrap;
-    gap: 15px;
-}
-
-.budget-header h2 {
-    color: #5a4d4d;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 600;
-}
-
-.budget-summary {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 25px;
-    margin-bottom: 35px;
-}
-
-.summary-card {
-    background: rgba(255, 255, 255, 0.85);
-    border-radius: 22px;
-    padding: 25px;
-    text-align: center;
-    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.3);
-    transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
-}
-
-.summary-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
-}
-
-.summary-card h3 {
-    color: #8b7d7d;
-    font-size: 0.95rem;
-    margin-bottom: 15px;
-    font-weight: 500;
-}
-
-.summary-card .amount {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #5a4d4d;
-}
-
-.summary-card .spent {
-    color: #e53e3e;
-}
-
-.summary-card .remaining {
-    color: #38a169;
-}
-
-.budget-container {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-}
-
-.budget-item {
-    background: #FFFFFF; /* A clean white or a slightly different off-white like #FAF8F6 */
-    border-radius: 20px; /* A slightly smaller radius can feel more modern */
-    padding: 25px;
-    border: 1px solid #EAE6E1; /* A very subtle border */
-    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.05); /* Soft, diffuse shadow */
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.budget-item:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 35px rgba(0, 0, 0, 0.07);
-}
-
-.budget-info {
-    flex-grow: 1;
-}
-
-.budget-category {
-    display: inline-block;
-    padding: 6px 16px;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 600;
-    margin-bottom: 12px;
-}
-
-.budget-category.food {
-    background: rgba(56, 161, 105, 0.12);
-    color: #38a169;
-}
-
-.budget-category.shopping {
-    background: rgba(237, 137, 54, 0.12);
-    color: #ed8936;
-}
-
-.budget-category.leisure {
-    background: rgba(66, 153, 225, 0.12);
-    color: #4299e1;
-}
-
-.budget-category.transport {
-    background: rgba(159, 122, 234, 0.12);
-    color: #9f7aea;
-}
-
-.budget-category.accommodation {
-    background: rgba(245, 101, 101, 0.12);
-    color: #f56565;
-}
-
-.budget-category.other {
-    background: rgba(160, 174, 192, 0.12);
-    color: #a0aec0;
-}
-
-.budget-description {
-    font-weight: 600;
-    color: #5a4d4d;
-    margin-bottom: 8px;
-    font-size: 1.05rem;
-}
-
-.budget-payment {
-    color: #8b7d7d;
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.budget-amount {
-    font-size: 1.35rem;
-    font-weight: 700;
-    color: #5a4d4d;
-    margin-right: 20px;
-}
-
-/* 資訊頁面 */
-.info-header {
-    margin-bottom: 30px;
-}
-
-.info-header h2 {
-    color: #5a4d4d;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 600;
-}
-
-.info-sections {
-    display: flex;
-    flex-direction: column;
-    gap: 30px;
-}
-
-.info-section {
-    background: #FFFFFF; /* A clean white or a slightly different off-white like #FAF8F6 */
-    border-radius: 20px; /* A slightly smaller radius can feel more modern */
-    padding: 25px;
-    border: 1px solid #EAE6E1; /* A very subtle border */
-    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.05); /* Soft, diffuse shadow */
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 25px;
-    padding-bottom: 20px;
-    border-bottom: 2px dashed rgba(255, 107, 139, 0.15);
-}
-
-.section-header h3 {
-    color: #5a4d4d;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    font-weight: 600;
-}
-
-.info-content {
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-}
-
-.info-item {
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 18px;
-    padding: 20px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
-    border: 1px solid rgba(255, 255, 255, 0.4);
-    transition: all 0.3s ease;
-    backdrop-filter: blur(5px);
-}
-
-.info-item:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 8px 35px rgba(0, 0, 0, 0.07);
-}
-
-.info-field {
-    margin-bottom: 12px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-.info-field strong {
-    min-width: 120px;
-    color: #6d5d5d;
-    font-weight: 500;
-}
-
-.info-field span {
-    color: #5a4d4d;
-}
-
-.info-notes {
-    background: rgba(247, 250, 252, 0.9);
-    padding: 14px;
-    border-radius: 14px;
-    margin-top: 15px;
-    color: #6d5d5d;
-    border-left: 3px solid #ff6b8b;
-    backdrop-filter: blur(5px);
-}
-
-/* 底部導航欄 - 固定位置 */
-/* 替換現有的 .bottom-nav 樣式 */
+/* =================================
+   11. Bottom Navigation
+   ================================= */
 .bottom-nav {
     display: flex;
     justify-content: space-around;
     background: rgba(255, 255, 255, 0.97);
     padding: 12px 10px;
     border-top: 1px solid rgba(255, 255, 255, 0.6);
-    box-shadow: 
-        0 -8px 30px rgba(0, 0, 0, 0.12),
-        0 -4px 10px rgba(0, 0, 0, 0.05);
-    position: fixed;  /* 改為 fixed */
-    bottom: 0;        /* 固定在底部 */
-    left: 0;          /* 左對齊 */
-    width: 100%;      /* 全寬度 */
+    box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.12), 0 -4px 10px rgba(0, 0, 0, 0.05);
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
     z-index: 1000;
     backdrop-filter: blur(20px);
     border-radius: 25px 25px 0 0;
@@ -981,33 +614,21 @@ body {
     min-width: 70px;
 }
 
-.nav-btn i {
-    font-size: 1.2rem;
-    transition: all 0.3s ease;
-}
-
-.nav-btn span {
-    font-size: 0.85rem;
-    font-weight: 500;
-}
+.nav-btn i { font-size: 1.2rem; transition: all 0.3s ease; }
+.nav-btn span { font-size: 0.85rem; font-weight: 500; }
+.nav-btn:hover:not(.active) { background: rgba(0, 0, 0, 0.04); color: #6d5d5d; transform: translateY(-2px); }
 
 .nav-btn.active {
-    background: linear-gradient(135deg, rgba(255, 107, 139, 0.15), rgba(255, 150, 170, 0.15));
-    color: #ff6b8b;
-    box-shadow: 0 4px 15px rgba(255, 107, 139, 0.2);
+    background: rgba(255, 107, 139, 0.1);
+    color: #d6336c;
 }
-
 .nav-btn.active i {
     transform: scale(1.1);
 }
 
-.nav-btn:hover:not(.active) {
-    background: rgba(0, 0, 0, 0.04);
-    color: #6d5d5d;
-    transform: translateY(-2px);
-}
-
-/* 彈出視窗 */
+/* =================================
+   12. Modals (Popups)
+   ================================= */
 .modal {
     display: none;
     position: fixed;
@@ -1017,12 +638,10 @@ body {
     height: 100%;
     background: rgba(0, 0, 0, 0.4);
     z-index: 2000;
-    /* --- CHANGE THIS --- */
-    align-items: flex-start; /* Change from 'center' to 'flex-start' */
+    align-items: flex-start;
     justify-content: center;
-    /* --- ADD THIS --- */
-    padding: 40px 20px; /* Add padding top/bottom */
-    overflow-y: auto;   /* Add a scrollbar if the modal itself is too big on tiny screens */
+    padding: 40px 20px;
+    overflow-y: auto;
     backdrop-filter: blur(8px);
 }
 
@@ -1037,24 +656,17 @@ body {
     width: 100%;
     max-width: 500px;
     box-shadow: 0 30px 60px rgba(0, 0, 0, 0.15);
-    overflow: hidden; /* This is okay to keep */
+    overflow: hidden;
     animation: modalSlideIn 0.3s ease;
     backdrop-filter: blur(20px);
     border: 1px solid rgba(255, 255, 255, 0.3);
-    /* --- ADD THIS --- */
     display: flex;
     flex-direction: column;
 }
 
 @keyframes modalSlideIn {
-    from {
-        opacity: 0;
-        transform: translateY(-30px) scale(0.95);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
+    from { opacity: 0; transform: translateY(-30px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .modal-header {
@@ -1065,395 +677,65 @@ body {
     background: linear-gradient(135deg, rgba(255, 107, 139, 0.9), rgba(255, 150, 170, 0.9));
     color: white;
     backdrop-filter: blur(10px);
+    flex-shrink: 0;
 }
 
-.modal-header h3 {
-    font-size: 1.4rem;
-    font-weight: 600;
-}
-
-.close-modal {
-    background: rgba(255, 255, 255, 0.2);
-    border: none;
-    color: white;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 1.5rem;
-    transition: all 0.2s ease;
-}
-
-.close-modal:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: scale(1.1) rotate(90deg);
-}
+.modal-header h3 { font-size: 1.4rem; font-weight: 600; }
+.close-modal { background: rgba(255, 255, 255, 0.2); border: none; color: white; width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.5rem; transition: all 0.2s ease; }
+.close-modal:hover { background: rgba(255, 255, 255, 0.3); transform: scale(1.1) rotate(90deg); }
 
 .modal-body {
     padding: 30px;
-    max-height: calc(100vh - 220px); /* Set a max height (Viewport height minus header/footer/padding) */
-    overflow-y: auto;                /* The magic! Add a scrollbar if content is too tall */
+    max-height: calc(100vh - 220px);
+    overflow-y: auto;
 }
 
-.form-group {
-    margin-bottom: 25px;
-}
+.form-group { margin-bottom: 25px; }
+.form-group label { display: block; margin-bottom: 10px; font-weight: 600; color: #5a4d4d; font-size: 0.95rem; }
+.form-group input, .form-group select, .form-group textarea { width: 100%; padding: 14px 18px; border-radius: 14px; border: 1px solid rgba(0, 0, 0, 0.08); background: rgba(255, 255, 255, 0.9); font-size: 1rem; transition: all 0.3s ease; font-family: 'Poppins', sans-serif; color: #5a4d4d; }
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: #ff6b8b; box-shadow: 0 0 0 3px rgba(255, 107, 139, 0.15); background: white; }
+.form-actions { margin-top: 30px; display: flex; justify-content: flex-end; }
 
-.form-group label {
-    display: block;
-    margin-bottom: 10px;
-    font-weight: 600;
-    color: #5a4d4d;
-    font-size: 0.95rem;
-}
+/* Share Modal specific styles */
+.share-link-container { display: flex; margin-top: 15px; }
+#share-link-input { flex-grow: 1; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px 0 0 8px; background-color: #f8fafc; font-size: 0.9rem; overflow-x: hidden; }
+#copy-link-btn { border-radius: 0 8px 8px 0; white-space: nowrap; }
 
-.form-group input,
-.form-group select,
-.form-group textarea {
-    width: 100%;
-    padding: 14px 18px;
-    border-radius: 14px;
-    border: 1px solid rgba(0, 0, 0, 0.08);
-    background: rgba(255, 255, 255, 0.9);
-    font-size: 1rem;
-    transition: all 0.3s ease;
-    font-family: 'Poppins', sans-serif;
-    color: #5a4d4d;
-}
-
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
-    outline: none;
-    border-color: #ff6b8b;
-    box-shadow: 0 0 0 3px rgba(255, 107, 139, 0.15);
-    background: white;
-}
-
-.form-actions {
-    margin-top: 30px;
-    display: flex;
-    justify-content: flex-end;
-}
-
-/* 響應式設計 */
+/* =================================
+   13. Responsive Design
+   ================================= */
 @media (max-width: 768px) {
-        .app-container {
-        padding-bottom: 70px;
-        margin: 5px;
-        border-radius: 24px;
-    }
-    
-    .header {
-        padding: 15px 20px 12px;
-    }
-    
-    #trip-title {
-        font-size: 1.8rem;
-        padding: 6px 15px;
-    }
-    
-    .widget-row {
-        flex-direction: column;
-        gap: 10px;
-    }
-    
-    .widget {
-        width: 100%;
-        justify-content: center;
-        padding: 10px 15px;
-        font-size: 12px;
-    }
-    
-    .main-content {
-        padding: 20px;
-        min-height: calc(100vh - 180px);
-    }
-    
-    .itinerary-header {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 12px;
-    }
-    
-    .itinerary-header h2 {
-        font-size: 1.3rem;
-    }
-    
-    .btn-primary, .btn-secondary {
-        width: 100%;
-        justify-content: center;
-        padding: 12px 20px;
-    }
-    
-    .day-section {
-        padding: 20px;
-        border-radius: 20px;
-    }
-    
-    .day-header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-    }
-    
-    .day-title {
-        font-size: 1.2rem;
-    }
-    
-    .activity-item {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 12px;
-        padding: 16px;
-    }
-    
-    .activity-time {
-        align-self: flex-start;
-        min-width: 65px;
-    }
-    
-    .activity-actions {
-        align-self: flex-end;
-    }
-    
-    #map-container {
-        flex-direction: column;
-        height: auto;
-    }
-    
-    #map {
-        height: 350px;
-    }
-    
-    .map-sidebar {
-        height: auto;
-        max-height: 300px;
-    }
-    
-    .diary-container {
-        grid-template-columns: 1fr;
-    }
-    
-    .budget-summary {
-        grid-template-columns: 1fr;
-    }
-    
-    .budget-item {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 15px;
-    }
-    
-    .budget-amount {
-        margin-right: 0;
-        text-align: right;
-    }
-    
-    .bottom-nav {
-        padding: 10px 5px;
-        border-radius: 20px 20px 0 0;
-    }
-    
-    .nav-btn {
-        padding: 8px 10px;
-        min-width: 60px;
-    }
-    
-    .nav-btn i {
-        font-size: 1.1rem;
-    }
-    
-    .nav-btn span {
-        font-size: 0.8rem;
-    }
-    
-    .modal-content {
-        border-radius: 24px;
-    }
+    .app-container { padding-bottom: 70px; margin: 5px; border-radius: 24px; }
+    .header { padding: 15px 20px 12px; }
+    #trip-title { font-size: 1.8rem; padding: 6px 15px; }
+    .widget-row { flex-direction: column; gap: 10px; }
+    .widget { width: 100%; justify-content: center; padding: 10px 15px; font-size: 12px; }
+    .main-content { padding: 20px; min-height: calc(100vh - 180px); }
+    .section-page-header { flex-direction: column; align-items: stretch; gap: 12px; }
+    .section-page-header h2 { font-size: 1.3rem; }
+    .btn-primary, .btn-secondary { width: 100%; }
+    .day-section { padding: 20px; border-radius: 20px; }
+    .day-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .day-title { font-size: 1.2rem; }
+    #map-container { flex-direction: column; height: auto; }
+    #map { height: 350px; }
+    .map-sidebar { height: auto; max-height: 300px; }
+    .diary-container { grid-template-columns: 1fr; }
+    .budget-summary { grid-template-columns: 1fr; }
+    .budget-item { flex-direction: column; align-items: stretch; gap: 15px; }
+    .budget-amount { margin-right: 0; text-align: right; }
+    .bottom-nav { padding: 10px 5px; border-radius: 20px 20px 0 0; }
+    .nav-btn { padding: 8px 10px; min-width: 60px; }
+    .nav-btn i { font-size: 1.1rem; }
+    .nav-btn span { font-size: 0.8rem; }
+    .modal-content { border-radius: 24px; }
 }
-
-/* =================== PASTE THIS AT THE END OF YOUR CSS, BEFORE @media =================== */
-
-/* --- Step 2 & 3: Timeline & Card Redesign --- */
-
-/* The container for all activities in a day, this will hold the timeline line */
-.activity-list {
-    position: relative; /* This is crucial for positioning the timeline */
-    padding-left: 30px; /* Make space for the timeline */
-    display: flex;
-    flex-direction: column;
-    gap: 25px; /* Increase gap between cards */
-}
-
-/* The main vertical timeline line */
-.activity-list::before {
-    content: '';
-    position: absolute;
-    left: 8px; /* Position of the line */
-    top: 0;    /* Start from the very top */
-    bottom: 0; /* Go to the very bottom */
-    width: 2px;
-    /* This creates a dashed line using a background gradient */
-    background-image: linear-gradient(to bottom, #EAE6E1 60%, transparent 40%);
-    background-size: 2px 10px; /* Adjusts the dash and gap size */
-    background-repeat: repeat-y;
-    z-index: 1; /* Make sure it's behind the cards and markers */
-}
-/* Redesign the activity item into a "Card" */
-
-.activity-item:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.07);
-}
-
-.activity-item {
-    display: flex;
-    align-items: center;
-    position: relative;
-    background: #FFFFFF;
-    border-radius: 16px;
-    padding: 15px;
-    border: 1px solid #EAE6E1;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.04);
-    z-index: 2;
-}
-
-/* The left column: icon + time (NOW POSITIONED CORRECTLY) */
-.activity-timeline-marker {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    flex-shrink: 0;
-    width: auto;
-    position: absolute; /* This is the key change */
-    left: -22px;      /* This positions it on the timeline line */
-    z-index: 3;
-}
-
-/* The colored dot/icon */
-.timeline-dot {
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    background-color: #fff;
-    border: 2px solid;
-    z-index: 2;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.7rem;
-    margin-bottom: 5px;
-}
-
-/* The time text below the icon */
-.activity-time {
-    color: #8b7d7d;
-    font-weight: 600;
-    font-size: 13px;
-}
-
-/* The middle column: name, location, notes */
-.activity-details {
-    flex-grow: 1; /* Allows it to take up all available space */
-    min-width: 0;
-    padding-left: 5px; /* Adds a tiny bit of space away from the marker */
-}
-
-/* The right column: edit/delete buttons */
-.activity-actions {
-    display: flex;
-    gap: 8px;
-    flex-shrink: 0; /* Prevents buttons from shrinking */
-}
-/* ========================================================================= */
-
-/* ====================================================================================== */
-
-/* =================== PASTE THIS AT THE END OF YOUR CSS, BEFORE @media =================== */
-
-/* --- Step 4: Collapsible Day Sections --- */
-
-/* Make the day header clickable */
-.day-header {
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-}
-
-.day-header:hover {
-    background-color: #f8f7f5; /* A very slight hover effect */
-}
-
-/* The activity list will be the part that collapses */
-.activity-list {
-    position: relative;
-    padding-left: 30px;
-    display: flex;
-    flex-direction: column;
-    gap: 25px;
-    max-height: 2000px;
-    overflow: hidden;
-    transition: max-height 0.5s ease-in-out, padding-top 0.5s ease-in-out, padding-bottom 0.5s ease-in-out;
-}
-
-/* The "collapsed" state */
-.day-section.is-collapsed .activity-list {
-    max-height: 0;
-    padding-top: 0;
-    padding-bottom: 0;
-    margin-top: -25px; /* Hide the margin-bottom from the day-header */
-}
-
-/* Style the day title icon to show open/closed state */
-.day-title .toggle-icon {
-    transition: transform 0.3s ease;
-}
-
-.day-section.is-collapsed .day-title .toggle-icon {
-    transform: rotate(-90deg);
-}
-
-/* ====================================================================================== */
 
 @media (max-width: 480px) {
-    body {
-        padding: 5px;
-    }
-    
-    .app-container {
-        margin-bottom: 65px;
-        border-radius: 20px;
-    }
-    
-    .main-content {
-        padding: 15px;
-    }
-    
-    .itinerary-header h2,
-    .map-header h2,
-    .diary-header h2,
-    .budget-header h2,
-    .info-header h2 {
-        font-size: 1.2rem;
-    }
-    
-    .day-section {
-        padding: 16px;
-        border-radius: 18px;
-    }
-    
-    .activity-item {
-        padding: 14px;
-    }
-    
-    .btn-icon {
-        width: 32px;
-        height: 32px;
-        font-size: 0.85rem;
-    }
+    body { padding: 5px; padding-bottom: 80px; }
+    .app-container { margin-bottom: 0; border-radius: 20px; }
+    .main-content { padding: 15px; }
+    .section-page-header h2 { font-size: 1.2rem; }
+    .day-section { padding: 16px; border-radius: 18px; }
+    .activity-item { padding: 14px; }
 }
-
-
