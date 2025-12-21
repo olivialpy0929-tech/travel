@@ -1651,7 +1651,6 @@ async function generateShareLink() {
             headers: {
                 'Content-Type': 'application/json',
                 'X-Master-Key': JSONBIN_API_KEY,
-                'X-Collection-Id': '66518f88e41b4d34e4f8d550' // Optional: helps organize your bins
             },
             body: JSON.stringify(dataToShare)
         });
