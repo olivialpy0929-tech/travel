@@ -32,9 +32,10 @@ const state = {
 };
 
 const JSONBIN_API_KEY = '$2a$10$Un291SU4uymEeemXfulDTeJrfd2hzdUVRLhUQlD69XvAM8es1E/1y';
-
-// DOM 完全加載後初始化應用程序
-document.addEventListener('DOMContentLoaded', initApp);
+function loadApp() {
+    console.log("Google Maps loaded. Now starting the main app...");
+    initApp(); // This calls your existing initialization function
+}
 
 // 初始化應用程序
 async function initApp() { // <-- MAKE THIS ASYNC
@@ -355,8 +356,6 @@ function initMap() {
         mapContainer.innerHTML = errorHtml;
     }
 }
-
-window.initMap = initMap;
 
 // 更新地圖標記
 function updateMapMarkers() {
