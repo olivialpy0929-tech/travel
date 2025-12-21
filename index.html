@@ -11,6 +11,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCaoU4qICEMFvEGY2AdoCUP-nlVjBj3bSM&callback=initMap" async defer></script>
+    <!-- In index.html, inside the <head> tag -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js"></script>
+    <!-- This should come after pako -->
+    <script defer src="app.js"></script> 
 </head>
 <body>
     <!-- 背景裝飾 -->
@@ -30,6 +34,9 @@
             <div class="header-main">
                 <div class="title-container">
                     <h1 id="trip-title" contenteditable="true">我的泰國之旅 <span class="thai-emoji">🐘</span></h1>
+                    <button id="share-trip-btn" class="btn-icon" title="分享旅程">
+                       <i class="fas fa-share-alt"></i>
+                    </button>
                 </div>
             </div>
             
@@ -389,6 +396,19 @@
                 </div>
             </div>
         </div>
+
+        <!-- In index.html, near the bottom with other modals -->
+        <div id="share-modal" class="modal">
+           <div class="modal-content">
+                <span class="close-modal">&times;</span>
+                <h3>分享您的旅程</h3>
+                <p>複製下面的連結並發送給您的朋友！</p>
+                <div class="share-link-container">
+                    <input type="text" id="share-link-input" readonly>
+                    <button id="copy-link-btn" class="btn">複製</button>
+                </div>
+            </div>
+        </div>
 <!-- ================= END OF NEW CODE BLOCK =================== -->
      <!-- PASTE THE NAV BAR HERE -->
     <nav class="bottom-nav">
@@ -413,8 +433,5 @@
             <span>資訊</span>
         </button>
     </nav>
-    <script src="app.js"></script>
 </body>
 </html>
-
-
