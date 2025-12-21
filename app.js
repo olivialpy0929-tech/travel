@@ -1709,84 +1709,59 @@ function copyShareLink() {
 
 
 async function loadFromUrl() {
-    const urlParams = new URLSearchParams(window.location.search);
-    const binId = urlParams.get('trip');
+    const binId = new URLSearchParams(window.location.search).get('trip');
+    if (!binId) return false;
+        state.sharedBinId = binId;
 
-    if (!binId) {
-        return false; 
-    }
+    const resp = await fetch(https://api.jsonbin.io/v3/b/${binId}/latest);
+    if (!resp.ok) throw new Error('無法獲取共享行程數據。');
 
-    // It's a shared link! Let's store the ID.
-    state.sharedBinId = binId;
-    console.log('合作模式已啟用，行程 ID:', state.sharedBinId);
+    const data = await resp.json();
+    const record = data.record || {};
 
-    try {
-        const response = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`);
-        if (!response.ok) {
-            throw new Error('無法獲取共享行程數據。');
-        }
-        const loadedData = await response.json();
+    const titleEl = document.getElementById('trip-title');
+    if (titleEl) titleEl.textContent = record.tripTitle || '我的泰國之旅';
 
-        // Populate the state and UI (same as before)
-        if (document.getElementById('trip-title')) {
-            document.getElementById('trip-title').textContent = loadedData.tripTitle;
-        }
-        state.itinerary = loadedData.itinerary || [];
-        state.diaryEntries = loadedData.diaryEntries || [];
-        state.budgetItems = loadedData.budgetItems || [];
-        state.infoItems = loadedData.infoItems || { flight: [], hotel: [], car: [], other: [] };
+    state.itinerary = record.itinerary || [];
+    state.diaryEntries = record.diaryEntries || [];
+    state.budgetItems = record.budgetItems || [];
+    state.infoItems = record.infoItems || { flight: [], hotel: [], car: [], other: [] };
 
-        return true; // Success!
-
-    } catch (error) {
-        console.error('從 URL 加載數據失敗:', error);
-        alert('無法加載共享的旅程連結，它可能已損壞或不存在。');
-        window.location.href = window.location.href.split('?')[0]; // Redirect to clean URL on failure
-        return false;
-    }
+    return true;
 }
 
 // In app.js, ADD THIS NEW FUNCTION to check for updates
 
 async function checkForUpdates() {
-    if (!state.sharedBinId) return; // Only run in collaboration mode
+    if (!state.sharedBinId) return;
+    const resp = await fetch(https://api.jsonbin.io/v3/b/${state.sharedBinId}/latest);
+    if (!resp.ok) return;
 
-    console.log('正在檢查雲端更新...');
-    try {
-        const response = await fetch(`https://api.jsonbin.io/v3/b/${state.sharedBinId}/latest`);
-        if (!response.ok) return;
+    const data = await resp.json();
+    const record = data.record || {};
 
-        const cloudData = await response.json();
-        
-        // Convert current state and cloud state to strings to easily compare them
-        const currentStateString = JSON.stringify({
-            tripTitle: document.getElementById('trip-title').textContent,
-            itinerary: state.itinerary,
-            diaryEntries: state.diaryEntries,
-            budgetItems: state.budgetItems,
-            infoItems: state.infoItems
-        });
-        const cloudStateString = JSON.stringify(cloudData);
+    const current = JSON.stringify({
+        tripTitle: document.getElementById('trip-title').textContent,
+        itinerary: state.itinerary,
+        diaryEntries: state.diaryEntries,
+        budgetItems: state.budgetItems,
+        infoItems: state.infoItems
+    });
+    const cloud = JSON.stringify(record);
 
-        // If they are different, it means someone else made a change!
-        if (currentStateString !== cloudStateString) {
-            console.log('檢測到新更改！正在刷新數據...');
-            // Repopulate state with the new cloud data
-            document.getElementById('trip-title').textContent = cloudData.tripTitle;
-            state.itinerary = cloudData.itinerary || [];
-            state.diaryEntries = cloudData.diaryEntries || [];
-            state.budgetItems = cloudData.budgetItems || [];
-            state.infoItems = cloudData.infoItems || { flight: [], hotel: [], car: [], other: [] };
+    if (current !== cloud) {
+    const titleEl = document.getElementById('trip-title');
+    if (titleEl) titleEl.textContent = record.tripTitle || '我的泰國之旅';
 
-            // Re-render everything on the screen
-            renderItinerary();
-            renderDiaryEntries();
-            renderBudgetItems();
-            renderInfoItems();
-        }
+        state.itinerary = record.itinerary || [];
+        state.diaryEntries = record.diaryEntries || [];
+        state.budgetItems = record.budgetItems || [];
+        state.infoItems = record.infoItems || { flight: [], hotel: [], car: [], other: [] };
 
-    } catch (error) {
-        console.error('檢查更新時出錯:', error);
+    renderItinerary();
+    renderDiaryEntries();
+    renderBudgetItems();
+    renderInfoItems();
     }
 }
 
