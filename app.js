@@ -63,8 +63,7 @@ function initApp() {
         showPage('home-page');
         
         // 初始化天氣和匯率
-        updateWeatherAndExchange();
-        updateCountdown();
+        updateWidgets(); // This now handles exchange, weather, AND countdown
 
         
         console.log('應用初始化完成');
@@ -1607,97 +1606,63 @@ let state = {
 };
 
 // Update exchange (real Frankfurter API)
+// In app.js, at the bottom of the file
+
+// Update exchange (real Frankfurter API)
 async function updateExchangeRate() {
-    const exchangeElement = document.getElementById('exchange-rate');
-    if (!exchangeElement) return;
-    try {
-        const response = await fetch('https://api.frankfurter.app/latest?from=HKD&to=THB');
-        const data = await response.json();
-        const rate = data.rates.THB;
-        exchangeElement.textContent = `1 港幣 = ${rate.toFixed(3)} 泰銖`;
-    } catch (error) {
-        console.error('Exchange error:', error);
-        exchangeElement.textContent = '匯率載入失敗';
-    }
+   const exchangeElement = document.getElementById('exchange-rate');
+   if (!exchangeElement) return;
+   try {
+       const response = await fetch('https://api.frankfurter.app/latest?from=HKD&to=THB');
+       if (!response.ok) throw new Error('Network response was not ok');
+       const data = await response.json();
+       const rate = data.rates.THB;
+       exchangeElement.textContent = `1 港幣 = ${rate.toFixed(3)} 泰銖`;
+   } catch (error) {
+       console.error('Exchange error:', error);
+       exchangeElement.textContent = '匯率載入失敗';
+   }
 }
 
 // Update weather (real Open-Meteo)
 async function updateWeather() {
-    const weatherElement = document.getElementById('weather-info');
-    if (!weatherElement) return;
-    try {
-        const url = 'https://api.open-meteo.com/v1/forecast?latitude=13.7563&longitude=100.5018&current=temperature_2m,weather_code&timezone=Asia/Bangkok';
-        const response = await fetch(url);
-        const data = await response.json();
-        const temp = data.current.temperature_2m;
-        const code = data.current.weather_code;
-        let icon = '☀️'; // Default
-        if (code >= 51 && code <= 67) icon = '🌧️'; // Rain
-        if (code >= 1 && code <= 3) icon = '🌤️'; // Cloudy
-        weatherElement.textContent = `曼谷: ${temp}°C, ${icon}`;
-    } catch (error) {
-        console.error('Weather error:', error);
-        weatherElement.textContent = '天氣載入失敗';
-    }
+   const weatherElement = document.getElementById('weather-info');
+   if (!weatherElement) return;
+   try {
+       const url = 'https://api.open-meteo.com/v1/forecast?latitude=13.7563&longitude=100.5018&current=temperature_2m,weather_code&timezone=Asia/Bangkok';
+       const response = await fetch(url);
+       if (!response.ok) throw new Error('Network response was not ok');
+       const data = await response.json();
+       const temp = data.current.temperature_2m;
+       const code = data.current.weather_code;
+       let icon = '☀️'; // Default
+       if (code >= 51 && code <= 67) icon = '🌧️'; // Rain
+       if (code >= 1 && code <= 3) icon = '🌤️'; // Cloudy
+       if (code >= 95) icon = '⛈️'; // Thunderstorm
+       weatherElement.textContent = `曼谷: ${temp}°C, ${icon}`;
+   } catch (error) {
+       console.error('Weather error:', error);
+       weatherElement.textContent = '天氣載入失敗';
+   }
 }
 
 // Update countdown
 function updateCountdown() {
-    const countdownElement = document.getElementById('countdown');
-    if (!countdownElement) return;
-    
-    if (state.itinerary.length === 0) {
-        countdownElement.textContent = '旅程倒數: -- 天';
-        return;
-    }
-    
-    let earliestDate = null;
-    state.itinerary.forEach(activity => {
-        const activityDate = new Date(activity.date);
-        if (!earliestDate || activityDate < earliestDate) {
-            earliestDate = activityDate;
-        }
-    });
-    
-    if (!earliestDate) {
-        countdownElement.textContent = '旅程倒數: -- 天';
-        return;
-    }
-    
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    earliestDate.setHours(0, 0, 0, 0);
-    
-    const timeDiff = earliestDate.getTime() - today.getTime();
-    const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
-    
-    if (daysDiff > 0) {
-        countdownElement.textContent = `旅程倒數: ${daysDiff} 天`;
-    } else if (daysDiff === 0) {
-        countdownElement.textContent = '旅程今天開始！';
-    } else {
-        countdownElement.textContent = '旅程已開始';
-    }
+   // ... (this function is correct, no changes needed)
 }
 
-// Combined update function
-async function updateWidgets() {
-    await updateExchangeRate();
-    await updateWeather();
-    updateCountdown();
+// Combined update function (RENAMED)
+async function initializeHeaderWidgets() {
+   await updateExchangeRate();
+   await updateWeather();
+   updateCountdown();
 }
-
-// Load on start
-document.addEventListener('DOMContentLoaded', () => {
-    updateWidgets();
-    state.itinerary = JSON.parse(localStorage.getItem('itinerary')) || [];
-    // Your other render functions here...
-});
 
 // Auto refresh every 5 minutes
-setInterval(updateWidgets, 300000); // 5 minutes
+setInterval(initializeHeaderWidgets, 300000); // 5 minutes
 
-// 全局錯誤處理
+// ... (global error handler)
+
 window.addEventListener('error', function(e) {
     console.error('全局錯誤:', e.error);
     console.error('錯誤訊息:', e.message);
@@ -1706,5 +1671,3 @@ window.addEventListener('error', function(e) {
 
 // 確保所有功能在頁面加載後可用
 console.log('應用程式腳本加載完成');
-
-
