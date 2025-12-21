@@ -14,6 +14,7 @@ function getActivityTypeDetails(type) {
 }
 const state = {
     currentPage: 'home-page',
+    sharedBinId: null,
     itinerary: [],
     diaryEntries: [],
     budgetItems: [],
@@ -36,11 +37,11 @@ const JSONBIN_API_KEY = '$2a$10$SMnAyv3seaKebpHMYm65X..qh7jOSd47bCJbAuNYimjhxkqK
 document.addEventListener('DOMContentLoaded', initApp);
 
 // 初始化應用程序
-function initApp() {
+async function initApp() { // <-- MAKE THIS ASYNC
     console.log('初始化應用...');
     
     try {
-        // 設置表單的默認日期為今天
+        // Set default form dates
         const today = new Date().toISOString().split('T')[0];
         if (document.getElementById('activity-date')) {
             document.getElementById('activity-date').value = today;
@@ -49,38 +50,32 @@ function initApp() {
             document.getElementById('diary-date').value = today;
         }
         
-        // NEW: Check for shared data in URL first
-        const sharedData = loadFromUrl();
+        // AWAIT the result of loading from the URL
+        const loadedFromCloud = await loadFromUrl(); // <-- AWAIT a boolean result
 
-        if (sharedData) {
-            console.log('從 URL 加載共享數據...');
-            // If we load from URL, we don't load from localStorage
-            // We also disable saving to not overwrite the original user's data
-            document.getElementById('trip-title').contentEditable = false;
-            document.getElementById('share-trip-btn').style.display = 'none'; // Hide share button on a shared view
+        if (loadedFromCloud) {
+            console.log('從雲端加載數據成功。合作模式已啟用。');
+            // Don't disable anything, we want collaboration!
         } else {
-            // Load from local storage if no URL data
+            // If we didn't load from cloud, load from local storage
+            console.log('未找到雲端數據，從本地存儲加載...');
             loadFromLocalStorage();
         }
         
-        // 渲染初始數據
+        // Now render the data that was loaded (either from cloud or local)
         renderItinerary();
         renderDiaryEntries();
         renderBudgetItems();
         renderInfoItems();
         
-        // 初始化事件監聽器
+        // Initialize everything else
         initEventListeners();
-        
-        // 初始顯示首頁並更新小工具
         showPage('home-page');
-        
-        // 初始化天氣和匯率
-         initializeHeaderWidgets(); // This now handles exchange, weather, AND countdown
-
+        initializeHeaderWidgets(); 
         
         console.log('應用初始化完成');
-    } catch (error) {
+    } catch (error)
+    {
         console.error('初始化應用時出錯:', error);
     }
 }
@@ -189,7 +184,7 @@ function initEventListeners() {
         // 旅程標題編輯
         const tripTitle = document.getElementById('trip-title');
         if (tripTitle) {
-            tripTitle.addEventListener('blur', saveToLocalStorage);
+            tripTitle.addEventListener('blur', saveData);
         }
         
         // 資訊類型變更
@@ -698,7 +693,7 @@ function addActivity(e) {
             state.itinerary.push(activity);
         }
         
-        saveToLocalStorage();
+        saveData();
         renderItinerary();
         closeAllModals();
         updateCountdown();
@@ -737,7 +732,7 @@ function addDiaryEntry(e) {
             state.diaryEntries.push(entry);
         }
         
-        saveToLocalStorage();
+        saveData();
         renderDiaryEntries();
         closeAllModals();
         console.log('日記條目保存成功:', entry);
@@ -777,7 +772,7 @@ function addBudgetItem(e) {
             state.budgetItems.push(item);
         }
         
-        saveToLocalStorage();
+        saveData();
         renderBudgetItems();
         closeAllModals();
         console.log('預算項目保存成功:', item);
@@ -839,7 +834,7 @@ function addInfoItem(e) {
             state.infoItems[type].push(item);
         }
 
-        saveToLocalStorage();
+        saveData();
         renderInfoItems();
         closeAllModals();
         
@@ -879,7 +874,7 @@ function editActivity(id) {
 function deleteActivity(id) {
     if (confirm('您確定要刪除此活動嗎？')) {
         state.itinerary = state.itinerary.filter(item => item.id !== id);
-        saveToLocalStorage();
+        saveData();
         renderItinerary();
         
         // 如果在地圖頁面，更新標記
@@ -915,7 +910,7 @@ function editDiaryEntry(id) {
 function deleteDiaryEntry(id) {
     if (confirm('您確定要刪除此日記條目嗎？')) {
         state.diaryEntries = state.diaryEntries.filter(item => item.id !== id);
-        saveToLocalStorage();
+        saveData();
         renderDiaryEntries();
         
         console.log('刪除日記條目:', id);
@@ -945,7 +940,7 @@ function editBudgetItem(id) {
 function deleteBudgetItem(id) {
     if (confirm('您確定要刪除此預算項目嗎？')) {
         state.budgetItems = state.budgetItems.filter(item => item.id !== id);
-        saveToLocalStorage();
+        saveData();
         renderBudgetItems();
         
         console.log('刪除預算項目:', id);
@@ -997,7 +992,7 @@ function editInfoItem(type, id) {
 function deleteInfoItem(type, id) {
     if (confirm('您確定要刪除此資訊嗎？')) {
         state.infoItems[type] = state.infoItems[type].filter(item => item.id !== id);
-        saveToLocalStorage();
+        saveData();
         renderInfoItems();
         
         // 如果刪除了租車資訊，更新地圖
@@ -1541,7 +1536,7 @@ function handleDrop(e) {
             const [removed] = state.itinerary.splice(draggedIndex, 1);
             state.itinerary.splice(targetIndex, 0, removed);
             
-            saveToLocalStorage();
+            saveData();
             renderItinerary(); // Re-rendering is the simplest way to ensure all data is correct. We'll re-attach listeners.
             
             console.log('活動重新排序完成');
@@ -1558,6 +1553,19 @@ function handleDragEnd() {
 }
 
 // 本地存儲功能
+// In app.js, REPLACE the old saveToLocalStorage function
+
+function saveData() {
+    // This is the "smart" function that decides where to save.
+    if (state.sharedBinId) {
+        saveToCloud(); // If we are in collaboration mode, save to the cloud.
+    } else {
+        saveToLocalStorage(); // Otherwise, save to the user's local device.
+    }
+}
+
+// This is the original function, now just for local use.
+// **Its name is saveToLocalStorage, NOT saveData**
 function saveToLocalStorage() {
     try {
         const appData = {
@@ -1567,7 +1575,6 @@ function saveToLocalStorage() {
             budgetItems: state.budgetItems,
             infoItems: state.infoItems
         };
-        
         localStorage.setItem('travelAppData', JSON.stringify(appData));
         console.log('數據已保存到本地存儲');
     } catch (error) {
@@ -1695,34 +1702,27 @@ function copyShareLink() {
     }
 }
 
-// In app.js, REPLACE the existing loadFromUrl function
-
-// In app.js, REPLACE the old loadFromUrl function with this
 
 async function loadFromUrl() {
     const urlParams = new URLSearchParams(window.location.search);
-    const binId = urlParams.get('trip'); // Get the ID from the URL
+    const binId = urlParams.get('trip');
 
     if (!binId) {
-        return false; // No ID in URL, so we load from local storage
+        return false; 
     }
 
+    // It's a shared link! Let's store the ID.
+    state.sharedBinId = binId;
+    console.log('合作模式已啟用，行程 ID:', state.sharedBinId);
+
     try {
-        // Fetch the data from JSONBin using the ID
-        const response = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
-            method: 'GET',
-            headers: {
-                // You don't need the master key to read a public bin
-            }
-        });
-
+        const response = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`);
         if (!response.ok) {
-            throw new Error('Could not fetch shared trip data.');
+            throw new Error('無法獲取共享行程數據。');
         }
-
         const loadedData = await response.json();
 
-        // Populate the state and UI (this part is the same as before)
+        // Populate the state and UI (same as before)
         if (document.getElementById('trip-title')) {
             document.getElementById('trip-title').textContent = loadedData.tripTitle;
         }
@@ -1736,7 +1736,52 @@ async function loadFromUrl() {
     } catch (error) {
         console.error('從 URL 加載數據失敗:', error);
         alert('無法加載共享的旅程連結，它可能已損壞或不存在。');
+        window.location.href = window.location.href.split('?')[0]; // Redirect to clean URL on failure
         return false;
+    }
+}
+
+// In app.js, ADD THIS NEW FUNCTION to check for updates
+
+async function checkForUpdates() {
+    if (!state.sharedBinId) return; // Only run in collaboration mode
+
+    console.log('正在檢查雲端更新...');
+    try {
+        const response = await fetch(`https://api.jsonbin.io/v3/b/${state.sharedBinId}/latest`);
+        if (!response.ok) return;
+
+        const cloudData = await response.json();
+        
+        // Convert current state and cloud state to strings to easily compare them
+        const currentStateString = JSON.stringify({
+            tripTitle: document.getElementById('trip-title').textContent,
+            itinerary: state.itinerary,
+            diaryEntries: state.diaryEntries,
+            budgetItems: state.budgetItems,
+            infoItems: state.infoItems
+        });
+        const cloudStateString = JSON.stringify(cloudData);
+
+        // If they are different, it means someone else made a change!
+        if (currentStateString !== cloudStateString) {
+            console.log('檢測到新更改！正在刷新數據...');
+            // Repopulate state with the new cloud data
+            document.getElementById('trip-title').textContent = cloudData.tripTitle;
+            state.itinerary = cloudData.itinerary || [];
+            state.diaryEntries = cloudData.diaryEntries || [];
+            state.budgetItems = cloudData.budgetItems || [];
+            state.infoItems = cloudData.infoItems || { flight: [], hotel: [], car: [], other: [] };
+
+            // Re-render everything on the screen
+            renderItinerary();
+            renderDiaryEntries();
+            renderBudgetItems();
+            renderInfoItems();
+        }
+
+    } catch (error) {
+        console.error('檢查更新時出錯:', error);
     }
 }
 
@@ -1835,6 +1880,42 @@ function updateCountdown() {
         countdownElement.textContent = '旅程已開始';
     }
 }
+async function saveToCloud() {
+    // Only run if we are in collaboration mode (we have a binId)
+    if (!state.sharedBinId) return;
+
+    console.log('正在保存更改到雲端...');
+    
+    const dataToSave = {
+        tripTitle: document.getElementById('trip-title').textContent,
+        itinerary: state.itinerary,
+        diaryEntries: state.diaryEntries,
+        budgetItems: state.budgetItems,
+        infoItems: state.infoItems
+    };
+
+    try {
+        const response = await fetch(`https://api.jsonbin.io/v3/b/${state.sharedBinId}`, {
+            method: 'PUT', // PUT means UPDATE the entire record
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Master-Key': JSONBIN_API_KEY
+            },
+            body: JSON.stringify(dataToSave)
+        });
+
+        if (!response.ok) {
+            throw new Error('無法將更改保存到雲端。');
+        }
+
+        console.log('雲端保存成功！');
+
+    } catch (error) {
+        console.error('保存到雲端時出錯:', error);
+        // Optionally, alert the user that the save failed
+        // alert('無法保存您的最新更改，請檢查網絡連接。');
+    }
+}
 
 // Combined update function (RENAMED)
 async function initializeHeaderWidgets() {
@@ -1855,5 +1936,8 @@ window.addEventListener('error', function(e) {
 
 // Confirm script has loaded
 console.log('應用程式腳本加載完成');
-// ... (global error handler)
+
+// Check for new cloud updates every 15 seconds
+setInterval(checkForUpdates, 15000); 
+
 
