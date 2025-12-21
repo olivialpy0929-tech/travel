@@ -1641,7 +1641,41 @@ async function updateWeather() {
 
 // Update countdown
 function updateCountdown() {
-   // ... (this function is correct, no changes needed)
+const countdownElement = document.getElementById('countdown');
+if (!countdownElement) return;
+    if (state.itinerary.length === 0) {
+    countdownElement.textContent = '旅程倒數: -- 天';
+    return;
+}
+
+// Find the earliest date string from the itinerary
+let earliestDateString = null;
+state.itinerary.forEach(activity => {
+    if (!earliestDateString || activity.date < earliestDateString) {
+        earliestDateString = activity.date;
+    }
+});
+
+if (!earliestDateString) {
+    countdownElement.textContent = '旅程倒數: -- 天';
+    return;
+}
+
+const today = new Date();
+today.setHours(0, 0, 0, 0); 
+
+const tripStartDate = new Date(earliestDateString + 'T00:00:00');
+
+const timeDiff = tripStartDate.getTime() - today.getTime();
+
+const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+
+if (daysDiff > 0) {
+    countdownElement.textContent = `旅程倒數: ${daysDiff} 天`;
+} else if (daysDiff === 0) {
+    countdownElement.textContent = '旅程今天開始！';
+} else {
+    countdownElement.textContent = '旅程已開始';
 }
 
 // Combined update function (RENAMED)
