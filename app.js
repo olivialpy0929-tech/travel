@@ -1712,22 +1712,23 @@ async function loadFromUrl() {
     const binId = new URLSearchParams(window.location.search).get('trip');
     if (!binId) return false;
         state.sharedBinId = binId;
-
+    try {
     const resp = await fetch(https://api.jsonbin.io/v3/b/${binId}/latest);
     if (!resp.ok) throw new Error('無法獲取共享行程數據。');
-
-    const data = await resp.json();
-    const record = data.record || {};
-
-    const titleEl = document.getElementById('trip-title');
+        const data = await resp.json();
+        const record = data.record || {};
+        const titleEl = document.getElementById('trip-title');
     if (titleEl) titleEl.textContent = record.tripTitle || '我的泰國之旅';
-
-    state.itinerary = record.itinerary || [];
-    state.diaryEntries = record.diaryEntries || [];
-    state.budgetItems = record.budgetItems || [];
-    state.infoItems = record.infoItems || { flight: [], hotel: [], car: [], other: [] };
-
+        state.itinerary = record.itinerary || [];
+        state.diaryEntries = record.diaryEntries || [];
+        state.budgetItems = record.budgetItems || [];
+        state.infoItems = record.infoItems || { flight: [], hotel: [], car: [], other: [] };
     return true;
+    } catch (err) {
+        console.error('從 URL 加載數據失敗:', err);
+        state.sharedBinId = null;
+        return false;
+        }
 }
 
 // In app.js, ADD THIS NEW FUNCTION to check for updates
