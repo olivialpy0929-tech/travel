@@ -63,7 +63,7 @@ function initApp() {
         showPage('home-page');
         
         // 初始化天氣和匯率
-        updateWidgets(); // This now handles exchange, weather, AND countdown
+         initializeHeaderWidgets(); // This now handles exchange, weather, AND countdown
 
         
         console.log('應用初始化完成');
@@ -222,8 +222,7 @@ function showPage(pageId) {
             if (pageId === 'home-page') {
                 widgetRow.style.display = 'flex';
                 // 更新小工具數據
-                updateWeatherAndExchange();
-                updateCountdown();
+                initializeHeaderWidgets();
             } else {
                 widgetRow.style.display = 'none';
             }
@@ -1598,12 +1597,6 @@ function resetToEmptyState() {
         other: []
     };
 }
-
-// Global state (define if not already)
-let state = {
-    itinerary: JSON.parse(localStorage.getItem('itinerary')) || []
-    // Add other states as needed
-};
 
 // Update exchange (real Frankfurter API)
 // In app.js, at the bottom of the file
