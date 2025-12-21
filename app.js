@@ -1651,6 +1651,7 @@ async function generateShareLink() {
             headers: {
                 'Content-Type': 'application/json',
                 'X-Master-Key': JSONBIN_API_KEY,
+                'X-Bin-Private': 'false'
             },
             body: JSON.stringify(dataToShare)
         });
