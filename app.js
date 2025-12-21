@@ -1600,65 +1600,48 @@ function resetToEmptyState() {
     };
 }
 
-// 更新天氣和匯率
-function updateWeatherAndExchange() {
-    console.log('更新天氣和匯率...');
-    
-    async function updateExchangeRate() {
+// Global state (define if not already)
+let state = {
+    itinerary: JSON.parse(localStorage.getItem('itinerary')) || []
+    // Add other states as needed
+};
+
+// Update exchange (real Frankfurter API)
+async function updateExchangeRate() {
     const exchangeElement = document.getElementById('exchange-rate');
     if (!exchangeElement) return;
-
     try {
         const response = await fetch('https://api.frankfurter.app/latest?from=HKD&to=THB');
-        if (!response.ok) throw new Error('Network error');
-
         const data = await response.json();
         const rate = data.rates.THB;
-
-        if (rate) {
-            exchangeElement.textContent = `1 港幣 = ${rate.toFixed(3)} 泰銖`;
-        } else {
-            exchangeElement.textContent = '匯率載入失敗';
-        }
+        exchangeElement.textContent = `1 港幣 = ${rate.toFixed(3)} 泰銖`;
     } catch (error) {
-        console.error('無法載入匯率:', error);
-        exchangeElement.textContent = '離線模式';
+        console.error('Exchange error:', error);
+        exchangeElement.textContent = '匯率載入失敗';
     }
 }
 
-// 頁面載入時立即更新
-updateExchangeRate();
-
-// 可選：每小時自動更新一次（保持最新）
-setInterval(updateExchangeRate, 3600000); // 1小時 = 3600000 ms
-        
-        async function getBangkokWeather() {
+// Update weather (real Open-Meteo)
+async function updateWeather() {
+    const weatherElement = document.getElementById('weather-info');
+    if (!weatherElement) return;
     try {
-        const url = 'https://api.open-meteo.com/v1/forecast?latitude=13.7563&longitude=100.5018&current=temperature_2m,weather_code&daily=temperature_2m_max,temperature_2m_min,weather_code&timezone=Asia%2FBangkok';
+        const url = 'https://api.open-meteo.com/v1/forecast?latitude=13.7563&longitude=100.5018&current=temperature_2m,weather_code&timezone=Asia/Bangkok';
         const response = await fetch(url);
         const data = await response.json();
-
-        // Current temperature
-        const currentTemp = data.current.temperature_2m;
-        const currentCode = data.current.weather_code; // Use this for icons
-
-        console.log(`曼谷現在: ${currentTemp}°C`);
-
-        // You can also get daily max/min, etc.
+        const temp = data.current.temperature_2m;
+        const code = data.current.weather_code;
+        let icon = '☀️'; // Default
+        if (code >= 51 && code <= 67) icon = '🌧️'; // Rain
+        if (code >= 1 && code <= 3) icon = '🌤️'; // Cloudy
+        weatherElement.textContent = `曼谷: ${temp}°C, ${icon}`;
     } catch (error) {
-        console.error('Weather fetch error:', error);
+        console.error('Weather error:', error);
+        weatherElement.textContent = '天氣載入失敗';
     }
 }
 
-getBangkokWeather();
-        
-        console.log('天氣和匯率更新完成');
-    } catch (error) {
-        console.error('更新天氣和匯率時出錯:', error);
-    }
-}
-
-// 更新旅程倒數計時
+// Update countdown
 function updateCountdown() {
     const countdownElement = document.getElementById('countdown');
     if (!countdownElement) return;
@@ -1668,7 +1651,6 @@ function updateCountdown() {
         return;
     }
     
-    // 找出最早的活動日期
     let earliestDate = null;
     state.itinerary.forEach(activity => {
         const activityDate = new Date(activity.date);
@@ -1696,13 +1678,24 @@ function updateCountdown() {
     } else {
         countdownElement.textContent = '旅程已開始';
     }
-    
-    console.log('倒數計時更新完成:', daysDiff, '天');
 }
 
-// 定期更新天氣和匯率
-setInterval(updateWeatherAndExchange, 300000); // 每5分鐘更新一次
-setInterval(updateCountdown, 86400000); // 每天更新一次倒數計時
+// Combined update function
+async function updateWidgets() {
+    await updateExchangeRate();
+    await updateWeather();
+    updateCountdown();
+}
+
+// Load on start
+document.addEventListener('DOMContentLoaded', () => {
+    updateWidgets();
+    state.itinerary = JSON.parse(localStorage.getItem('itinerary')) || [];
+    // Your other render functions here...
+});
+
+// Auto refresh every 5 minutes
+setInterval(updateWidgets, 300000); // 5 minutes
 
 // 全局錯誤處理
 window.addEventListener('error', function(e) {
