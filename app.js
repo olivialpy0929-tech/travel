@@ -1640,55 +1640,66 @@ async function updateWeather() {
 }
 
 // Update countdown
+// PASTE THIS ENTIRE BLOCK AT THE END OF YOUR FILE:
+
+// Update countdown
 function updateCountdown() {
-const countdownElement = document.getElementById('countdown');
-if (!countdownElement) return;
+    const countdownElement = document.getElementById('countdown');
+    if (!countdownElement) return;
+
     if (state.itinerary.length === 0) {
-    countdownElement.textContent = '旅程倒數: -- 天';
-    return;
-}
-
-// Find the earliest date string from the itinerary
-let earliestDateString = null;
-state.itinerary.forEach(activity => {
-    if (!earliestDateString || activity.date < earliestDateString) {
-        earliestDateString = activity.date;
+        countdownElement.textContent = '旅程倒數: -- 天';
+        return;
     }
-});
 
-if (!earliestDateString) {
-    countdownElement.textContent = '旅程倒數: -- 天';
-    return;
-}
+    let earliestDateString = null;
+    state.itinerary.forEach(activity => {
+        if (!earliestDateString || activity.date < earliestDateString) {
+            earliestDateString = activity.date;
+        }
+    });
 
-const today = new Date();
-today.setHours(0, 0, 0, 0); 
+    if (!earliestDateString) {
+        countdownElement.textContent = '旅程倒數: -- 天';
+        return;
+    }
 
-const tripStartDate = new Date(earliestDateString + 'T00:00:00');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); 
 
-const timeDiff = tripStartDate.getTime() - today.getTime();
+    const tripStartDate = new Date(earliestDateString + 'T00:00:00');
 
-const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
+    const timeDiff = tripStartDate.getTime() - today.getTime();
+    const daysDiff = Math.ceil(timeDiff / (1000 * 3600 * 24));
 
-if (daysDiff > 0) {
-    countdownElement.textContent = `旅程倒數: ${daysDiff} 天`;
-} else if (daysDiff === 0) {
-    countdownElement.textContent = '旅程今天開始！';
-} else {
-    countdownElement.textContent = '旅程已開始';
-}
+    if (daysDiff > 0) {
+        countdownElement.textContent = `旅程倒數: ${daysDiff} 天`;
+    } else if (daysDiff === 0) {
+        countdownElement.textContent = '旅程今天開始！';
+    } else {
+        countdownElement.textContent = '旅程已開始';
+    }
 }
 
 // Combined update function (RENAMED)
 async function initializeHeaderWidgets() {
-   await updateExchangeRate();
-   await updateWeather();
-   updateCountdown();
+    await updateExchangeRate();
+    await updateWeather();
+    updateCountdown();
 }
 
 // Auto refresh every 5 minutes
 setInterval(initializeHeaderWidgets, 300000); // 5 minutes
 
+// Global error handler
+window.addEventListener('error', function(e) {
+    console.error('全局錯誤:', e.error);
+    console.error('錯誤訊息:', e.message);
+    console.error('錯誤位置:', e.filename, ':', e.lineno, ':', e.colno);
+});
+
+// Confirm script has loaded
+console.log('應用程式腳本加載完成');
 // ... (global error handler)
 
 window.addEventListener('error', function(e) {
