@@ -31,7 +31,7 @@ const state = {
     colors: ['#ff6b8b', '#38a169', '#ff8f00', '#9f7aea', '#ff5252', '#4299e1']
 };
 
-const JSONBIN_API_KEY = '$2a$10$SMnAyv3seaKebpHMYm65X..qh7jOSd47bCJbAuNYimjhxkqK//xf.';
+const JSONBIN_API_KEY = '$2a$10$dbv45BEoTLMwEza6bx1OEeft4WEmJYOzURuAcYM2/eiHSnrNl8XQy';
 
 // DOM 完全加載後初始化應用程序
 document.addEventListener('DOMContentLoaded', initApp);
