@@ -1582,39 +1582,43 @@ function saveToLocalStorage() {
     }
 }
 
-function loadFromLocalStorage() {
-    try {
-        const savedData = localStorage.getItem('travelAppData');
-        
-        if (savedData) {
-            const appData = JSON.parse(savedData);
-            const titleElement = document.getElementById('trip-title');
-            
-            if (titleElement && appData.tripTitle) {
-                titleElement.textContent = appData.tripTitle;
-            }
-            
-            state.itinerary = appData.itinerary || [];
-            state.diaryEntries = appData.diaryEntries || [];
-            state.budgetItems = appData.budgetItems || [];
-            state.infoItems = appData.infoItems || {
-                flight: [],
-                hotel: [],
-                car: [],
-                other: []
-            };
-            
-            console.log('從本地存儲加載數據成功');
-        } else {
-            console.log('本地存儲中沒有找到數據，使用默認空狀態');
-            resetToEmptyState();
-        }
-    } catch (error) {
-        console.error('從本地存儲加載數據時出錯:', error);
-        resetToEmptyState();
-    }
-}
+// REPLACE your old loadFromLocalStorage function with this one.
 
+function loadFromLocalStorage() {
+  try {
+    const savedData = localStorage.getItem('travelAppData');
+    
+    if (savedData) {
+      const appData = JSON.parse(savedData);
+      
+      // Get the title element
+      const titleElement = document.getElementById('trip-title');
+      if (titleElement && appData.tripTitle) {
+        titleElement.textContent = appData.tripTitle;
+      }
+      
+      // *** THIS IS THE CRITICAL FIX ***
+      // Update the global 'state' object with the loaded data.
+      state.itinerary = appData.itinerary || [];
+      state.diaryEntries = appData.diaryEntries || [];
+      state.budgetItems = appData.budgetItems || [];
+      state.infoItems = appData.infoItems || {
+        flight: [],
+        hotel: [],
+        car: [],
+        other: []
+      };
+      
+      console.log('從本地存儲加載數據成功');
+    } else {
+      console.log('本地存儲中沒有找到數據，使用默認空狀態');
+      // No need to call resetToEmptyState() here, it's already empty by default.
+    }
+  } catch (error) {
+    console.error('從本地存儲加載數據時出錯:', error);
+    resetToEmptyState(); // On error, we should clear everything.
+  }
+}
 // In app.js, add this new helper function
 
 function uint8ArrayToBase64(bytes) {
