@@ -1677,6 +1677,7 @@ if (daysDiff > 0) {
 } else {
     countdownElement.textContent = '旅程已開始';
 }
+}
 
 // Combined update function (RENAMED)
 async function initializeHeaderWidgets() {
