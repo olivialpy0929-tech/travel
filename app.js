@@ -30,6 +30,8 @@ const state = {
     colors: ['#ff6b8b', '#38a169', '#ff8f00', '#9f7aea', '#ff5252', '#4299e1']
 };
 
+const JSONBIN_API_KEY = '$2a$10$SMnAyv3seaKebpHMYm65X..qh7jOSd47bCJbAuNYimjhxkqK//xf.';
+
 // DOM 完全加載後初始化應用程序
 document.addEventListener('DOMContentLoaded', initApp);
 
@@ -47,8 +49,19 @@ function initApp() {
             document.getElementById('diary-date').value = today;
         }
         
-        // 從本地存儲加載數據
-        loadFromLocalStorage();
+        // NEW: Check for shared data in URL first
+        const sharedData = loadFromUrl();
+
+        if (sharedData) {
+            console.log('從 URL 加載共享數據...');
+            // If we load from URL, we don't load from localStorage
+            // We also disable saving to not overwrite the original user's data
+            document.getElementById('trip-title').contentEditable = false;
+            document.getElementById('share-trip-btn').style.display = 'none'; // Hide share button on a shared view
+        } else {
+            // Load from local storage if no URL data
+            loadFromLocalStorage();
+        }
         
         // 渲染初始數據
         renderItinerary();
@@ -145,6 +158,16 @@ function initEventListeners() {
         const infoForm = document.getElementById('info-form');
         if (infoForm) {
             infoForm.addEventListener('submit', addInfoItem);
+        }
+
+        const shareTripBtn = document.getElementById('share-trip-btn');
+        if (shareTripBtn) {
+            shareTripBtn.addEventListener('click', generateShareLink);
+        }
+
+        const copyLinkBtn = document.getElementById('copy-link-btn');
+        if (copyLinkBtn) {
+            copyLinkBtn.addEventListener('click', copyShareLink);
         }
         
         // 關閉彈出視窗按鈕
@@ -1585,6 +1608,138 @@ function loadFromLocalStorage() {
     }
 }
 
+// In app.js, add this new helper function
+
+function uint8ArrayToBase64(bytes) {
+    let binary = '';
+    const len = bytes.byteLength;
+    for (let i = 0; i < len; i++) {
+        binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+}
+
+// In app.js, REPLACE the existing generateShareLink function
+
+// In app.js, REPLACE the old generateShareLink function with this
+
+async function generateShareLink() {
+    const shareBtn = document.getElementById('share-trip-btn');
+    const originalIcon = shareBtn.innerHTML;
+    shareBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; // Show loading spinner
+    shareBtn.disabled = true;
+
+    const dataToShare = {
+        tripTitle: document.getElementById('trip-title').textContent,
+        itinerary: state.itinerary,
+        diaryEntries: state.diaryEntries,
+        budgetItems: state.budgetItems,
+        infoItems: state.infoItems
+    };
+
+    try {
+        // Make a POST request to JSONBin to create a new "bin" (a new record)
+        const response = await fetch('https://api.jsonbin.io/v3/b', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Master-Key': JSONBIN_API_KEY,
+                'X-Collection-Id': '66518f88e41b4d34e4f8d550' // Optional: helps organize your bins
+            },
+            body: JSON.stringify(dataToShare)
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to save data to cloud.');
+        }
+
+        const result = await response.json();
+        const binId = result.metadata.id; // This is the unique ID for our data
+
+        // Build the new, clean URL
+        const baseUrl = window.location.href.split('?')[0];
+        const shareUrl = `${baseUrl}?trip=${binId}`;
+
+        // Display the modal with the new link
+        const shareInput = document.getElementById('share-link-input');
+        if (shareInput) {
+            shareInput.value = shareUrl;
+            showModal('share-modal');
+            shareInput.select();
+        }
+
+    } catch (error) {
+        console.error('Share link generation failed:', error);
+        alert('無法生成分享連結，請檢查您的網絡或API密鑰。');
+    } finally {
+        // Restore button state
+        shareBtn.innerHTML = originalIcon;
+        shareBtn.disabled = false;
+    }
+}
+
+function copyShareLink() {
+    const shareInput = document.getElementById('share-link-input');
+    if (shareInput) {
+        navigator.clipboard.writeText(shareInput.value).then(() => {
+            const copyBtn = document.getElementById('copy-link-btn');
+            copyBtn.textContent = '已複製!';
+            setTimeout(() => {
+                copyBtn.textContent = '複製';
+                closeAllModals();
+            }, 2000);
+        }).catch(err => {
+            console.error('複製失敗:', err);
+            alert('複製連結失敗。');
+        });
+    }
+}
+
+// In app.js, REPLACE the existing loadFromUrl function
+
+// In app.js, REPLACE the old loadFromUrl function with this
+
+async function loadFromUrl() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const binId = urlParams.get('trip'); // Get the ID from the URL
+
+    if (!binId) {
+        return false; // No ID in URL, so we load from local storage
+    }
+
+    try {
+        // Fetch the data from JSONBin using the ID
+        const response = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`, {
+            method: 'GET',
+            headers: {
+                // You don't need the master key to read a public bin
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Could not fetch shared trip data.');
+        }
+
+        const loadedData = await response.json();
+
+        // Populate the state and UI (this part is the same as before)
+        if (document.getElementById('trip-title')) {
+            document.getElementById('trip-title').textContent = loadedData.tripTitle;
+        }
+        state.itinerary = loadedData.itinerary || [];
+        state.diaryEntries = loadedData.diaryEntries || [];
+        state.budgetItems = loadedData.budgetItems || [];
+        state.infoItems = loadedData.infoItems || { flight: [], hotel: [], car: [], other: [] };
+
+        return true; // Success!
+
+    } catch (error) {
+        console.error('從 URL 加載數據失敗:', error);
+        alert('無法加載共享的旅程連結，它可能已損壞或不存在。');
+        return false;
+    }
+}
+
 // 重置為空狀態
 function resetToEmptyState() {
     state.itinerary = [];
@@ -1702,11 +1857,3 @@ window.addEventListener('error', function(e) {
 console.log('應用程式腳本加載完成');
 // ... (global error handler)
 
-window.addEventListener('error', function(e) {
-    console.error('全局錯誤:', e.error);
-    console.error('錯誤訊息:', e.message);
-    console.error('錯誤位置:', e.filename, ':', e.lineno, ':', e.colno);
-});
-
-// 確保所有功能在頁面加載後可用
-console.log('應用程式腳本加載完成');
