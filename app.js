@@ -356,6 +356,8 @@ function initMap() {
     }
 }
 
+window.initMap = initMap;
+
 // 更新地圖標記
 function updateMapMarkers() {
     if (!state.mapInitialized || !state.map) {
