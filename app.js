@@ -38,45 +38,34 @@ function loadApp() {
 }
 
 // 初始化應用程序
-async function initApp() { // <-- MAKE THIS ASYNC
+// 修改 initApp() 函數的結尾部分
+async function initApp() {
     console.log('初始化應用...');
     
     try {
-        // Set default form dates
-        const today = new Date().toISOString().split('T')[0];
-        if (document.getElementById('activity-date')) {
-            document.getElementById('activity-date').value = today;
-        }
-        if (document.getElementById('diary-date')) {
-            document.getElementById('diary-date').value = today;
-        }
-        
-        // AWAIT the result of loading from the URL
-        const loadedFromCloud = await loadFromUrl(); // <-- AWAIT a boolean result
+        // ... 現有代碼 ...
 
-        if (loadedFromCloud) {
-            console.log('從雲端加載數據成功。合作模式已啟用。');
-            // Don't disable anything, we want collaboration!
-        } else {
-            // If we didn't load from cloud, load from local storage
-            console.log('未找到雲端數據，從本地存儲加載...');
-            loadFromLocalStorage();
-        }
-        
-        // Now render the data that was loaded (either from cloud or local)
+        // 渲染數據
         renderItinerary();
         renderDiaryEntries();
         renderBudgetItems();
         renderInfoItems();
         
-        // Initialize everything else
+        // 初始化其他功能
         initEventListeners();
         showPage('home-page');
         initializeHeaderWidgets(); 
         
         console.log('應用初始化完成');
-    } catch (error)
-    {
+        
+        // 確保定時器啟動
+        if (state.sharedBinId) {
+            console.log('協作模式已啟用，啟動定期更新檢查');
+            // 立即檢查一次更新
+            setTimeout(() => checkForUpdates(), 1000);
+        }
+        
+    } catch (error) {
         console.error('初始化應用時出錯:', error);
     }
 }
@@ -1716,80 +1705,136 @@ function copyShareLink() {
 
 
 async function loadFromUrl() {
-    const binId = new URLSearchParams(window.location.search).get('trip');
-    if (!binId) return false;
-        state.sharedBinId = binId;
+    const params = new URLSearchParams(window.location.search);
+    const binId = params.get('trip');
+    
+    if (!binId) {
+        console.log('URL中沒有行程ID，將從本地存儲加載');
+        return false;
+    }
+    
+    console.log('從URL檢測到行程ID:', binId);
+    state.sharedBinId = binId;
+    
     try {
-    const resp = await fetch('https://api.jsonbin.io/v3/b/' + binId + '/latest');
-    if (!resp.ok) throw new Error('無法獲取共享行程數據。');
+        const resp = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`);
+        
+        if (!resp.ok) {
+            if (resp.status === 404) {
+                console.log('找不到雲端數據，可能已被刪除');
+            } else {
+                console.error('獲取雲端數據失敗，狀態碼:', resp.status);
+            }
+            state.sharedBinId = null;
+            return false;
+        }
+        
         const data = await resp.json();
         const record = data.record || {};
+        
+        console.log('成功從雲端加載數據');
+        
+        // 更新UI
         const titleEl = document.getElementById('trip-title');
-    if (titleEl) titleEl.textContent = record.tripTitle || '我的泰國之旅';
+        if (titleEl) titleEl.textContent = record.tripTitle || '我的泰國之旅';
+
         state.itinerary = record.itinerary || [];
         state.diaryEntries = record.diaryEntries || [];
         state.budgetItems = record.budgetItems || [];
         state.infoItems = record.infoItems || { flight: [], hotel: [], car: [], other: [] };
-    return true;
+        
+        return true;
+        
     } catch (err) {
-        console.error('從 URL 加載數據失敗:', err);
+        console.error('從URL加載數據失敗:', err);
         state.sharedBinId = null;
         return false;
-        }
+    }
 }
 
 // In app.js, ADD THIS NEW FUNCTION to check for updates
 
 async function checkForUpdates() {
-  if (!state.sharedBinId) return;
-
-  try {
-    const resp = await fetch('https://api.jsonbin.io/v3/b/' + state.sharedBinId + '/latest');
-    if (!resp.ok) return;
-
-    const data = await resp.json();
-    const record = data.record || {};
-
-    // 檢查是否有更新
-    const current = JSON.stringify({
-      tripTitle: document.getElementById('trip-title').textContent,
-      itinerary: state.itinerary,
-      diaryEntries: state.diaryEntries,
-      budgetItems: state.budgetItems,
-      infoItems: state.infoItems
-    });
-
-    const cloud = JSON.stringify(record);
-
-    if (current !== cloud) {
-      console.log('檢測到雲端更新，正在同步...');
-      
-      // 顯示更新提示（可選）
-      showUpdateNotification();
-      
-      // 更新本地數據
-      const titleEl = document.getElementById('trip-title');
-      if (titleEl) titleEl.textContent = record.tripTitle || '我的泰國之旅';
-
-      state.itinerary = record.itinerary || [];
-      state.diaryEntries = record.diaryEntries || [];
-      state.budgetItems = record.budgetItems || [];
-      state.infoItems = record.infoItems || { flight: [], hotel: [], car: [], other: [] };
-
-      // 重新渲染所有頁面
-      renderItinerary();
-      renderDiaryEntries();
-      renderBudgetItems();
-      renderInfoItems();
-      
-      // 更新地圖標記
-      if (state.currentPage === 'map-page' && state.mapInitialized) {
-        updateMapMarkers();
-      }
+    if (!state.sharedBinId) {
+        console.log('沒有 sharedBinId，跳過檢查更新');
+        return;
     }
-  } catch (err) {
-    console.error('檢查更新時出錯:', err);
-  }
+
+    try {
+        console.log('正在檢查雲端更新...');
+        const resp = await fetch('https://api.jsonbin.io/v3/b/' + state.sharedBinId + '/latest');
+        if (!resp.ok) {
+            console.log('獲取雲端數據失敗');
+            return;
+        }
+
+        const data = await resp.json();
+        const record = data.record || {};
+
+        // 創建當前狀態的快照
+        const currentSnapshot = {
+            tripTitle: document.getElementById('trip-title').textContent,
+            itinerary: state.itinerary,
+            diaryEntries: state.diaryEntries,
+            budgetItems: state.budgetItems,
+            infoItems: state.infoItems
+        };
+
+        // 深度比較兩個對象
+        const hasChanges = !deepEqual(currentSnapshot, record);
+
+        if (hasChanges) {
+            console.log('檢測到雲端更新，正在同步...');
+            
+            // 顯示更新通知
+            showUpdateNotification();
+            
+            // 更新本地數據
+            const titleEl = document.getElementById('trip-title');
+            if (titleEl) titleEl.textContent = record.tripTitle || '我的泰國之旅';
+
+            state.itinerary = record.itinerary || [];
+            state.diaryEntries = record.diaryEntries || [];
+            state.budgetItems = record.budgetItems || [];
+            state.infoItems = record.infoItems || { flight: [], hotel: [], car: [], other: [] };
+
+            // 重新渲染所有頁面
+            renderItinerary();
+            renderDiaryEntries();
+            renderBudgetItems();
+            renderInfoItems();
+            
+            // 更新地圖標記
+            if (state.currentPage === 'map-page' && state.mapInitialized) {
+                updateMapMarkers();
+            }
+            
+            // 更新小工具
+            updateCountdown();
+        }
+    } catch (err) {
+        console.error('檢查更新時出錯:', err);
+    }
+}
+
+// 添加深度比較函數
+function deepEqual(obj1, obj2) {
+    if (obj1 === obj2) return true;
+    if (typeof obj1 !== 'object' || obj1 === null || typeof obj2 !== 'object' || obj2 === null) {
+        return false;
+    }
+    
+    const keys1 = Object.keys(obj1);
+    const keys2 = Object.keys(obj2);
+    
+    if (keys1.length !== keys2.length) return false;
+    
+    for (const key of keys1) {
+        if (!keys2.includes(key)) return false;
+        if (!deepEqual(obj1[key], obj2[key])) return false;
+    }
+    
+    return true;
 }
 
 // 添加更新通知函數（可選）
@@ -1907,7 +1952,6 @@ function updateCountdown() {
     }
 }
 async function saveToCloud() {
-    // Only run if we are in collaboration mode (we have a binId)
     if (!state.sharedBinId) return;
 
     console.log('正在保存更改到雲端...');
@@ -1922,15 +1966,20 @@ async function saveToCloud() {
 
     try {
         const response = await fetch(`https://api.jsonbin.io/v3/b/${state.sharedBinId}`, {
-            method: 'PUT', // PUT means UPDATE the entire record
+            method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
-                'X-Master-Key': JSONBIN_API_KEY
+                'X-Master-Key': JSONBIN_API_KEY,
+                'X-Bin-Private': 'false',  // 添加這行
+                'X-Bin-Versioning': 'false' // 添加這行
             },
             body: JSON.stringify(dataToSave)
         });
 
         if (!response.ok) {
+            console.error('雲端保存失敗，狀態碼:', response.status);
+            const errorText = await response.text();
+            console.error('錯誤詳情:', errorText);
             throw new Error('無法將更改保存到雲端。');
         }
 
@@ -1938,8 +1987,6 @@ async function saveToCloud() {
 
     } catch (error) {
         console.error('保存到雲端時出錯:', error);
-        // Optionally, alert the user that the save failed
-        // alert('無法保存您的最新更改，請檢查網絡連接。');
     }
 }
 
@@ -1959,6 +2006,18 @@ window.addEventListener('error', function(e) {
     console.error('錯誤訊息:', e.message);
     console.error('錯誤位置:', e.filename, ':', e.lineno, ':', e.colno);
 });
+
+function logCurrentState() {
+    console.log('=== 當前應用狀態 ===');
+    console.log('sharedBinId:', state.sharedBinId);
+    console.log('行程項目數:', state.itinerary.length);
+    console.log('日記條目數:', state.diaryEntries.length);
+    console.log('預算項目數:', state.budgetItems.length);
+    console.log('========================');
+}
+
+// 在數據保存和加載時調用
+logCurrentState();
 
 // Confirm script has loaded
 console.log('應用程式腳本加載完成');
