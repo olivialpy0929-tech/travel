@@ -29,12 +29,11 @@
             <div class="header-main">
                 <div class="title-container">
                     <h1 id="trip-title" contenteditable="true">我的泰國之旅 <span class="thai-emoji">🐘</span></h1>
-        <!-- 分享按鈕（使用 share.png） -->
-          <button id="share-trip-btn" type="button" title="分享旅程" aria-label="分享旅程"
-              style="display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; border:1px solid #ddd; background:#fff; border-radius:8px; cursor:pointer; padding:0;">
-                    <img src="share.png" alt="分享" style="width:18px; height:18px; display:block;">
-          </button>
-                </div>
+        <!-- 添加分享按鈕 -->
+                    <button id="share-trip-btn" title="分享旅程">
+                        <i class="fas fa-share-alt"></i>
+                </button>
+              </div>
             </div>
             
             <!-- 小工具行 (只在首頁顯示) -->
@@ -393,6 +392,26 @@
                 </div>
             </div>
         </div>
+
+        <!-- Share Modal -->
+        <div id="share-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>分享旅程</h3>
+                    <button class="close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                <p>複製下面的連結以分享您的旅程：</p>
+                <div class="share-link-container">
+                    <input type="text" id="share-link-input" readonly>
+                    <button id="copy-link-btn" class="btn-secondary">複製</button>
+                </div>
+                <p style="margin-top: 15px; font-size: 0.9rem; color: #8b7d7d;">
+                    <i class="fas fa-info-circle"></i> 分享後，其他人可以查看和編輯此行程
+                </p>
+                </div>
+            </div>
+        </div>
 <!-- ================= END OF NEW CODE BLOCK =================== -->
      <!-- PASTE THE NAV BAR HERE -->
     <nav class="bottom-nav">
@@ -422,5 +441,3 @@
     
 </body>
 </html>
-
-
