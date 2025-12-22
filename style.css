@@ -286,6 +286,21 @@ body {
     color: #3D352E;
 }
 
+#share-trip-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: 1px solid #ddd;
+    background: #fff;
+    border-radius: 8px;
+    cursor: pointer;
+    padding: 0;
+}
+#share-trip-btn:hover { background: #f7f7f7; }
+#share-trip-btn img { width: 18px; height: 18px; display: block; }
+
 
 /* =================================
    6. Itinerary Page & Timeline
@@ -697,9 +712,26 @@ body {
 .form-actions { margin-top: 30px; display: flex; justify-content: flex-end; }
 
 /* Share Modal specific styles */
-.share-link-container { display: flex; margin-top: 15px; }
-#share-link-input { flex-grow: 1; padding: 10px; border: 1px solid #e2e8f0; border-radius: 8px 0 0 8px; background-color: #f8fafc; font-size: 0.9rem; overflow-x: hidden; }
-#copy-link-btn { border-radius: 0 8px 8px 0; white-space: nowrap; }
+.share-link-container {
+  display: flex;
+  margin-top: 15px;
+}
+
+#share-link-input {
+  flex-grow: 1;
+  padding: 12px 15px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px 0 0 10px;
+  background-color: #f8fafc;
+  font-size: 0.9rem;
+  overflow-x: auto;
+}
+
+#copy-link-btn {
+  border-radius: 0 10px 10px 0;
+  white-space: nowrap;
+  padding: 12px 20px;
+}
 
 /* =================================
    13. Responsive Design
@@ -739,3 +771,5 @@ body {
     .day-section { padding: 16px; border-radius: 18px; }
     .activity-item { padding: 14px; }
 }
+
+
