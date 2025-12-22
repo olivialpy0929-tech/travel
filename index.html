@@ -81,12 +81,30 @@
                         <button id="show-route" class="btn-secondary">
                             <i class="fas fa-directions"></i> 顯示路線
                         </button>
-                        <div class="travel-time">
-                            <i class="fas fa-car"></i>
-                            <span id="total-travel-time">總時間: -- 分鐘</span>
-                        </div>
                     </div>
                 </div>
+                
+                <!-- ========== 交通時間查詢區塊 ========== -->
+                <div id="travel-query-box" class="travel-query-box">
+                 <div class="query-title">
+                     <i class="fas fa-stopwatch"></i>
+                    交通時間
+                </div>
+                <div class="query-controls">
+                    <select id="from-location" class="query-select">
+                        <option value="">選擇出發地點</option>
+                    </select>
+                    <span class="query-arrow">→</span>
+                    <select id="to-location" class="query-select">
+                        <option value="">選擇目的地</option>
+                    </select>
+                    <button id="query-time-btn" class="btn-primary" style="padding:8px 18px;font-size:1rem;">
+                        計算時間
+                    </button>
+                </div>
+            <div id="travel-query-result" class="query-result"></div>
+        </div>
+    <!-- ====================================== -->
                 <div id="map-container">
                     <div id="map">
                         <div class="map-loading">
