@@ -537,6 +537,94 @@ body {
 .rental-locations { background: linear-gradient(135deg, rgba(255, 107, 139, 0.05), rgba(255, 150, 170, 0.05)); padding: 20px; border-radius: 18px; margin-top: 25px; border: 1px solid rgba(255, 107, 139, 0.1); backdrop-filter: blur(5px); }
 .rental-item { margin-top: 12px; padding: 10px; background: rgba(255, 255, 255, 0.9); border-radius: 12px; display: flex; justify-content: space-between; }
 
+/* ======= Travel Query Box 交通查詢樣式 ======= */
+.travel-query-box {
+    background: rgba(255,255,255,0.85);
+    border-radius: 18px;
+    box-shadow: 0 6px 18px rgba(255,107,139,0.09), 0 1px 0 rgba(255,255,255,0.90) inset;
+    backdrop-filter: blur(16px);
+    border: 1.5px solid #ffe4ec;
+    padding: 18px 22px 12px;
+    margin-top: 18px;
+    margin-bottom: 12px;
+}
+
+.query-title {
+    font-family: 'Lora', 'Comfortaa', sans-serif;
+    color: #d6336c;
+    font-weight: 600;
+    font-size: 1.12rem;
+    margin-bottom: 12px;
+    display: flex; align-items: center;
+    gap: 8px;
+}
+
+.query-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+}
+
+.query-select {
+    border-radius: 12px;
+    border: 1.5px solid #ff6b8b;
+    background: #FFF9FB;
+    padding: 8px 12px;
+    font-family: 'Poppins', sans-serif;
+    color: #5a4d4d;
+    font-size: 1rem;
+    min-width: 130px;
+    box-shadow: 0 2px 8px rgba(255,107,139,0.05);
+    outline: none;
+    transition: border 0.2s, box-shadow 0.2s;
+}
+
+.query-select:focus {
+    border: 2px solid #ff8fb2;
+    box-shadow: 0 0 0 6px #ffe4ec45;
+}
+
+.query-arrow {
+    font-size: 1.19rem; color: #ff6b8b;
+}
+
+.query-result {
+    margin-top: 8px;
+    color: #5a4d4d;
+    font-size: 16px;
+    background: #FFF9FB;
+    border-radius: 12px;
+    padding: 8px 12px;
+    min-height: 24px;
+    transition: background 0.14s;
+    font-family: 'Poppins', sans-serif;
+}
+
+.query-result.success {
+    background: linear-gradient(90deg, #ffe4ec 70%, #fff4ff 100%);
+    color: #d6336c;
+    font-weight: 600;
+}
+
+.query-result.error {
+    background: #ffe4ec;
+    color: #bd376c;
+    font-weight: 500;
+}
+
+/* Marker Flash/Scale Anim */
+.gm-marker-flash {
+    animation: markerFlash 0.7s;
+}
+@keyframes markerFlash {
+    0%   { transform: scale(1);    filter: drop-shadow(0 0 0 rgba(255,107,139,0)); }
+    20%  { transform: scale(1.18); filter: drop-shadow(0 0 8px #ffdaf1); }
+    65%  { transform: scale(1.06); filter: drop-shadow(0 0 2px #ffdaf1); }
+    100% { transform: scale(1);    filter: drop-shadow(0 0 0 rgba(255,107,139,0)); }
+}
+
 /* =================================
    8. Diary Page
    ================================= */
