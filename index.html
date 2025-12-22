@@ -78,9 +78,6 @@
                 <div class="map-header">
                     <h2><i class="fas fa-map-marked-alt thai-emoji"></i> 旅程地圖</h2>
                     <div class="map-controls">
-                        <button id="show-route" class="btn-secondary">
-                            <i class="fas fa-directions"></i> 顯示路線
-                        </button>
                     </div>
                 </div>
                 
@@ -91,19 +88,21 @@
                     交通時間
                 </div>
                 <div class="query-controls">
-                    <select id="from-location" class="query-select">
-                        <option value="">選擇出發地點</option>
-                    </select>
-                    <span class="query-arrow">→</span>
-                    <select id="to-location" class="query-select">
-                        <option value="">選擇目的地</option>
-                    </select>
-                    <button id="query-time-btn" class="btn-primary" style="padding:8px 18px;font-size:1rem;">
-                        計算時間
-                    </button>
-                </div>
-            <div id="travel-query-result" class="query-result"></div>
+    <select id="from-location" class="query-select"><option value="">選擇出發地點</option></select>
+    <span class="query-arrow">→</span>
+    <select id="to-location" class="query-select"><option value="">選擇目的地</option></select>
+    <button id="query-time-btn" class="btn-primary" style="padding:8px 18px;font-size:1rem;">
+        計算時間
+    </button>
+    <button id="gmap-nav-btn" class="btn-primary soft-btn-disabled" style="padding:8px 18px;font-size:1rem;" disabled>
+        Google Maps導航🧭
+    </button>
+</div>
+<div id="travel-query-result" class="query-result"></div>
         </div>
+
+        <div class="travel-query-box">
+
     <!-- ====================================== -->
                 <div id="map-container">
                     <div id="map">
