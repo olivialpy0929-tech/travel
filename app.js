@@ -350,17 +350,6 @@ function formatLocation(loc) {
     return loc;
 }
 
-function resetGmapBtn() {
-    const navBtn = document.getElementById('gmap-nav-btn');
-    navBtn.disabled = true;
-    navBtn.classList.add('soft-btn-disabled');
-}
-
-function enableGmapBtn() {
-    const navBtn = document.getElementById('gmap-nav-btn');
-    navBtn.disabled = false;
-    navBtn.classList.remove('soft-btn-disabled');
-}
 
 
 async function queryTravelTime() {
@@ -369,8 +358,7 @@ async function queryTravelTime() {
     const resultBox = document.getElementById('travel-query-result');
     const navBtn = document.getElementById('gmap-nav-btn');
 
-    // 保證每次查詢都重置導航按鈕
-    resetGmapBtn();
+ 
 
     if (!fromSel || !toSel || !resultBox) return;
 
@@ -420,11 +408,10 @@ async function queryTravelTime() {
             // 記錄地址，供導航按鈕用
             window.gmapNavFrom = from;
             window.gmapNavTo = to;
-            enableGmapBtn();
+
         } else {
             resultBox.textContent = "查詢失敗，請檢查地點或稍後重試";
             resultBox.classList.add('error');
-            resetGmapBtn();
             window.gmapNavFrom = null;
             window.gmapNavTo = null;
             console.error("Distance Matrix API failure:", data);
@@ -432,7 +419,6 @@ async function queryTravelTime() {
     } catch (err) {
         resultBox.textContent = "查詢失敗，請檢查地點或稍後重試";
         resultBox.classList.add('error');
-        resetGmapBtn();
         window.gmapNavFrom = null;
         window.gmapNavTo = null;
         console.error("Distance Matrix error:", err);
@@ -441,20 +427,51 @@ async function queryTravelTime() {
 
 // 禁用導航按鈕（選單變動即重置）
 document.getElementById('from-location').onchange =
-document.getElementById('to-location').onchange = resetGmapBtn;
+
 
 // 計算時間
 document.getElementById('query-time-btn').onclick = queryTravelTime;
 
 // Google Maps導航按鈕
+function updateGmapNavBtnState() {
+    const from = document.getElementById('from-location').value.trim();
+    const to = document.getElementById('to-location').value.trim();
+    const navBtn = document.getElementById('gmap-nav-btn');
+    if (from && to && from !== to) {
+        navBtn.disabled = false;
+        navBtn.classList.remove('soft-btn-disabled');
+    } else {
+        navBtn.disabled = true;
+        navBtn.classList.add('soft-btn-disabled');
+    }
+}
+
+document.getElementById('from-location').addEventListener('change', updateGmapNavBtnState);
+document.getElementById('to-location').addEventListener('change', updateGmapNavBtnState);
+// 初次載入
+window.addEventListener('DOMContentLoaded', updateGmapNavBtnState);
+
 document.getElementById('gmap-nav-btn').onclick = function () {
-    if (!window.gmapNavFrom || !window.gmapNavTo) {
-        resetGmapBtn();
+    const fromSel = document.getElementById('from-location');
+    const toSel = document.getElementById('to-location');
+    const from = fromSel.value.trim();
+    const to = toSel.value.trim();
+    if (!from || !to || from === to) {
+        alert('請選擇不同的出發地點和目的地');
         return;
     }
-    const url = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(window.gmapNavFrom)}&destination=${encodeURIComponent(window.gmapNavTo)}&travelmode=driving`;
+    function formatLocation(loc) {
+        if (!loc) return '';
+        if (!/Bangkok|Thailand/i.test(loc)) return loc + ', Bangkok, Thailand';
+        return loc;
+    }
+    const url = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(formatLocation(from))}&destination=${encodeURIComponent(formatLocation(to))}&travelmode=driving`;
     window.open(url, '_blank');
 };
+
+// 綁定事件
+document.getElementById('from-location').addEventListener('change', updateGmapNavBtnState);
+document.getElementById('to-location').addEventListener('change', updateGmapNavBtnState);
 
 // ------ 初始化與事件註冊 --------
 // 建議在 initEventListeners/地圖頁 setup 處添加以下行
@@ -543,6 +560,7 @@ function showPage(pageId) {
                 }
             }, 100); // 給頁面切換動畫一點時間
         }
+        updateGmapNavBtnState(); // 確保按鈕狀態刷新正確
         
         // 如果是其他頁面，確保重新渲染內容
         if (pageId === 'home-page') {
@@ -619,6 +637,7 @@ function initMap() {
         
         // 更新標記
         updateMapMarkers();
+        updateGmapNavBtnState(); // 確保按鈕狀態刷新正確
         
         // 移除加載指示器
         const mapLoading = mapContainer.querySelector('.map-loading');
@@ -733,6 +752,7 @@ function updateMapMarkers() {
         console.log('地圖未初始化，跳過更新標記');
         return;
     }
+    updateGmapNavBtnState(); // 確保按鈕狀態刷新正確
 
     console.log('更新地圖標記...');
     // 清除現有標記
@@ -1007,6 +1027,9 @@ function populateLocationSelects() {
     if (fromSelect && prevFrom) fromSelect.value = prevFrom;
     if (toSelect && prevTo) toSelect.value = prevTo;
 }
+
+updateGmapNavBtnState(); // 確保按鈕狀態刷新正確
+
 // 顯示彈出視窗
 function showModal(modalId) {
     const modal = document.getElementById(modalId);
@@ -1055,6 +1078,7 @@ function highlightMarker(location) {
         }
     }
 }
+window.addEventListener('DOMContentLoaded', updateGmapNavBtnState); // 第一次載入
 
 // ================= Marker+Query互動 =================
 
@@ -1063,6 +1087,7 @@ function updateMapMarkers() {
         console.log('地圖未初始化，跳過更新標記');
         return;
     }
+    updateGmapNavBtnState(); // 確保按鈕狀態刷新正確
 
     // 清除現有標記
     state.mapMarkers.forEach(marker => marker.setMap(null));
@@ -1209,6 +1234,8 @@ function updateMapMarkers() {
     populateLocationSelects();
     setTimeout(initTravelQueryEvents,150); // 保證下拉已更新
 }
+updateGmapNavBtnState(); // 確保按鈕狀態刷新正確
+
 
 // =========== 在地圖頁載入後執行 updateMapMarkers (已有) ============
 
@@ -1513,6 +1540,7 @@ function addInfoItem(e) {
         if (type === 'car') {
             updateMapMarkers();
         }
+        updateGmapNavBtnState(); // 確保按鈕狀態刷新正確
 
         console.log('資訊項目保存成功:', item);
 
@@ -1553,7 +1581,8 @@ function deleteActivity(id) {
         if (state.currentPage === 'map-page' && state.mapInitialized) {
             updateMapMarkers();
         }
-        
+        updateGmapNavBtnState(); // 確保按鈕狀態刷新正確
+
         // 更新倒數計時
         updateCountdown();
         
@@ -1671,6 +1700,7 @@ function deleteInfoItem(type, id) {
         if (type === 'car' && state.currentPage === 'map-page' && state.mapInitialized) {
             updateMapMarkers();
         }
+        updateGmapNavBtnState(); // 確保按鈕狀態刷新正確
         
         console.log('刪除資訊項目:', type, id);
     }
@@ -2506,6 +2536,7 @@ async function checkForUpdates() {
             if (state.currentPage === 'map-page' && state.mapInitialized) {
                 updateMapMarkers();
             }
+            updateGmapNavBtnState(); // 確保按鈕狀態刷新正確
             
             // 更新小工具
             updateCountdown();
