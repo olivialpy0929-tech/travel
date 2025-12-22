@@ -1,6 +1,5 @@
 // 應用程序狀態
 // At the top of app.js, near your `state` object
-
 function getActivityTypeDetails(type) {
     const types = {
         'food': { icon: 'fas fa-utensils', color: '#f59e0b' }, // Amber
