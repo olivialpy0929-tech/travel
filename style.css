@@ -633,6 +633,15 @@ body {
   opacity: 0.5;
 }
 
+.btn-primary.soft-btn-disabled, .btn-primary[disabled] {
+    background: #ffe4ec !important;
+    color: #e5a2bf !important;
+    cursor: not-allowed;
+    opacity: 0.66;
+    box-shadow: none;
+}
+#gmap-nav-btn { margin-left: 8px; }
+
 /* =================================
    8. Diary Page
    ================================= */
@@ -867,5 +876,3 @@ body {
     .day-section { padding: 16px; border-radius: 18px; }
     .activity-item { padding: 14px; }
 }
-
-
