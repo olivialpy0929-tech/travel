@@ -1557,12 +1557,13 @@ function handleDragEnd() {
 // In app.js, REPLACE the old saveToLocalStorage function
 
 function saveData() {
-    // This is the "smart" function that decides where to save.
-    if (state.sharedBinId) {
-        saveToCloud(); // If we are in collaboration mode, save to the cloud.
-    } else {
-        saveToLocalStorage(); // Otherwise, save to the user's local device.
-    }
+  // 先保存到本地存儲
+  saveToLocalStorage();
+  
+  // 如果在協作模式，也保存到雲端
+  if (state.sharedBinId) {
+    saveToCloud();
+  }
 }
 
 // This is the original function, now just for local use.
@@ -1636,58 +1637,64 @@ function uint8ArrayToBase64(bytes) {
 // In app.js, REPLACE the old generateShareLink function with this
 
 async function generateShareLink() {
-    const shareBtn = document.getElementById('share-trip-btn');
-    const originalIcon = shareBtn.innerHTML;
-    shareBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; // Show loading spinner
-    shareBtn.disabled = true;
+  const shareBtn = document.getElementById('share-trip-btn');
+  const originalIcon = shareBtn.innerHTML;
+  shareBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+  shareBtn.disabled = true;
 
-    const dataToShare = {
-        tripTitle: document.getElementById('trip-title').textContent,
-        itinerary: state.itinerary,
-        diaryEntries: state.diaryEntries,
-        budgetItems: state.budgetItems,
-        infoItems: state.infoItems
-    };
+  const dataToShare = {
+    tripTitle: document.getElementById('trip-title').textContent,
+    itinerary: state.itinerary,
+    diaryEntries: state.diaryEntries,
+    budgetItems: state.budgetItems,
+    infoItems: state.infoItems
+  };
 
-    try {
-        // Make a POST request to JSONBin to create a new "bin" (a new record)
-        const response = await fetch('https://api.jsonbin.io/v3/b', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Master-Key': JSONBIN_API_KEY,
-                'X-Bin-Private': 'false'
-            },
-            body: JSON.stringify(dataToShare)
-        });
+  try {
+    const response = await fetch('https://api.jsonbin.io/v3/b', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': JSONBIN_API_KEY,
+        'X-Bin-Private': 'false'
+      },
+      body: JSON.stringify(dataToShare)
+    });
 
-        if (!response.ok) {
-            throw new Error('Failed to save data to cloud.');
-        }
-
-        const result = await response.json();
-        const binId = result.metadata.id; // This is the unique ID for our data
-
-        // Build the new, clean URL
-        const baseUrl = window.location.href.split('?')[0];
-        const shareUrl = `${baseUrl}?trip=${binId}`;
-
-        // Display the modal with the new link
-        const shareInput = document.getElementById('share-link-input');
-        if (shareInput) {
-            shareInput.value = shareUrl;
-            showModal('share-modal');
-            shareInput.select();
-        }
-
-    } catch (error) {
-        console.error('Share link generation failed:', error);
-        alert('無法生成分享連結，請檢查您的網絡或API密鑰。');
-    } finally {
-        // Restore button state
-        shareBtn.innerHTML = originalIcon;
-        shareBtn.disabled = false;
+    if (!response.ok) {
+      throw new Error('Failed to save data to cloud.');
     }
+
+    const result = await response.json();
+    const binId = result.metadata.id;
+
+    // 關鍵：將自己的應用轉為協作模式
+    state.sharedBinId = binId;
+    
+    // 立即保存當前狀態到雲端
+    saveData();
+
+    // 構建分享連結
+    const baseUrl = window.location.href.split('?')[0];
+    const shareUrl = `${baseUrl}?trip=${binId}`;
+
+    // 顯示模態框
+    const shareInput = document.getElementById('share-link-input');
+    if (shareInput) {
+      shareInput.value = shareUrl;
+      showModal('share-modal');
+      shareInput.select();
+    }
+
+    console.log('已切換到協作模式，將定期檢查更新');
+
+  } catch (error) {
+    console.error('Share link generation failed:', error);
+    alert('無法生成分享連結，請檢查您的網絡或API密鑰。');
+  } finally {
+    shareBtn.innerHTML = originalIcon;
+    shareBtn.disabled = false;
+  }
 }
 
 function copyShareLink() {
@@ -1734,36 +1741,74 @@ async function loadFromUrl() {
 // In app.js, ADD THIS NEW FUNCTION to check for updates
 
 async function checkForUpdates() {
-    if (!state.sharedBinId) return;
+  if (!state.sharedBinId) return;
+
+  try {
     const resp = await fetch('https://api.jsonbin.io/v3/b/' + state.sharedBinId + '/latest');
     if (!resp.ok) return;
 
     const data = await resp.json();
     const record = data.record || {};
 
+    // 檢查是否有更新
     const current = JSON.stringify({
-        tripTitle: document.getElementById('trip-title').textContent,
-        itinerary: state.itinerary,
-        diaryEntries: state.diaryEntries,
-        budgetItems: state.budgetItems,
-        infoItems: state.infoItems
+      tripTitle: document.getElementById('trip-title').textContent,
+      itinerary: state.itinerary,
+      diaryEntries: state.diaryEntries,
+      budgetItems: state.budgetItems,
+      infoItems: state.infoItems
     });
+
     const cloud = JSON.stringify(record);
 
     if (current !== cloud) {
-    const titleEl = document.getElementById('trip-title');
-    if (titleEl) titleEl.textContent = record.tripTitle || '我的泰國之旅';
+      console.log('檢測到雲端更新，正在同步...');
+      
+      // 顯示更新提示（可選）
+      showUpdateNotification();
+      
+      // 更新本地數據
+      const titleEl = document.getElementById('trip-title');
+      if (titleEl) titleEl.textContent = record.tripTitle || '我的泰國之旅';
 
-        state.itinerary = record.itinerary || [];
-        state.diaryEntries = record.diaryEntries || [];
-        state.budgetItems = record.budgetItems || [];
-        state.infoItems = record.infoItems || { flight: [], hotel: [], car: [], other: [] };
+      state.itinerary = record.itinerary || [];
+      state.diaryEntries = record.diaryEntries || [];
+      state.budgetItems = record.budgetItems || [];
+      state.infoItems = record.infoItems || { flight: [], hotel: [], car: [], other: [] };
 
-    renderItinerary();
-    renderDiaryEntries();
-    renderBudgetItems();
-    renderInfoItems();
+      // 重新渲染所有頁面
+      renderItinerary();
+      renderDiaryEntries();
+      renderBudgetItems();
+      renderInfoItems();
+      
+      // 更新地圖標記
+      if (state.currentPage === 'map-page' && state.mapInitialized) {
+        updateMapMarkers();
+      }
     }
+  } catch (err) {
+    console.error('檢查更新時出錯:', err);
+  }
+}
+
+// 添加更新通知函數（可選）
+function showUpdateNotification() {
+  // 創建一個臨時通知
+  const notification = document.createElement('div');
+  notification.innerHTML = `
+    <div style="position: fixed; top: 20px; right: 20px; background: #38a169; color: white; padding: 15px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); z-index: 9999; display: flex; align-items: center; gap: 10px;">
+      <i class="fas fa-sync-alt"></i>
+      <span>行程已更新！</span>
+    </div>
+  `;
+  
+  document.body.appendChild(notification);
+  
+  // 3秒後自動消失
+  setTimeout(() => {
+    notification.remove();
+  }, 3000);
 }
 
 // 重置為空狀態
