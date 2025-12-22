@@ -232,6 +232,31 @@ function initEventListeners() {
     }
 }
 
+function renderEllipsisText(text, type = "note") {
+  // type: "note" or "location"
+  // id 保證唯一
+  const id = `${type}-${Math.random().toString(36).substr(2, 8)}`;
+  return `<span class="${type}-ellipsis" id="${id}" title="點擊展開/複製">${text.replace(/</g, '&lt;')}</span>
+    <span class="ellipsis-copy-btn" onclick="copyToClipboard('${text.replace(/'/g, "\\'")}')">📋</span>
+    <script>
+      (function(){
+        var ele = document.getElementById('${id}');
+        if(ele){
+          ele.onclick = function(){
+            ele.classList.toggle('expanded');
+          };
+        }
+      })();
+    </script>`;
+}
+
+// 複製 function
+window.copyToClipboard = function(txt){
+  navigator.clipboard.writeText(txt);
+  alert('已複製！');
+};
+
+
 // ====== 地圖單一路線功能 變數 ======
 let lastQueryFrom = null;    // 儲存查詢的出發地（地址、座標皆可）
 let lastQueryTo = null;      // 儲存查詢的目的地
