@@ -1920,5 +1920,3 @@ console.log('應用程式腳本加載完成');
 
 // Check for new cloud updates every 15 seconds
 setInterval(checkForUpdates, 15000); 
-
-
