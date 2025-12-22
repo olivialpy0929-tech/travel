@@ -12,6 +12,26 @@ function getActivityTypeDetails(type) {
     };
     return types[type] || types['other'];
 }
+
+let updateTimer = null;
+function startUpdatePolling() {
+    if (updateTimer) return; // 防止重複啟動
+    updateTimer = setInterval(checkForUpdates, 15000);
+    setTimeout(checkForUpdates, 1000); // 立刻先檢查一次
+}
+
+function joinSharedBin(binId) {
+    state.sharedBinId = binId;
+    localStorage.setItem('sharedBinId', binId);
+    startUpdatePolling();
+}
+
+function leaveCollaboration() {
+state.sharedBinId = null;
+localStorage.removeItem('sharedBinId');
+if (updateTimer) { clearInterval(updateTimer); updateTimer = null; }
+}
+
 const state = {
     currentPage: 'home-page',
     sharedBinId: null,
@@ -1647,8 +1667,10 @@ function uint8ArrayToBase64(bytes) {
 
 async function generateShareLink() {
     const shareBtn = document.getElementById('share-trip-btn');
+    if (!shareBtn) return;
+
     const originalIcon = shareBtn.innerHTML;
-    shareBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    shareBtn.innerHTML = '';
     shareBtn.disabled = true;
 
     const dataToShare = {
@@ -1659,58 +1681,44 @@ async function generateShareLink() {
         infoItems: state.infoItems
     };
 
-    console.log('準備分享的數據:', dataToShare);
-
     try {
-        const response = await fetch('https://api.jsonbin.io/v3/b', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-Master-Key': JSONBIN_API_KEY,
-                'X-Bin-Private': 'false'
-            },
-            body: JSON.stringify(dataToShare)
-        });
+    const response = await fetch('https://api.jsonbin.io/v3/b', {
+    method: 'POST',
+    headers: {
+    'Content-Type': 'application/json',
+    'X-Master-Key': JSONBIN_API_KEY,
+    'X-Bin-Private': 'false'
+    },
+    body: JSON.stringify(dataToShare)
+    });
 
-        if (!response.ok) {
-            throw new Error('Failed to save data to cloud.');
-        }
+    if (!response.ok) throw new Error('Failed to save data to cloud.');
 
-        const result = await response.json();
-        const binId = result.metadata.id;
+    const result = await response.json();
+    const binId = result.metadata.id;
 
-        console.log('創建的 binId:', binId);
+    const baseUrl = window.location.href.split('?')[0];
+    const shareUrl = `${baseUrl}?trip=${binId}`;
+    try { history.replaceState(null, '', shareUrl); } catch (_) {}
 
-        // 關鍵：將自己的應用轉為協作模式
-        state.sharedBinId = binId;
-        
-        // 立即保存當前狀態到雲端
-        await saveData();
+    joinSharedBin(binId);
+    console.log('已切換到協作模式，將定期檢查更新');
 
-        // 構建分享連結
-        const baseUrl = window.location.href.split('?')[0];
-        const shareUrl = `${baseUrl}?trip=${binId}`;
-
-        console.log('分享連結:', shareUrl);
-
-        // 顯示模態框
-        const shareInput = document.getElementById('share-link-input');
-        if (shareInput) {
-            shareInput.value = shareUrl;
-            showModal('share-modal');
-            shareInput.select();
-        }
-
-        console.log('已切換到協作模式，將定期檢查更新');
-
+    const shareInput = document.getElementById('share-link-input');
+    if (shareInput) {
+    shareInput.value = shareUrl;
+    showModal('share-modal');
+    shareInput.select();
+    }
     } catch (error) {
-        console.error('Share link generation failed:', error);
-        alert('無法生成分享連結，請檢查您的網絡或API密鑰。');
+    console.error('Share link generation failed:', error);
+    alert('無法生成分享連結，請檢查您的網絡或API密鑰。');
     } finally {
-        shareBtn.innerHTML = originalIcon;
-        shareBtn.disabled = false;
+    shareBtn.innerHTML = originalIcon;
+    shareBtn.disabled = false;
     }
 }
+
 
 function copyShareLink() {
     const shareInput = document.getElementById('share-link-input');
@@ -1731,51 +1739,70 @@ function copyShareLink() {
 
 
 async function loadFromUrl() {
-    const params = new URLSearchParams(window.location.search);
-    const binId = params.get('trip');
-    
-    if (!binId) {
-        console.log('URL中沒有行程ID，將從本地存儲加載');
-        return false;
-    }
-    
-    console.log('從URL檢測到行程ID:', binId);
-    state.sharedBinId = binId;
-    
-    try {
-        const resp = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest`);
-        
-        if (!resp.ok) {
-            if (resp.status === 404) {
-                console.log('找不到雲端數據，可能已被刪除');
-            } else {
-                console.error('獲取雲端數據失敗，狀態碼:', resp.status);
-            }
-            state.sharedBinId = null;
-            return false;
-        }
-        
-        const data = await resp.json();
-        const record = data.record || {};
-        
-        console.log('成功從雲端加載數據');
-        
-        // 更新UI
-        const titleEl = document.getElementById('trip-title');
-        if (titleEl) titleEl.textContent = record.tripTitle || '我的泰國之旅';
+const params = new URLSearchParams(window.location.search);
+let binId = params.get('trip');
 
-        state.itinerary = record.itinerary || [];
-        state.diaryEntries = record.diaryEntries || [];
-        state.budgetItems = record.budgetItems || [];
-        state.infoItems = record.infoItems || { flight: [], hotel: [], car: [], other: [] };
-        
-        return true;
-        
-    } catch (err) {
-        console.error('從URL加載數據失敗:', err);
-        state.sharedBinId = null;
-        return false;
-    }
+// If URL has no ?trip=, try last shared bin from localStorage and patch the URL
+if (!binId) {
+const stored = localStorage.getItem('sharedBinId');
+if (stored) {
+binId = stored;
+const baseUrl = window.location.href.split('?')[0];
+try { history.replaceState(null, '', `${baseUrl}?trip=${stored}`); } catch (_) {}
+} else {
+console.log('URL中沒有行程ID，將從本地存儲加載');
+return false;
+}
+}
+
+console.log('從URL/本地記錄檢測到行程ID:', binId);
+
+try {
+// Cache-buster to avoid stale responses
+const resp = await fetch(`https://api.jsonbin.io/v3/b/${binId}/latest?t=${Date.now()}`);
+if (!resp.ok) {
+if (resp.status === 404) {
+console.log('找不到雲端數據，可能已被刪除或權限問題');
+} else {
+console.error('獲取雲端數據失敗，狀態碼:', resp.status);
+}
+// Clear collaboration state on failure
+state.sharedBinId = null;
+localStorage.removeItem('sharedBinId');
+return false;
+}
+
+const data = await resp.json();
+const record = data.record || {};
+
+// Update UI and state
+const titleEl = document.getElementById('trip-title');
+if (titleEl) titleEl.textContent = record.tripTitle || '我的泰國之旅';
+
+state.itinerary = Array.isArray(record.itinerary) ? record.itinerary : [];
+state.diaryEntries = Array.isArray(record.diaryEntries) ? record.diaryEntries : [];
+state.budgetItems = Array.isArray(record.budgetItems) ? record.budgetItems : [];
+const info = record.infoItems || {};
+state.infoItems = {
+  flight: Array.isArray(info.flight) ? info.flight : [],
+  hotel: Array.isArray(info.hotel) ? info.hotel : [],
+  car: Array.isArray(info.car) ? info.car : [],
+  other: Array.isArray(info.other) ? info.other : []
+};
+
+// Join collaboration only after successful load
+joinSharedBin(binId);
+
+// Kick an immediate check once
+setTimeout(() => { try { checkForUpdates(); } catch (_) {} }, 1000);
+
+return true;
+} catch (err) {
+console.error('從URL加載數據失敗:', err);
+state.sharedBinId = null;
+localStorage.removeItem('sharedBinId');
+return false;
+}
 }
 
 // In app.js, ADD THIS NEW FUNCTION to check for updates
