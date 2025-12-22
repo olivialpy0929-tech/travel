@@ -1,5 +1,6 @@
 // 應用程序狀態
 // At the top of app.js, near your `state` object
+
 function getActivityTypeDetails(type) {
     const types = {
         'food': { icon: 'fas fa-utensils', color: '#f59e0b' }, // Amber
@@ -224,11 +225,6 @@ function initEventListeners() {
             });
         }
         
-        // 顯示路線按鈕
-        const showRouteBtn = document.getElementById('show-route');
-        if (showRouteBtn) {
-            showRouteBtn.addEventListener('click', showRouteOnMap);
-        }
         
         console.log('事件監聽器初始化完成');
     } catch (error) {
@@ -295,8 +291,8 @@ async function queryTravelTime() {
   try {
     // 若 from/to 是座標建議直接用，否則用地址（假設你的 value 是地址）
     // 依據你現有 queryTravelTime 中 Google Distance Matrix API 來寫
-    const apiKey = '你的API KEY';
-    const baseUrl = `https://maps.googleapis.com/maps/api/distancematrix/json?language=zh-TW&units=metric&origins=${encodeURIComponent(from)}&destinations=${encodeURIComponent(to)}&mode=driving&key=${apiKey}`;
+    const apiKey = 'AIzaSyCaoU4qICEMFvEGY2AdoCUP-nlVjBj3bSM';
+    const baseUrl = `https://maps.googleapis.com/maps/api/distancematrix/json?language=zh-HK&units=metric&origins=${encodeURIComponent(from)}&destinations=${encodeURIComponent(to)}&mode=driving&key=${apiKey}`;
     const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(baseUrl);
 
     const resp = await fetch(proxyUrl);
@@ -345,87 +341,120 @@ async function queryTravelTime() {
   }
 }
 
-// 顯示路線按鈕 click 行為
-function handleShowRouteClick() {
-  const showRouteBtn = document.getElementById('show-route-btn');
-  if (!lastQueryFrom || !lastQueryTo) {
-    showTip("請先選擇出發地與目的地並計算時間");
-    return;
-  }
-
-  // 開始顯示單一路線
-  const directionsService = new google.maps.DirectionsService();
-
-  // 清除舊路線
-  if (singleRouteRenderer) {
-    singleRouteRenderer.setMap(null);
-    singleRouteRenderer = null;
-  }
-  singleRouteActive = false;
-
-  singleRouteRenderer = new google.maps.DirectionsRenderer({
-    suppressMarkers: false,
-    polylineOptions: {
-      strokeColor: '#d63384',
-      strokeWeight: 6,
-      strokeOpacity: 0.88
+function formatLocation(loc) {
+    if (!loc) return '';
+    // 保證是地址，根據需求補全
+    if (!/Bangkok/i.test(loc) && !/Thailand/i.test(loc)) {
+        return `${loc}, Bangkok, Thailand`;
     }
-  });
-
-  if (state.map) singleRouteRenderer.setMap(state.map);
-
-  showTip("正在尋找最佳路線...");
-
-  const request = {
-    origin: lastQueryFrom,
-    destination: lastQueryTo,
-    travelMode: 'DRIVING'
-  };
-
-  directionsService.route(request, function(result, status) {
-    if (status === 'OK') {
-      singleRouteRenderer.setDirections(result);
-      singleRouteActive = true;
-
-      showTip("已顯示專屬路線 ♡(｡>∀<｡)");
-      // 顯示清除路線按鈕
-      showClearRouteButton();
-    } else {
-      showTip("無法繪製路線，請稍後再試～");
-      singleRouteRenderer.setMap(null);
-      singleRouteRenderer = null;
-      singleRouteActive = false;
-    }
-  });
+    return loc;
 }
 
-// 清除單一路線按鈕及行為
-function showClearRouteButton() {
-  // 不重複加
-  let clrBtn = document.getElementById('clear-route-btn');
-  if (clrBtn) return;
-  clrBtn = document.createElement('button');
-  clrBtn.id = 'clear-route-btn';
-  clrBtn.innerHTML = '清除路線';
-  clrBtn.style.cssText = `
-    position: fixed; top: 62px; left: 56%; transform: translateX(-50%);
-    background: #ffb9dd; color: #fff9fb; border:none; border-radius:18px;
-    box-shadow:0 2px 16px rgba(255,92,159,0.12); font-size:1rem; font-family:'Poppins',sans-serif;
-    padding:6px 24px; cursor:pointer; z-index:9999;
-  `;
-  document.body.appendChild(clrBtn);
-
-  clrBtn.onclick = function() {
-    if (singleRouteRenderer) {
-      singleRouteRenderer.setMap(null);
-      singleRouteRenderer = null;
-      singleRouteActive = false;
-      // 保持 from/to 不清除
-    }
-    clrBtn.remove();
-    showTip("路線已清除(˶‾᷄ ⁻̫ ‾᷅˵)");
-  };
+function resetGmapBtn() {
+    const navBtn = document.getElementById('gmap-nav-btn');
+    navBtn.disabled = true;
+    navBtn.classList.add('soft-btn-disabled');
 }
+
+function enableGmapBtn() {
+    const navBtn = document.getElementById('gmap-nav-btn');
+    navBtn.disabled = false;
+    navBtn.classList.remove('soft-btn-disabled');
+}
+
+
+async function queryTravelTime() {
+    const fromSel = document.getElementById('from-location');
+    const toSel = document.getElementById('to-location');
+    const resultBox = document.getElementById('travel-query-result');
+    const navBtn = document.getElementById('gmap-nav-btn');
+
+    // 保證每次查詢都重置導航按鈕
+    resetGmapBtn();
+
+    if (!fromSel || !toSel || !resultBox) return;
+
+    const from = formatLocation(fromSel.value.trim());
+    const to = formatLocation(toSel.value.trim());
+
+    resultBox.textContent = '';
+    resultBox.className = 'query-result';
+
+    if (!from || !to) {
+        resultBox.textContent = '請選擇出發地點及目的地。';
+        resultBox.classList.add('error');
+        return;
+    }
+    if (from === to) {
+        resultBox.textContent = '相同地點，無需移動。';
+        resultBox.classList.add('success');
+        return;
+    }
+
+    resultBox.textContent = '查詢中...';
+    resultBox.classList.remove('error', 'success');
+
+    try {
+        // Distance Matrix API（請填入你的API KEY）
+        const apiKey = '你的API KEY';
+        const baseUrl = `https://maps.googleapis.com/maps/api/distancematrix/json?language=zh-TW&units=metric&origins=${encodeURIComponent(from)}&destinations=${encodeURIComponent(to)}&mode=driving&key=${apiKey}`;
+        const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(baseUrl);
+
+        const resp = await fetch(proxyUrl);
+        const data = await resp.json();
+
+        if (
+            data &&
+            data.rows &&
+            data.rows[0] &&
+            data.rows[0].elements &&
+            data.rows[0].elements[0] &&
+            data.rows[0].elements[0].status === "OK"
+        ) {
+            const element = data.rows[0].elements[0];
+            const durationText = String(element.duration.text).replace('分鐘', ' 分鐘');
+            const distanceText = String(element.distance.text).replace('公里', ' 公里');
+            resultBox.innerHTML = `<span style="font-weight:600;">約 ${durationText}（${distanceText}）</span>`;
+            resultBox.classList.add('success');
+
+            // 記錄地址，供導航按鈕用
+            window.gmapNavFrom = from;
+            window.gmapNavTo = to;
+            enableGmapBtn();
+        } else {
+            resultBox.textContent = "查詢失敗，請檢查地點或稍後重試";
+            resultBox.classList.add('error');
+            resetGmapBtn();
+            window.gmapNavFrom = null;
+            window.gmapNavTo = null;
+            console.error("Distance Matrix API failure:", data);
+        }
+    } catch (err) {
+        resultBox.textContent = "查詢失敗，請檢查地點或稍後重試";
+        resultBox.classList.add('error');
+        resetGmapBtn();
+        window.gmapNavFrom = null;
+        window.gmapNavTo = null;
+        console.error("Distance Matrix error:", err);
+    }
+}
+
+// 禁用導航按鈕（選單變動即重置）
+document.getElementById('from-location').onchange =
+document.getElementById('to-location').onchange = resetGmapBtn;
+
+// 計算時間
+document.getElementById('query-time-btn').onclick = queryTravelTime;
+
+// Google Maps導航按鈕
+document.getElementById('gmap-nav-btn').onclick = function () {
+    if (!window.gmapNavFrom || !window.gmapNavTo) {
+        resetGmapBtn();
+        return;
+    }
+    const url = `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(window.gmapNavFrom)}&destination=${encodeURIComponent(window.gmapNavTo)}&travelmode=driving`;
+    window.open(url, '_blank');
+};
 
 // ------ 初始化與事件註冊 --------
 // 建議在 initEventListeners/地圖頁 setup 處添加以下行
