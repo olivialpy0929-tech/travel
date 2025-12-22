@@ -311,6 +311,9 @@ function showPage(pageId) {
     }
 }
 
+// ==== Travel Time Query 交通時間查詢 ====
+
+
 // 窗口大小改變時調整佈局
 window.addEventListener('resize', function() {
     // 如果在地圖頁面，重新調整地圖大小
@@ -386,91 +389,238 @@ function initMap() {
     }
 }
 
+function formatLocation(loc) {
+    if (!loc) return '';
+    // 如果地名沒包含 Bangkok / Thailand，就補全
+    if (!/Bangkok/i.test(loc) && !/Thailand/i.test(loc)) {
+        return `${loc}, Bangkok, Thailand`;
+    }
+    return loc;
+}
+
+async function queryTravelTime() {
+    const fromSel = document.getElementById('from-location');
+    const toSel = document.getElementById('to-location');
+    const resultBox = document.getElementById('travel-query-result');
+    if (!fromSel || !toSel || !resultBox) return;
+
+    const from = formatLocation(fromSel.value.trim());
+    const to = formatLocation(toSel.value.trim());
+
+    resultBox.textContent = '';
+    resultBox.className = 'query-result';
+
+    if (!from || !to) {
+        resultBox.textContent = '請選擇出發地點及目的地。';
+        resultBox.classList.add('error');
+        return;
+    }
+    if (from === to) {
+        resultBox.textContent = '相同地點，無需移動。';
+        resultBox.classList.add('success');
+        return;
+    }
+    resultBox.textContent = '查詢中...';
+    resultBox.classList.remove('error', 'success');
+
+    try {
+        const apiKey = 'AIzaSyCaoU4qICEMFvEGY2AdoCUP-nlVjBj3bSM'; // ← 請換成你的
+        const baseUrl = `https://maps.googleapis.com/maps/api/distancematrix/json?language=zh-TW&units=metric&origins=${encodeURIComponent(from)}&destinations=${encodeURIComponent(to)}&mode=driving&key=${apiKey}`;
+        const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(baseUrl);
+
+        const resp = await fetch(proxyUrl);
+        const data = await resp.json();
+
+        if (
+            data &&
+            data.rows &&
+            data.rows[0] &&
+            data.rows[0].elements &&
+            data.rows[0].elements[0] &&
+            data.rows[0].elements[0].status === "OK"
+        ) {
+            const element = data.rows[0].elements[0];
+            const durationText = String(element.duration.text).replace('分鐘', ' 分鐘');
+            const distanceText = String(element.distance.text).replace('公里', ' 公里');
+            resultBox.innerHTML = `
+                <span style="font-weight:600;">
+                    約 ${durationText}（${distanceText}）
+                </span>
+            `;
+            resultBox.classList.add('success');
+        } else {
+            let apiMsg = "查詢失敗，請檢查地點或稍後重試";
+            if (
+                data &&
+                data.rows &&
+                data.rows[0] &&
+                data.rows[0].elements &&
+                data.rows[0].elements[0]
+            ) {
+                const status = data.rows[0].elements[0].status;
+                apiMsg += "（API回應: " + status + "）";
+            }
+            resultBox.textContent = apiMsg;
+            resultBox.classList.add('error');
+            console.error("Distance Matrix API failure:", data);
+        }
+    } catch (err) {
+        resultBox.textContent = "查詢失敗，請檢查地點或稍後重試";
+        resultBox.classList.add('error');
+        console.error("Distance Matrix error:", err);
+    }
+}
+
 // 更新地圖標記
 function updateMapMarkers() {
     if (!state.mapInitialized || !state.map) {
         console.log('地圖未初始化，跳過更新標記');
         return;
     }
-    
+
     console.log('更新地圖標記...');
-    
     // 清除現有標記
-    state.mapMarkers.forEach(marker => {
-        marker.setMap(null);
-    });
+    state.mapMarkers.forEach(marker => marker.setMap(null));
     state.mapMarkers = [];
-    
+
+    // InfoWindow 單例（同時只開一個）
+    if (!state.infoWindow) {
+        state.infoWindow = new google.maps.InfoWindow();
+    } else {
+        state.infoWindow.close();
+    }
+
     // 更新地點列表
     const locationsList = document.getElementById('locations-list');
     if (!locationsList) return;
-    
     locationsList.innerHTML = '';
-    
-    // 從行程添加標記
-    const locations = [];
+
+    // 準備 sidebar list <li> 物件，之後可高亮
+    const sidebarItems = [];
     const bounds = new google.maps.LatLngBounds();
-    
-    state.itinerary.forEach(activity => {
-        if (activity.location && activity.location.trim() !== '') {
-            locations.push(activity.name);
-            
-            // 為演示生成曼谷附近的隨機座標
-            const lat = 13.7563 + (Math.random() - 0.5) * 0.1;
-            const lng = 100.5018 + (Math.random() - 0.5) * 0.1;
-            const position = { lat, lng };
-            
-            const marker = new google.maps.Marker({
-                position: position,
-                map: state.map,
-                title: activity.name,
-                icon: {
-                    url: 'http://maps.google.com/mapfiles/ms/icons/red-dot.png'
-                }
-            });
-            
-            const infoWindow = new google.maps.InfoWindow({
-                content: `<div style="padding: 10px;"><b>${activity.name}</b><br>${activity.time}<br>${activity.location}</div>`
-            });
-            
-            marker.addListener('click', () => {
-                infoWindow.open(state.map, marker);
-            });
-            
-            state.mapMarkers.push(marker);
-            bounds.extend(position);
-        }
-    });
-    
-    // 更新地點列表
-    if (locations.length > 0) {
-        locations.forEach(location => {
-            const li = document.createElement('li');
-            li.innerHTML = `<i class="fas fa-map-marker-alt"></i> ${location}`;
-            locationsList.appendChild(li);
-        });
-        
-        // 自動調整地圖視野以包含所有標記
-        if (state.mapMarkers.length > 0) {
-            state.map.fitBounds(bounds);
-            // 如果只有一個標記，設置適當的縮放級別
-            if (state.mapMarkers.length === 1) {
-                setTimeout(() => {
-                    state.map.setZoom(14);
-                }, 300);
+
+    // 對有地點的活動建立 marker & sidebar
+    const activitiesWithLocation = state.itinerary.filter(a => a.location && a.location.trim() !== '');
+    activitiesWithLocation.forEach((activity, idx) => {
+        // 座標 (範例：隨機曼谷附近)
+        const lat = 13.7563 + (Math.random() - 0.5) * 0.1;
+        const lng = 100.5018 + (Math.random() - 0.5) * 0.1;
+        const position = { lat, lng };
+        bounds.extend(position);
+
+        // marker 圖標顏色可根據活動類型
+        const typeDetails = getActivityTypeDetails(activity.type);
+        const marker = new google.maps.Marker({
+            position,
+            map: state.map,
+            title: activity.name,
+            icon: {
+                url: `https://maps.google.com/mapfiles/ms/icons/${typeDetails.color === '#f59e0b' ? 'orange' :
+                        typeDetails.color === '#ec4899' ? 'pink' :
+                        typeDetails.color === '#8b5cf6' ? 'purple' :
+                        typeDetails.color === '#3b82f6' ? 'blue' :
+                        typeDetails.color === '#10b981' ? 'green' : 'red'}-dot.png`
             }
+        });
+
+        // sidebar list item
+        const li = document.createElement('li');
+        li.innerHTML = `
+            <i class="fas fa-map-marker-alt" style="color:${typeDetails.color};"></i>
+            <div>
+                <div style="font-weight:600;">${activity.name}</div>
+                <div style="font-size:13px;color:#8b7d7d;">${activity.time}｜${activity.location}</div>
+                ${activity.notes ? `<div style="font-size:12px;color:#6d5d5d;">${activity.notes}</div>` : ''}
+            </div>
+        `;
+        li.classList.add('sidebar-activity');
+        li.style.cursor = 'pointer';
+        locationsList.appendChild(li);
+        sidebarItems.push(li);
+
+        // marker click handler
+        marker.addListener('click', () => {
+            // 1. 地圖自動平移置中
+            state.map.panTo(position);
+            // 2. 放大
+            state.map.setZoom(16);
+
+            // 3. 打開 InfoWindow（美化樣式）
+            state.infoWindow.setOptions({
+                pixelOffset: new google.maps.Size(0, -8)
+            });
+            state.infoWindow.setContent(`
+                <div style="
+                    background: #fff9fb;
+                    border-radius: 16px;
+                    box-shadow: 0 6px 24px rgba(255,107,139,0.13);
+                    padding: 16px 18px;
+                    min-width: 180px;
+                    font-family: 'Poppins', 'Lora', sans-serif;
+                    color: #5a4d4d;
+                    position:relative;
+                ">
+                    <div style="font-weight:700;font-size:16px;display:flex;align-items:center;gap:8px;">
+                        <i class="${typeDetails.icon}" style="color:${typeDetails.color};font-size:16px;"></i>
+                        <span>${activity.name}</span>
+                    </div>
+                    <div style="margin-top:8px;font-size:13px;color:#8b7d7d;">
+                        <i class="fas fa-clock"></i> ${activity.time}
+                    </div>
+                    <div style="margin-top:4px;font-size:13px;color:#6d5d5d;">
+                        <i class="fas fa-map-marker-alt"></i> ${activity.location}
+                    </div>
+                    ${activity.notes ? `<div style="margin-top:8px;font-size:12px;background:#ffe4ec;padding:8px 10px;border-radius:8px;color:#d6336c;">${activity.notes}</div>` : ''}
+                </div>
+            `);
+            state.infoWindow.open(state.map, marker);
+
+            // 4. sidebar list 高亮
+            sidebarItems.forEach(item => item.classList.remove('highlighted'));
+            li.classList.add('highlighted');
+            // 滾動 sidebar 到該項目
+            li.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+
+        // sidebar 點擊也會觸發 marker 點擊
+        li.addEventListener('click', () => {
+            google.maps.event.trigger(marker, 'click');
+        });
+
+        state.mapMarkers.push(marker);
+    });
+
+    // sidebar 高亮樣式
+    const style = document.createElement('style');
+    style.innerHTML = `
+        #locations-list li.highlighted {
+            background: linear-gradient(90deg, #ffe4ec 80%, #fff);
+            border: 2px solid #ff6b8b;
+            box-shadow: 0 2px 14px rgba(255,107,139,0.10);
         }
-    } else {
+    `;
+    document.head.appendChild(style);
+
+    // sidebar 空狀態
+    if (activitiesWithLocation.length === 0) {
         const li = document.createElement('li');
         li.className = 'empty';
         li.textContent = '尚未添加地點';
         locationsList.appendChild(li);
+    } else {
+        // 調整地圖視野
+        state.map.fitBounds(bounds);
+        // 若只有一個標記，zoom 到 15
+        if (state.mapMarkers.length === 1) {
+            setTimeout(() => {
+                state.map.setZoom(15);
+            }, 300);
+        }
     }
-    
+
     // 更新租車地點
     const pickupLocation = document.getElementById('pickup-location');
     const returnLocation = document.getElementById('return-location');
-    
     if (state.infoItems.car.length > 0) {
         const carInfo = state.infoItems.car[0];
         if (pickupLocation) pickupLocation.textContent = carInfo.pickUpLocation || '--';
@@ -569,6 +719,224 @@ function showInfoModal(section) {
     updateInfoFormFields(section);
     showModal('info-modal');
 }
+// Helper: 保留 marker 資料對應
+state.markerLocationMap = {}; // key: location, value: marker
+
+// 更新查詢下拉選項
+function updateTravelQueryOptions() {
+    const allLocations = state.itinerary.map(a => a.location?.trim()).filter(Boolean);
+    const uniqueLocations = Array.from(new Set(allLocations));
+    const fromSelect = document.getElementById('from-location');
+    const toSelect = document.getElementById('to-location');
+
+    // 記住之前選擇
+    const prevFrom = fromSelect?.value;
+    const prevTo = toSelect?.value;
+
+    // 下拉內容
+    [fromSelect, toSelect].forEach(sel => {
+        if (sel) {
+            sel.innerHTML = `<option value="">選擇${sel.id==='from-location'?'出發地點':'目的地'}</option>`;
+            uniqueLocations.forEach(loc => {
+                const opt = document.createElement('option');
+                opt.value = loc;
+                opt.textContent = loc;
+                sel.appendChild(opt);
+            });
+        }
+    });
+
+    // 回復之前選擇
+    if (fromSelect && prevFrom && uniqueLocations.includes(prevFrom)) fromSelect.value = prevFrom;
+    if (toSelect && prevTo && uniqueLocations.includes(prevTo)) toSelect.value = prevTo;
+}
+
+// 查詢功能初始化
+function initTravelQueryEvents() {
+    const fromSel = document.getElementById('from-location');
+    const toSel = document.getElementById('to-location');
+    const btn = document.getElementById('query-time-btn');
+
+    if (btn) btn.onclick = queryTravelTime;
+    if (fromSel) fromSel.onchange = () => highlightMarker(fromSel.value);
+    if (toSel) toSel.onchange = () => highlightMarker(toSel.value);
+}
+
+// 使 marker 有動畫提示（閃爍放大）
+function highlightMarker(location) {
+    if (!location) return;
+    const marker = state.markerLocationMap[location];
+    if (marker) {
+        if (marker.icon && marker.getIcon) {
+            // 強制重新設置圖標 style
+            const icon = marker.getIcon();
+            marker.setIcon(icon); // 重刷
+        }
+        // 利用 Google Marker 內部 el (只能用 setAnimation/自訂icon 或外掛包裝)
+        // 這裡利用 marker DOM (GM API自帶) animation
+        if (marker.getMap()) {
+            // Google Maps marker DOM不可直接訪問, 可以用setAnimation:
+            marker.setAnimation(google.maps.Animation.BOUNCE);
+            setTimeout(()=>marker.setAnimation(null), 700);
+        }
+    }
+}
+
+// ================= Marker+Query互動 =================
+
+function updateMapMarkers() {
+    if (!state.mapInitialized || !state.map) {
+        console.log('地圖未初始化，跳過更新標記');
+        return;
+    }
+
+    // 清除現有標記
+    state.mapMarkers.forEach(marker => marker.setMap(null));
+    state.mapMarkers = [];
+    state.markerLocationMap = {};
+
+    // InfoWindow
+    if (!state.infoWindow) {
+        state.infoWindow = new google.maps.InfoWindow();
+    } else {
+        state.infoWindow.close();
+    }
+
+    // sidebar
+    const locationsList = document.getElementById('locations-list');
+    if (!locationsList) return;
+    locationsList.innerHTML = '';
+
+    const sidebarItems = [];
+    const bounds = new google.maps.LatLngBounds();
+
+    // 標記 + Sidebar
+    const activitiesWithLocation = state.itinerary.filter(a => a.location && a.location.trim() !== '');
+    activitiesWithLocation.forEach((activity, idx) => {
+        // 用地點做 marker key
+        const locationKey = activity.location.trim();
+
+        // 曼谷附近(示例)
+        const lat = 13.7563 + (Math.random() - 0.5) * 0.12;
+        const lng = 100.5018 + (Math.random() - 0.5) * 0.12;
+        const position = { lat, lng };
+        bounds.extend(position);
+
+        // marker 圖標顏色
+        const typeDetails = getActivityTypeDetails(activity.type);
+        const markerColor =
+            typeDetails.color === '#f59e0b' ? 'orange' :
+            typeDetails.color === '#ec4899' ? 'pink' :
+            typeDetails.color === '#8b5cf6' ? 'purple' :
+            typeDetails.color === '#3b82f6' ? 'blue' :
+            typeDetails.color === '#10b981' ? 'green' : 'red';
+
+        const marker = new google.maps.Marker({
+            position,
+            map: state.map,
+            title: activity.name,
+            icon: {
+                url: `https://maps.google.com/mapfiles/ms/icons/${markerColor}-dot.png`
+            },
+            optimized: false // 需要高亮時每個 marker 可獨立
+        });
+
+        // 存入map 
+        state.markerLocationMap[locationKey] = marker;
+
+        // 美化 InfoWindow
+        const infoHtml = `
+            <div style="background: #fff9fb;border-radius: 16px;box-shadow: 0 6px 24px rgba(255,107,139,0.13);padding: 16px 18px;min-width:180px;font-family:'Poppins','Lora',sans-serif;color:#5a4d4d;position:relative;">
+                <div style="font-weight:700;font-size:16px;display:flex;align-items:center;gap:8px;">
+                    <i class="${typeDetails.icon}" style="color:${typeDetails.color};font-size:16px;"></i>
+                    <span>${activity.name}</span>
+                </div>
+                <div style="margin-top:8px;font-size:13px;color:#8b7d7d;">
+                    <i class="fas fa-clock"></i> ${activity.time}
+                </div>
+                <div style="margin-top:4px;font-size:13px;color:#6d5d5d;">
+                    <i class="fas fa-map-marker-alt"></i> ${activity.location}
+                </div>
+                ${activity.notes ? `<div style="margin-top:8px;font-size:12px;background:#ffe4ec;padding:8px 10px;border-radius:8px;color:#d6336c;">${activity.notes}</div>` : ''}
+            </div>
+        `;
+
+        // sidebar item
+        const li = document.createElement('li');
+        li.innerHTML = `
+            <i class="fas fa-map-marker-alt" style="color:${typeDetails.color};"></i>
+            <div>
+                <div style="font-weight:600;">${activity.name}</div>
+                <div style="font-size:13px;color:#8b7d7d;">${activity.time}｜${activity.location}</div>
+                ${activity.notes ? `<div style="font-size:12px;color:#6d5d5d;">${activity.notes}</div>` : ''}
+            </div>
+        `;
+        li.classList.add('sidebar-activity');
+        li.style.cursor = 'pointer';
+        locationsList.appendChild(li);
+        sidebarItems.push(li);
+
+        // marker click: 地圖聚焦 + infoWindow + sidebar高亮 + 查詢下拉預設
+        marker.addListener('click', () => {
+            state.map.panTo(position);
+            state.map.setZoom(16);
+            state.infoWindow.setContent(infoHtml);
+            state.infoWindow.setOptions({
+                pixelOffset: new google.maps.Size(0, -8)
+            });
+            state.infoWindow.open(state.map, marker);
+
+            // sidebar高亮
+            sidebarItems.forEach(item => item.classList.remove('highlighted'));
+            li.classList.add('highlighted');
+            li.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            // —— 同步查詢下拉「出發地點」預設 —
+            const fromSel = document.getElementById('from-location');
+            if (fromSel) {
+                fromSel.value = locationKey;
+                // Marker閃爍提示
+                highlightMarker(locationKey);
+            }
+        });
+        // sidebar 點 = marker click
+        li.onclick = ()=>{ google.maps.event.trigger(marker, 'click'); };
+
+        state.mapMarkers.push(marker);
+    });
+
+    // sidebar高亮樣式
+    if (!document.getElementById('marker-highlight-style')) {
+        const style = document.createElement('style');
+        style.id = 'marker-highlight-style';
+        style.innerHTML = `
+        #locations-list li.highlighted {
+            background: linear-gradient(90deg, #ffe4ec 80%, #fff);
+            border: 2px solid #ff6b8b;
+            box-shadow: 0 2px 14px rgba(255,107,139,0.10);
+        }`;
+        document.head.appendChild(style);
+    }
+
+    // sidebar空
+    if (activitiesWithLocation.length === 0) {
+        const li = document.createElement('li');
+        li.className = 'empty';
+        li.textContent = '尚未添加地點';
+        locationsList.appendChild(li);
+    } else {
+        state.map.fitBounds(bounds);
+        if (state.mapMarkers.length === 1) {
+            setTimeout(() => { state.map.setZoom(15); }, 300);
+        }
+    }
+    // 租車地點更新略
+    // ———— Travel Query資料更新與監聽初始化 ————
+    updateTravelQueryOptions();
+    setTimeout(initTravelQueryEvents,150); // 保證下拉已更新
+}
+
+// =========== 在地圖頁載入後執行 updateMapMarkers (已有) ============
 
 // 更新資訊表單字段
 function updateInfoFormFields(type) {
