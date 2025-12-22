@@ -237,6 +237,234 @@ function initEventListeners() {
     }
 }
 
+// ====== 地圖單一路線功能 變數 ======
+let lastQueryFrom = null;    // 儲存查詢的出發地（地址、座標皆可）
+let lastQueryTo = null;      // 儲存查詢的目的地
+let singleRouteRenderer = null; // 單一路線 DirectionsRenderer
+let singleRouteActive = false;  // route 狀態
+
+// 親軟提示
+function showTip(msg) {
+  // 可自訂軟萌提示樣式
+  const tip = document.createElement('div');
+  tip.className = 'soft-tip';
+  tip.style.cssText = `
+    position: fixed; top: 50px; left: 50%; transform: translateX(-50%);
+    background: #fff6fa; color: #d63384; border-radius:18px; 
+    padding:12px 28px; box-shadow:0 2px 18px rgba(255,92,159,0.09);
+    font-family:'Lora','Poppins',sans-serif; z-index: 9999;
+    font-size: 1.1rem; text-align:center;
+  `;
+  tip.textContent = msg;
+  document.body.appendChild(tip);
+  setTimeout(() => tip.remove(), 2200);
+}
+
+// 計算時間 按鈕 click
+async function queryTravelTime() {
+  const fromSel = document.getElementById('from-location');
+  const toSel = document.getElementById('to-location');
+  const resultBox = document.getElementById('travel-query-result');
+  const showRouteBtn = document.getElementById('show-route-btn');
+
+  if (!fromSel || !toSel || !resultBox) return;
+
+  const from = fromSel.value.trim();
+  const to = toSel.value.trim();
+
+  resultBox.textContent = '';
+  resultBox.className = 'query-result';
+
+  if (!from || !to) {
+    resultBox.textContent = '請選擇出發地點及目的地。';
+    resultBox.classList.add('error');
+    if (showRouteBtn) showRouteBtn.disabled = true;
+    lastQueryFrom = null; lastQueryTo = null; // reset
+    return;
+  }
+  if (from === to) {
+    resultBox.textContent = '相同地點，無需移動。';
+    resultBox.classList.add('success');
+    if (showRouteBtn) showRouteBtn.disabled = true;
+    lastQueryFrom = null; lastQueryTo = null; // reset
+    return;
+  }
+  resultBox.textContent = '查詢中...';
+  resultBox.classList.remove('error', 'success');
+  if (showRouteBtn) showRouteBtn.disabled = true; // 暫時 disable
+
+  try {
+    // 若 from/to 是座標建議直接用，否則用地址（假設你的 value 是地址）
+    // 依據你現有 queryTravelTime 中 Google Distance Matrix API 來寫
+    const apiKey = '你的API KEY';
+    const baseUrl = `https://maps.googleapis.com/maps/api/distancematrix/json?language=zh-TW&units=metric&origins=${encodeURIComponent(from)}&destinations=${encodeURIComponent(to)}&mode=driving&key=${apiKey}`;
+    const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(baseUrl);
+
+    const resp = await fetch(proxyUrl);
+    const data = await resp.json();
+
+    if (
+      data &&
+      data.rows &&
+      data.rows[0] &&
+      data.rows[0].elements &&
+      data.rows[0].elements[0] &&
+      data.rows[0].elements[0].status === "OK"
+    ) {
+      const element = data.rows[0].elements[0];
+      const durationText = String(element.duration.text).replace('分鐘', ' 分鐘');
+      const distanceText = String(element.distance.text).replace('公里', ' 公里');
+      resultBox.innerHTML = `
+        <span style="font-weight:600;">
+          約 ${durationText}（${distanceText}）
+        </span>
+      `;
+      resultBox.classList.add('success');
+
+      // 儲存選定地點供路線繪製
+      lastQueryFrom = from;
+      lastQueryTo = to;
+
+      // 啟用顯示路線按鈕
+      if (showRouteBtn) {
+        showRouteBtn.disabled = false;
+        showRouteBtn.classList.remove('disabled');
+      }
+    } else {
+      resultBox.textContent = "查詢失敗，請檢查地點或稍後重試";
+      resultBox.classList.add('error');
+      if (showRouteBtn) showRouteBtn.disabled = true;
+      lastQueryFrom = null; lastQueryTo = null;
+      console.error("Distance Matrix API failure:", data);
+    }
+  } catch (err) {
+    resultBox.textContent = "查詢失敗，請檢查地點或稍後重試";
+    resultBox.classList.add('error');
+    if (showRouteBtn) showRouteBtn.disabled = true;
+    lastQueryFrom = null; lastQueryTo = null;
+    console.error("Distance Matrix error:", err);
+  }
+}
+
+// 顯示路線按鈕 click 行為
+function handleShowRouteClick() {
+  const showRouteBtn = document.getElementById('show-route-btn');
+  if (!lastQueryFrom || !lastQueryTo) {
+    showTip("請先選擇出發地與目的地並計算時間");
+    return;
+  }
+
+  // 開始顯示單一路線
+  const directionsService = new google.maps.DirectionsService();
+
+  // 清除舊路線
+  if (singleRouteRenderer) {
+    singleRouteRenderer.setMap(null);
+    singleRouteRenderer = null;
+  }
+  singleRouteActive = false;
+
+  singleRouteRenderer = new google.maps.DirectionsRenderer({
+    suppressMarkers: false,
+    polylineOptions: {
+      strokeColor: '#d63384',
+      strokeWeight: 6,
+      strokeOpacity: 0.88
+    }
+  });
+
+  if (state.map) singleRouteRenderer.setMap(state.map);
+
+  showTip("正在尋找最佳路線...");
+
+  const request = {
+    origin: lastQueryFrom,
+    destination: lastQueryTo,
+    travelMode: 'DRIVING'
+  };
+
+  directionsService.route(request, function(result, status) {
+    if (status === 'OK') {
+      singleRouteRenderer.setDirections(result);
+      singleRouteActive = true;
+
+      showTip("已顯示專屬路線 ♡(｡>∀<｡)");
+      // 顯示清除路線按鈕
+      showClearRouteButton();
+    } else {
+      showTip("無法繪製路線，請稍後再試～");
+      singleRouteRenderer.setMap(null);
+      singleRouteRenderer = null;
+      singleRouteActive = false;
+    }
+  });
+}
+
+// 清除單一路線按鈕及行為
+function showClearRouteButton() {
+  // 不重複加
+  let clrBtn = document.getElementById('clear-route-btn');
+  if (clrBtn) return;
+  clrBtn = document.createElement('button');
+  clrBtn.id = 'clear-route-btn';
+  clrBtn.innerHTML = '清除路線';
+  clrBtn.style.cssText = `
+    position: fixed; top: 62px; left: 56%; transform: translateX(-50%);
+    background: #ffb9dd; color: #fff9fb; border:none; border-radius:18px;
+    box-shadow:0 2px 16px rgba(255,92,159,0.12); font-size:1rem; font-family:'Poppins',sans-serif;
+    padding:6px 24px; cursor:pointer; z-index:9999;
+  `;
+  document.body.appendChild(clrBtn);
+
+  clrBtn.onclick = function() {
+    if (singleRouteRenderer) {
+      singleRouteRenderer.setMap(null);
+      singleRouteRenderer = null;
+      singleRouteActive = false;
+      // 保持 from/to 不清除
+    }
+    clrBtn.remove();
+    showTip("路線已清除(˶‾᷄ ⁻̫ ‾᷅˵)");
+  };
+}
+
+// ------ 初始化與事件註冊 --------
+// 建議在 initEventListeners/地圖頁 setup 處添加以下行
+function initTravelRouteEvents() {
+  // 計算時間按鈕
+  const calcBtn = document.getElementById('query-time-btn');
+  if (calcBtn) calcBtn.onclick = queryTravelTime;
+
+  // 顯示路線按鈕
+  const showRouteBtn = document.getElementById('show-route-btn');
+  if (showRouteBtn) {
+    showRouteBtn.onclick = handleShowRouteClick;
+    showRouteBtn.disabled = true; // 預設不可用
+    showRouteBtn.classList.add('disabled');
+  }
+}
+
+// 在 updateMapMarkers / 地圖頁初始化 / 查詢選單變更時都需呼叫
+// 例如：
+setTimeout(initTravelRouteEvents, 100);
+
+// -- 如果用 select onchange 會清除路線 --
+document.getElementById('from-location').onchange =
+document.getElementById('to-location').onchange = function() {
+  lastQueryFrom = null; lastQueryTo = null;
+  const showRouteBtn = document.getElementById('show-route-btn');
+  if (showRouteBtn) showRouteBtn.disabled = true;
+  // 清除現有單一路線
+  if (singleRouteRenderer) {
+    singleRouteRenderer.setMap(null);
+    singleRouteRenderer = null;
+    singleRouteActive = false;
+  }
+  const clrBtn = document.getElementById('clear-route-btn');
+  if (clrBtn) clrBtn.remove();
+};
+
+
 // 顯示頁面 - 修復導航功能
 function showPage(pageId) {
     console.log('切換到頁面:', pageId);
