@@ -704,6 +704,53 @@ function showRouteOnMap() {
     });
 }
 
+function populateLocationSelects() {
+    // 取得 itinerary 中有效地點的活動
+    const activitiesWithLocation = state.itinerary.filter(
+        a => a.location && a.location.trim()
+    );
+
+    // 建立去重後的清單（以 name + location key）
+    // 注意：可能有活動同名但不同地點，故 key 應該是 name + location
+    const uniqueMap = {};
+    activitiesWithLocation.forEach(activity => {
+        // key 只用 name，確保同名只顯示一次（若不同活動同名同地點可合併）
+        // 若想同名不同地點也合併，則使用 activity.name 做為 key
+        uniqueMap[activity.name] = activity;
+    });
+
+    const uniqueActivities = Object.values(uniqueMap);
+
+    // 取得之前選擇值
+    const fromSelect = document.getElementById('from-location');
+    const toSelect = document.getElementById('to-location');
+    const prevFrom = fromSelect?.value;
+    const prevTo = toSelect?.value;
+
+    // 產生選項
+    [fromSelect, toSelect].forEach(sel => {
+        if (sel) {
+            sel.innerHTML = `<option value="">${sel.id === 'from-location' ? '選擇出發地點' : '選擇目的地'}</option>`;
+            uniqueActivities.forEach(activity => {
+                let displayName = activity.name || '未命名活動';
+                // 自動截斷名稱過長
+                if (displayName.length > 20) {
+                    displayName = displayName.slice(0, 18) + '...';
+                }
+                // 也可讓 option 支持wrap/tooltip（HTML下拉不易換行，建議截斷＋title）
+                const opt = document.createElement('option');
+                opt.value = activity.location; // value 用原本地址或座標
+                opt.textContent = displayName;
+                opt.title = activity.name;     // hover 顯示完整名稱
+                sel.appendChild(opt);
+            });
+        }
+    });
+
+    // 恢復原選擇值
+    if (fromSelect && prevFrom) fromSelect.value = prevFrom;
+    if (toSelect && prevTo) toSelect.value = prevTo;
+}
 // 顯示彈出視窗
 function showModal(modalId) {
     const modal = document.getElementById(modalId);
@@ -721,35 +768,6 @@ function showInfoModal(section) {
 }
 // Helper: 保留 marker 資料對應
 state.markerLocationMap = {}; // key: location, value: marker
-
-// 更新查詢下拉選項
-function updateTravelQueryOptions() {
-    const allLocations = state.itinerary.map(a => a.location?.trim()).filter(Boolean);
-    const uniqueLocations = Array.from(new Set(allLocations));
-    const fromSelect = document.getElementById('from-location');
-    const toSelect = document.getElementById('to-location');
-
-    // 記住之前選擇
-    const prevFrom = fromSelect?.value;
-    const prevTo = toSelect?.value;
-
-    // 下拉內容
-    [fromSelect, toSelect].forEach(sel => {
-        if (sel) {
-            sel.innerHTML = `<option value="">選擇${sel.id==='from-location'?'出發地點':'目的地'}</option>`;
-            uniqueLocations.forEach(loc => {
-                const opt = document.createElement('option');
-                opt.value = loc;
-                opt.textContent = loc;
-                sel.appendChild(opt);
-            });
-        }
-    });
-
-    // 回復之前選擇
-    if (fromSelect && prevFrom && uniqueLocations.includes(prevFrom)) fromSelect.value = prevFrom;
-    if (toSelect && prevTo && uniqueLocations.includes(prevTo)) toSelect.value = prevTo;
-}
 
 // 查詢功能初始化
 function initTravelQueryEvents() {
@@ -932,7 +950,7 @@ function updateMapMarkers() {
     }
     // 租車地點更新略
     // ———— Travel Query資料更新與監聽初始化 ————
-    updateTravelQueryOptions();
+    populateLocationSelects();
     setTimeout(initTravelQueryEvents,150); // 保證下拉已更新
 }
 
