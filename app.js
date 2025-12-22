@@ -1713,7 +1713,7 @@ async function loadFromUrl() {
     if (!binId) return false;
         state.sharedBinId = binId;
     try {
-    const resp = await fetch(https://api.jsonbin.io/v3/b/${binId}/latest);
+    const resp = await fetch('https://api.jsonbin.io/v3/b/' + binId + '/latest');
     if (!resp.ok) throw new Error('無法獲取共享行程數據。');
         const data = await resp.json();
         const record = data.record || {};
@@ -1735,7 +1735,7 @@ async function loadFromUrl() {
 
 async function checkForUpdates() {
     if (!state.sharedBinId) return;
-    const resp = await fetch(https://api.jsonbin.io/v3/b/${state.sharedBinId}/latest);
+    const resp = await fetch('https://api.jsonbin.io/v3/b/' + state.sharedBinId + '/latest');
     if (!resp.ok) return;
 
     const data = await resp.json();
