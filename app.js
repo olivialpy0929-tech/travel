@@ -39,19 +39,39 @@ function loadApp() {
 
 // 初始化應用程序
 // 修改 initApp() 函數的結尾部分
+// 修改 initApp() 函數的結尾部分
 async function initApp() {
     console.log('初始化應用...');
     
     try {
-        // ... 現有代碼 ...
+        // Set default form dates
+        const today = new Date().toISOString().split('T')[0];
+        if (document.getElementById('activity-date')) {
+            document.getElementById('activity-date').value = today;
+        }
+        if (document.getElementById('diary-date')) {
+            document.getElementById('diary-date').value = today;
+        }
+        
+        // AWAIT the result of loading from the URL
+        const loadedFromCloud = await loadFromUrl(); // <-- 這行很重要！
 
-        // 渲染數據
+        if (loadedFromCloud) {
+            console.log('從雲端加載數據成功。合作模式已啟用。');
+            // Don't disable anything, we want collaboration!
+        } else {
+            // If we didn't load from cloud, load from local storage
+            console.log('未找到雲端數據，從本地存儲加載...');
+            loadFromLocalStorage();
+        }
+        
+        // Now render the data that was loaded (either from cloud or local)
         renderItinerary();
         renderDiaryEntries();
         renderBudgetItems();
         renderInfoItems();
         
-        // 初始化其他功能
+        // Initialize everything else
         initEventListeners();
         showPage('home-page');
         initializeHeaderWidgets(); 
@@ -1626,64 +1646,70 @@ function uint8ArrayToBase64(bytes) {
 // In app.js, REPLACE the old generateShareLink function with this
 
 async function generateShareLink() {
-  const shareBtn = document.getElementById('share-trip-btn');
-  const originalIcon = shareBtn.innerHTML;
-  shareBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-  shareBtn.disabled = true;
+    const shareBtn = document.getElementById('share-trip-btn');
+    const originalIcon = shareBtn.innerHTML;
+    shareBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    shareBtn.disabled = true;
 
-  const dataToShare = {
-    tripTitle: document.getElementById('trip-title').textContent,
-    itinerary: state.itinerary,
-    diaryEntries: state.diaryEntries,
-    budgetItems: state.budgetItems,
-    infoItems: state.infoItems
-  };
+    const dataToShare = {
+        tripTitle: document.getElementById('trip-title')?.textContent || '我的泰國之旅',
+        itinerary: state.itinerary,
+        diaryEntries: state.diaryEntries,
+        budgetItems: state.budgetItems,
+        infoItems: state.infoItems
+    };
 
-  try {
-    const response = await fetch('https://api.jsonbin.io/v3/b', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Master-Key': JSONBIN_API_KEY,
-        'X-Bin-Private': 'false'
-      },
-      body: JSON.stringify(dataToShare)
-    });
+    console.log('準備分享的數據:', dataToShare);
 
-    if (!response.ok) {
-      throw new Error('Failed to save data to cloud.');
+    try {
+        const response = await fetch('https://api.jsonbin.io/v3/b', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Master-Key': JSONBIN_API_KEY,
+                'X-Bin-Private': 'false'
+            },
+            body: JSON.stringify(dataToShare)
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to save data to cloud.');
+        }
+
+        const result = await response.json();
+        const binId = result.metadata.id;
+
+        console.log('創建的 binId:', binId);
+
+        // 關鍵：將自己的應用轉為協作模式
+        state.sharedBinId = binId;
+        
+        // 立即保存當前狀態到雲端
+        await saveData();
+
+        // 構建分享連結
+        const baseUrl = window.location.href.split('?')[0];
+        const shareUrl = `${baseUrl}?trip=${binId}`;
+
+        console.log('分享連結:', shareUrl);
+
+        // 顯示模態框
+        const shareInput = document.getElementById('share-link-input');
+        if (shareInput) {
+            shareInput.value = shareUrl;
+            showModal('share-modal');
+            shareInput.select();
+        }
+
+        console.log('已切換到協作模式，將定期檢查更新');
+
+    } catch (error) {
+        console.error('Share link generation failed:', error);
+        alert('無法生成分享連結，請檢查您的網絡或API密鑰。');
+    } finally {
+        shareBtn.innerHTML = originalIcon;
+        shareBtn.disabled = false;
     }
-
-    const result = await response.json();
-    const binId = result.metadata.id;
-
-    // 關鍵：將自己的應用轉為協作模式
-    state.sharedBinId = binId;
-    
-    // 立即保存當前狀態到雲端
-    saveData();
-
-    // 構建分享連結
-    const baseUrl = window.location.href.split('?')[0];
-    const shareUrl = `${baseUrl}?trip=${binId}`;
-
-    // 顯示模態框
-    const shareInput = document.getElementById('share-link-input');
-    if (shareInput) {
-      shareInput.value = shareUrl;
-      showModal('share-modal');
-      shareInput.select();
-    }
-
-    console.log('已切換到協作模式，將定期檢查更新');
-
-  } catch (error) {
-    console.error('Share link generation failed:', error);
-    alert('無法生成分享連結，請檢查您的網絡或API密鑰。');
-  } finally {
-    shareBtn.innerHTML = originalIcon;
-    shareBtn.disabled = false;
-  }
 }
 
 function copyShareLink() {
@@ -1761,29 +1787,32 @@ async function checkForUpdates() {
     }
 
     try {
-        console.log('正在檢查雲端更新...');
-        const resp = await fetch('https://api.jsonbin.io/v3/b/' + state.sharedBinId + '/latest');
+        console.log('正在檢查雲端更新...', state.sharedBinId);
+        
+        // 添加緩存避免頻繁請求
+        const cacheBuster = Date.now();
+        const resp = await fetch(`https://api.jsonbin.io/v3/b/${state.sharedBinId}/latest?t=${cacheBuster}`);
+        
         if (!resp.ok) {
-            console.log('獲取雲端數據失敗');
+            console.log('獲取雲端數據失敗，狀態碼:', resp.status);
             return;
         }
 
         const data = await resp.json();
         const record = data.record || {};
 
-        // 創建當前狀態的快照
-        const currentSnapshot = {
-            tripTitle: document.getElementById('trip-title').textContent,
+        // 轉換為可比較的字符串
+        const currentString = JSON.stringify({
+            tripTitle: document.getElementById('trip-title')?.textContent || '我的泰國之旅',
             itinerary: state.itinerary,
             diaryEntries: state.diaryEntries,
             budgetItems: state.budgetItems,
             infoItems: state.infoItems
-        };
+        });
+        
+        const recordString = JSON.stringify(record);
 
-        // 深度比較兩個對象
-        const hasChanges = !deepEqual(currentSnapshot, record);
-
-        if (hasChanges) {
+        if (currentString !== recordString) {
             console.log('檢測到雲端更新，正在同步...');
             
             // 顯示更新通知
@@ -1811,6 +1840,10 @@ async function checkForUpdates() {
             
             // 更新小工具
             updateCountdown();
+            
+            logCurrentState('更新後');
+        } else {
+            console.log('沒有檢測到更新');
         }
     } catch (err) {
         console.error('檢查更新時出錯:', err);
@@ -1819,19 +1852,40 @@ async function checkForUpdates() {
 
 // 添加深度比較函數
 function deepEqual(obj1, obj2) {
+    // 如果兩者是同一個對象，直接返回 true
     if (obj1 === obj2) return true;
-    if (typeof obj1 !== 'object' || obj1 === null || typeof obj2 !== 'object' || obj2 === null) {
-        return false;
-    }
     
+    // 如果其中一個是 null 或不是對象，則返回 false
+    if (obj1 == null || obj2 == null) return false;
+    if (typeof obj1 !== 'object' || typeof obj2 !== 'object') return false;
+    
+    // 獲取鍵值
     const keys1 = Object.keys(obj1);
     const keys2 = Object.keys(obj2);
     
+    // 如果鍵的數量不同，返回 false
     if (keys1.length !== keys2.length) return false;
     
+    // 檢查每個鍵
     for (const key of keys1) {
         if (!keys2.includes(key)) return false;
-        if (!deepEqual(obj1[key], obj2[key])) return false;
+        
+        const val1 = obj1[key];
+        const val2 = obj2[key];
+        
+        // 如果是數組，特殊處理
+        if (Array.isArray(val1) && Array.isArray(val2)) {
+            if (val1.length !== val2.length) return false;
+            for (let i = 0; i < val1.length; i++) {
+                if (!deepEqual(val1[i], val2[i])) return false;
+            }
+        } else if (typeof val1 === 'object' && typeof val2 === 'object') {
+            // 遞歸比較對象
+            if (!deepEqual(val1, val2)) return false;
+        } else {
+            // 比較基本類型
+            if (val1 !== val2) return false;
+        }
     }
     
     return true;
@@ -1856,6 +1910,7 @@ function showUpdateNotification() {
   }, 3000);
 }
 
+// 重置為空狀態
 // 重置為空狀態
 function resetToEmptyState() {
     state.itinerary = [];
@@ -1954,15 +2009,17 @@ function updateCountdown() {
 async function saveToCloud() {
     if (!state.sharedBinId) return;
 
-    console.log('正在保存更改到雲端...');
+    console.log('正在保存更改到雲端...', state.sharedBinId);
     
     const dataToSave = {
-        tripTitle: document.getElementById('trip-title').textContent,
+        tripTitle: document.getElementById('trip-title')?.textContent || '我的泰國之旅',
         itinerary: state.itinerary,
         diaryEntries: state.diaryEntries,
         budgetItems: state.budgetItems,
         infoItems: state.infoItems
     };
+
+    console.log('要保存的數據:', dataToSave);
 
     try {
         const response = await fetch(`https://api.jsonbin.io/v3/b/${state.sharedBinId}`, {
@@ -1970,8 +2027,8 @@ async function saveToCloud() {
             headers: {
                 'Content-Type': 'application/json',
                 'X-Master-Key': JSONBIN_API_KEY,
-                'X-Bin-Private': 'false',  // 添加這行
-                'X-Bin-Versioning': 'false' // 添加這行
+                'X-Bin-Private': 'false',
+                'X-Bin-Versioning': 'false'
             },
             body: JSON.stringify(dataToSave)
         });
@@ -1984,6 +2041,7 @@ async function saveToCloud() {
         }
 
         console.log('雲端保存成功！');
+        logCurrentState('雲端保存後');
 
     } catch (error) {
         console.error('保存到雲端時出錯:', error);
@@ -2007,8 +2065,9 @@ window.addEventListener('error', function(e) {
     console.error('錯誤位置:', e.filename, ':', e.lineno, ':', e.colno);
 });
 
-function logCurrentState() {
-    console.log('=== 當前應用狀態 ===');
+// 修改 logCurrentState 函數
+function logCurrentState(message = '') {
+    console.log(`=== 當前應用狀態 ${message} ===`);
     console.log('sharedBinId:', state.sharedBinId);
     console.log('行程項目數:', state.itinerary.length);
     console.log('日記條目數:', state.diaryEntries.length);
@@ -2016,8 +2075,12 @@ function logCurrentState() {
     console.log('========================');
 }
 
-// 在數據保存和加載時調用
-logCurrentState();
+// 然後在關鍵位置調用它：
+// 在 saveData() 函數末尾添加：
+logCurrentState('保存後');
+
+// 在 checkForUpdates() 檢測到更新時添加：
+logCurrentState('同步後');
 
 // Confirm script has loaded
 console.log('應用程式腳本加載完成');
